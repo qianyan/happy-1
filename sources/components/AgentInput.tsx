@@ -39,6 +39,7 @@ interface AgentInputProps {
     metadata?: Metadata | null;
     onAbort?: () => void | Promise<void>;
     showAbortButton?: boolean;
+    onSwitchToRemote?: () => void | Promise<void>;
     connectionStatus?: {
         text: string;
         color: string;
@@ -302,6 +303,8 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
 
     // Abort button state
     const [isAborting, setIsAborting] = React.useState(false);
+    // Switch to remote button state
+    const [isSwitchingToRemote, setIsSwitchingToRemote] = React.useState(false);
     const shakerRef = React.useRef<ShakeInstance>(null);
     const inputRef = React.useRef<MultiTextInputHandle>(null);
 
@@ -412,6 +415,31 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
             setIsAborting(false);
         }
     }, [props.onAbort]);
+
+    // Handle switch to remote button press
+    const handleSwitchToRemotePress = React.useCallback(async () => {
+        if (!props.onSwitchToRemote) return;
+
+        hapticsLight();
+        setIsSwitchingToRemote(true);
+        const startTime = Date.now();
+
+        try {
+            await props.onSwitchToRemote?.();
+
+            // Ensure minimum 300ms loading time
+            const elapsed = Date.now() - startTime;
+            if (elapsed < 300) {
+                await new Promise(resolve => setTimeout(resolve, 300 - elapsed));
+            }
+        } catch (error) {
+            // Shake on error
+            shakerRef.current?.shake();
+            console.error('Switch to remote RPC call failed:', error);
+        } finally {
+            setIsSwitchingToRemote(false);
+        }
+    }, [props.onSwitchToRemote]);
 
     // Handle keyboard navigation
     const handleKeyPress = React.useCallback((event: KeyPressEvent): boolean => {
@@ -943,6 +971,41 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                         )}
                                     </Pressable>
                                 </Shaker>
+                            )}
+
+                            {/* Switch to Remote button */}
+                            {props.onSwitchToRemote && (
+                                <Pressable
+                                    style={(p) => ({
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        borderRadius: Platform.select({ default: 16, android: 20 }),
+                                        paddingHorizontal: 8,
+                                        paddingVertical: 6,
+                                        justifyContent: 'center',
+                                        height: 32,
+                                        opacity: p.pressed ? 0.7 : 1,
+                                    })}
+                                    hitSlop={{ top: 5, bottom: 10, left: 0, right: 0 }}
+                                    onPress={handleSwitchToRemotePress}
+                                    disabled={isSwitchingToRemote}
+                                >
+                                    {isSwitchingToRemote ? (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color={theme.colors.button.secondary.tint}
+                                        />
+                                    ) : (
+                                        <Text style={{
+                                            fontSize: 16,
+                                            fontWeight: '600',
+                                            color: theme.colors.button.secondary.tint,
+                                            ...Typography.default('semiBold'),
+                                        }}>
+                                            R
+                                        </Text>
+                                    )}
+                                </Pressable>
                             )}
 
                             {/* Git Status Badge */}

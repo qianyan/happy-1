@@ -12,7 +12,7 @@ import { Modal } from '@/modal';
 import { voiceHooks } from '@/realtime/hooks/voiceHooks';
 import { startRealtimeSession, stopRealtimeSession, updateCurrentSessionId } from '@/realtime/RealtimeSession';
 import { gitStatusSync } from '@/sync/gitStatusSync';
-import { sessionAbort } from '@/sync/ops';
+import { sessionAbort, sessionSwitch } from '@/sync/ops';
 import { storage, useIsDataReady, useLocalSetting, useRealtimeStatus, useSessionMessages, useSessionUsage, useSetting } from '@/sync/storage';
 import { useSession } from '@/sync/storage';
 import { Session } from '@/sync/storageTypes';
@@ -197,6 +197,15 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
         storage.getState().updateSessionModelMode(sessionId, mode);
     }, [sessionId]);
 
+    // Handle switch to remote - switches to remote mode and aggressively syncs messages
+    const handleSwitchToRemote = React.useCallback(async () => {
+        // Switch session to remote mode
+        await sessionSwitch(sessionId, 'remote');
+
+        // Aggressively sync messages - invalidate to force a fresh fetch
+        sync.onSessionVisible(sessionId);
+    }, [sessionId]);
+
     // Memoize header-dependent styles to prevent re-renders
     const headerDependentStyles = React.useMemo(() => ({
         contentContainer: {
@@ -301,6 +310,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
             isMicActive={micButtonState.isMicActive}
             onAbort={() => sessionAbort(sessionId)}
             showAbortButton={sessionStatus.state === 'thinking' || sessionStatus.state === 'waiting'}
+            onSwitchToRemote={handleSwitchToRemote}
             onFileViewerPress={experiments ? () => router.push(`/session/${sessionId}/files`) : undefined}
             // Autocomplete configuration
             autocompletePrefixes={['@', '/']}
