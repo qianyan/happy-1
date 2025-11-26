@@ -14,34 +14,36 @@ export class Encryption {
     static async create(masterSecret: Uint8Array) {
 
         // Derive content data key to open session and machine records
-        const contentDataKey = await deriveKey(masterSecret, 'Happy EnCoder', ['content']);
+        const contentDataKeySeed = await deriveKey(masterSecret, 'Happy EnCoder', ['content']);
 
         // Derive content data key keypair
-        const contentKeyPair = sodium.crypto_box_seed_keypair(contentDataKey);
+        const contentKeyPair = sodium.crypto_box_seed_keypair(contentDataKeySeed);
 
         // Derive anonymous ID
         const anonID = encodeHex((await deriveKey(masterSecret, 'Happy Coder', ['analytics', 'id']))).slice(0, 16).toLowerCase();
 
         // Create encryption
-        return new Encryption(anonID, masterSecret, contentKeyPair);
+        return new Encryption(anonID, masterSecret, contentKeyPair, contentDataKeySeed);
     }
 
     private readonly legacyEncryption: SecretBoxEncryption;
     private readonly contentKeyPair: sodium.KeyPair;
     readonly anonID: string;
-    readonly contentDataKey: Uint8Array;
+    readonly contentDataKey: Uint8Array; // The seed used to derive the keypair
+    readonly contentPublicKey: Uint8Array; // The public key from the keypair
 
     // Session and machine encryption management
     private sessionEncryptions = new Map<string, SessionEncryption>();
     private machineEncryptions = new Map<string, MachineEncryption>();
     private cache: EncryptionCache;
 
-    private constructor(anonID: string, masterSecret: Uint8Array, contentKeyPair: sodium.KeyPair) {
+    private constructor(anonID: string, masterSecret: Uint8Array, contentKeyPair: sodium.KeyPair, contentDataKeySeed: Uint8Array) {
         this.anonID = anonID;
         this.contentKeyPair = contentKeyPair;
         this.legacyEncryption = new SecretBoxEncryption(masterSecret);
         this.cache = new EncryptionCache();
-        this.contentDataKey = contentKeyPair.publicKey;
+        this.contentDataKey = contentDataKeySeed; // Store the seed, not the public key!
+        this.contentPublicKey = contentKeyPair.publicKey; // Store public key separately
     }
 
     //
@@ -160,20 +162,35 @@ export class Encryption {
     //
 
     async decryptEncryptionKey(encrypted: string) {
+        console.log('[DEBUG] Decrypting encryption key');
+        console.log('[DEBUG] contentDataKey (seed):', encodeHex(this.contentDataKey).substring(0, 32) + '...');
+        console.log('[DEBUG] contentKeyPair.publicKey:', encodeHex(this.contentKeyPair.publicKey).substring(0, 32) + '...');
+        console.log('[DEBUG] contentKeyPair.privateKey:', encodeHex(this.contentKeyPair.privateKey).substring(0, 32) + '...');
+
         const encryptedKey = decodeBase64(encrypted, 'base64');
+        console.log('[DEBUG] Encrypted key length:', encryptedKey.length);
+        console.log('[DEBUG] First byte (version):', encryptedKey[0]);
+
         if (encryptedKey[0] !== 0) {
+            console.log('[DEBUG] Wrong version byte, returning null');
             return null;
         }
 
         const decrypted = decryptBox(encryptedKey.slice(1), this.contentKeyPair.privateKey);
         if (!decrypted) {
+            console.log('[DEBUG] decryptBox failed, returning null');
             return null;
         }
+        console.log('[DEBUG] Successfully decrypted encryption key');
         return decrypted;
     }
 
     async encryptEncryptionKey(key: Uint8Array): Promise<Uint8Array> {
         // Use public key for encryption (encrypt TO ourselves)
+        console.log('[DEBUG] Encrypting encryption key');
+        console.log('[DEBUG] contentDataKey (seed):', encodeHex(this.contentDataKey).substring(0, 32) + '...');
+        console.log('[DEBUG] contentPublicKey:', encodeHex(this.contentPublicKey).substring(0, 32) + '...');
+        console.log('[DEBUG] contentKeyPair.publicKey:', encodeHex(this.contentKeyPair.publicKey).substring(0, 32) + '...');
         const encrypted = encryptBox(key, this.contentKeyPair.publicKey);
         const result = new Uint8Array(encrypted.length + 1);
         result[0] = 0; // Version byte
