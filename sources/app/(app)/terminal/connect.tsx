@@ -14,6 +14,7 @@ import { t } from '@/text';
 export default function TerminalConnectScreen() {
     const router = useRouter();
     const [publicKey, setPublicKey] = useState<string | null>(null);
+    const [serverUrl, setServerUrl] = useState<string | null>(null);
     const [hashProcessed, setHashProcessed] = useState(false);
     const { processAuthUrl, isLoading } = useConnectTerminal({
         onSuccess: () => {
@@ -21,20 +22,28 @@ export default function TerminalConnectScreen() {
         }
     });
 
-    // Extract key from hash on web platform
+    // Extract key and optional server URL from hash on web platform
+    // Format: #key=<base64url>&server=<encoded-url>
     useEffect(() => {
         if (Platform.OS === 'web' && typeof window !== 'undefined' && !hashProcessed) {
             const hash = window.location.hash;
-            if (hash.startsWith('#key=')) {
-                const key = hash.substring(5); // Remove '#key='
-                setPublicKey(key);
-                
+            if (hash.startsWith('#')) {
+                // Parse hash as URL params (remove leading #)
+                const params = new URLSearchParams(hash.substring(1));
+                const key = params.get('key');
+                const server = params.get('server');
+
+                if (key) {
+                    setPublicKey(key);
+                    if (server) {
+                        setServerUrl(decodeURIComponent(server));
+                    }
+                }
+
                 // Clear the hash from URL to prevent exposure in browser history
                 window.history.replaceState(null, '', window.location.pathname + window.location.search);
-                setHashProcessed(true);
-            } else {
-                setHashProcessed(true);
             }
+            setHashProcessed(true);
         }
     }, [hashProcessed]);
 
@@ -42,7 +51,7 @@ export default function TerminalConnectScreen() {
         if (publicKey) {
             // Convert the hash key format to the expected happy:// URL format
             const authUrl = `happy://terminal?${publicKey}`;
-            await processAuthUrl(authUrl);
+            await processAuthUrl(authUrl, serverUrl ?? undefined);
         }
     };
 

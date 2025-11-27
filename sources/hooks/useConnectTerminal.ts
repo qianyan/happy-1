@@ -20,12 +20,12 @@ export function useConnectTerminal(options?: UseConnectTerminalOptions) {
     const [isLoading, setIsLoading] = React.useState(false);
     const checkScannerPermissions = useCheckScannerPermissions();
 
-    const processAuthUrl = React.useCallback(async (url: string) => {
+    const processAuthUrl = React.useCallback(async (url: string, serverUrlOverride?: string) => {
         if (!url.startsWith('happy://terminal?')) {
             Modal.alert(t('common.error'), t('modals.invalidAuthUrl'), [{ text: t('common.ok') }]);
             return false;
         }
-        
+
         setIsLoading(true);
         try {
             const tail = url.slice('happy://terminal?'.length);
@@ -35,11 +35,11 @@ export function useConnectTerminal(options?: UseConnectTerminalOptions) {
             responseV2Bundle[0] = 0;
             responseV2Bundle.set(sync.encryption.contentDataKey, 1);
             const responseV2 = encryptBox(responseV2Bundle, publicKey);
-            await authApprove(auth.credentials!.token, publicKey, responseV1, responseV2);
-            
+            await authApprove(auth.credentials!.token, publicKey, responseV1, responseV2, serverUrlOverride);
+
             Modal.alert(t('common.success'), t('modals.terminalConnectedSuccessfully'), [
-                { 
-                    text: t('common.ok'), 
+                {
+                    text: t('common.ok'),
                     onPress: () => options?.onSuccess?.()
                 }
             ]);

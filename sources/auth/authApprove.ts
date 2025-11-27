@@ -8,8 +8,18 @@ interface AuthRequestStatus {
     supportsV2: boolean;
 }
 
-export async function authApprove(token: string, publicKey: Uint8Array, answerV1: Uint8Array, answerV2: Uint8Array) {
-    const API_ENDPOINT = getServerUrl();
+/**
+ * Approve a terminal authentication request
+ *
+ * @param token - The user's auth token
+ * @param publicKey - The terminal's ephemeral public key
+ * @param answerV1 - The V1 encrypted response
+ * @param answerV2 - The V2 encrypted response
+ * @param serverUrlOverride - Optional server URL override for self-hosted setups
+ */
+export async function authApprove(token: string, publicKey: Uint8Array, answerV1: Uint8Array, answerV2: Uint8Array, serverUrlOverride?: string) {
+    // Use override URL if provided (for self-hosted setups), otherwise use configured server
+    const API_ENDPOINT = serverUrlOverride || getServerUrl();
     const publicKeyBase64 = encodeBase64(publicKey);
     
     // First, check the auth request status
