@@ -19,9 +19,11 @@ export const MetadataSchema = z.object({
     tools: z.array(z.string()).optional(),
     slashCommands: z.array(z.string()).optional(),
     homeDir: z.string().optional(), // User's home directory on the machine
-    happyHomeDir: z.string().optional(), // Happy configuration directory 
+    happyHomeDir: z.string().optional(), // Happy configuration directory
     hostPid: z.number().optional(), // Process ID of the session
-    flavor: z.string().nullish() // Session flavor/variant identifier
+    flavor: z.string().nullish(), // Session flavor/variant identifier
+    // Permission mode set by CLI flags (e.g., --yolo sets 'bypassPermissions')
+    permissionMode: z.enum(['default', 'acceptEdits', 'bypassPermissions', 'plan']).optional()
 });
 
 export type Metadata = z.infer<typeof MetadataSchema>;

@@ -309,11 +309,13 @@ export const storage = create<StorageState>()((set, get) => {
                 const savedDraft = savedDrafts[session.id];
                 const existingPermissionMode = state.sessions[session.id]?.permissionMode;
                 const savedPermissionMode = savedPermissionModes[session.id];
+                // Priority: existing > saved > metadata (from CLI --yolo flag) > local session field > default
+                const metadataPermissionMode = session.metadata?.permissionMode;
                 mergedSessions[session.id] = {
                     ...session,
                     presence,
                     draft: existingDraft || savedDraft || session.draft || null,
-                    permissionMode: existingPermissionMode || savedPermissionMode || session.permissionMode || 'default'
+                    permissionMode: existingPermissionMode || savedPermissionMode || metadataPermissionMode || session.permissionMode || 'default'
                 };
             });
 
