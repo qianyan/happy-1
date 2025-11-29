@@ -78,25 +78,34 @@ async function loadFonts() {
 
         if (!isTauri) {
             // Normal font loading for non-Tauri environments (native and regular web)
-            await Fonts.loadAsync({
-                // Keep existing font
-                SpaceMono: require('@/assets/fonts/SpaceMono-Regular.ttf'),
+            // On web, expo-font uses fontfaceobserver with a 6s timeout. On slow connections,
+            // this can fail but fonts will still load in the background. We catch the timeout
+            // and continue - the app will render with system fonts until custom fonts load.
+            try {
+                await Fonts.loadAsync({
+                    // Keep existing font
+                    SpaceMono: require('@/assets/fonts/SpaceMono-Regular.ttf'),
 
-                // IBM Plex Sans family
-                'IBMPlexSans-Regular': require('@/assets/fonts/IBMPlexSans-Regular.ttf'),
-                'IBMPlexSans-Italic': require('@/assets/fonts/IBMPlexSans-Italic.ttf'),
-                'IBMPlexSans-SemiBold': require('@/assets/fonts/IBMPlexSans-SemiBold.ttf'),
+                    // IBM Plex Sans family
+                    'IBMPlexSans-Regular': require('@/assets/fonts/IBMPlexSans-Regular.ttf'),
+                    'IBMPlexSans-Italic': require('@/assets/fonts/IBMPlexSans-Italic.ttf'),
+                    'IBMPlexSans-SemiBold': require('@/assets/fonts/IBMPlexSans-SemiBold.ttf'),
 
-                // IBM Plex Mono family  
-                'IBMPlexMono-Regular': require('@/assets/fonts/IBMPlexMono-Regular.ttf'),
-                'IBMPlexMono-Italic': require('@/assets/fonts/IBMPlexMono-Italic.ttf'),
-                'IBMPlexMono-SemiBold': require('@/assets/fonts/IBMPlexMono-SemiBold.ttf'),
+                    // IBM Plex Mono family
+                    'IBMPlexMono-Regular': require('@/assets/fonts/IBMPlexMono-Regular.ttf'),
+                    'IBMPlexMono-Italic': require('@/assets/fonts/IBMPlexMono-Italic.ttf'),
+                    'IBMPlexMono-SemiBold': require('@/assets/fonts/IBMPlexMono-SemiBold.ttf'),
 
-                // Bricolage Grotesque  
-                'BricolageGrotesque-Bold': require('@/assets/fonts/BricolageGrotesque-Bold.ttf'),
+                    // Bricolage Grotesque
+                    'BricolageGrotesque-Bold': require('@/assets/fonts/BricolageGrotesque-Bold.ttf'),
 
-                ...FontAwesome.font,
-            });
+                    ...FontAwesome.font,
+                });
+            } catch (e) {
+                // Font loading timeout on slow connections - continue anyway
+                // Fonts will continue loading in background and apply when ready
+                console.warn('Font loading timeout - continuing with system fonts:', e);
+            }
         } else {
             // For Tauri, skip Font Face Observer as fonts are loaded via CSS
             console.log('Do not wait for fonts to load');
