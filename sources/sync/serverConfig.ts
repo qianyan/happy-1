@@ -7,15 +7,48 @@ const serverConfigStorage = new MMKV({ id: 'server-config' });
 const SERVER_KEY = 'custom-server-url';
 const PRODUCTION_SERVER_URL = 'https://api.cluster-fluster.com';
 
+// Default server port when running locally (used for local development)
+// This can be overridden at runtime via URL hash parameter
+const DEFAULT_LOCAL_SERVER_PORT = 3005;
+
+/**
+ * Get server port from URL hash parameter for runtime configuration.
+ * This allows late-binding of ports without rebuilding:
+ *   http://localhost:8081/#server=10001
+ *   http://localhost:8081/?server=10001  (also supported)
+ */
+function getServerPortFromUrl(): number | null {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+        // Check hash first (e.g., #server=10001)
+        const hash = window.location.hash;
+        if (hash) {
+            const match = hash.match(/server=(\d+)/);
+            if (match) {
+                return parseInt(match[1], 10);
+            }
+        }
+        // Also check search params (e.g., ?server=10001)
+        const params = new URLSearchParams(window.location.search);
+        const serverPort = params.get('server');
+        if (serverPort) {
+            return parseInt(serverPort, 10);
+        }
+    }
+    return null;
+}
+
 // Auto-detect server URL for local development
 // When running on web+localhost, default to local server for convenience
 function getDefaultServerUrl(): string {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
         const hostname = window.location.hostname;
         if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            // Check for runtime port override via URL
+            const portFromUrl = getServerPortFromUrl();
+            const port = portFromUrl ?? DEFAULT_LOCAL_SERVER_PORT;
             // Use the same hostname that's serving the web client
             // This ensures browser can reach the server whether inside or outside container
-            return `http://${hostname}:3005`;
+            return `http://${hostname}:${port}`;
         }
     }
     return PRODUCTION_SERVER_URL;
