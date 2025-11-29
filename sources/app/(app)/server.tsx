@@ -89,8 +89,11 @@ export default function ServerConfigScreen() {
     const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('checking');
     const [connectionError, setConnectionError] = useState<string | null>(null);
 
-    // Input state for new server
-    const [inputUrl, setInputUrl] = useState('');
+    // Input state for new server - prefill with current URL if using custom server
+    const [inputUrl, setInputUrl] = useState(() => {
+        const info = getServerInfo();
+        return info.isCustom ? getServerUrl() : '';
+    });
     const [inputError, setInputError] = useState<string | null>(null);
     const [isValidating, setIsValidating] = useState(false);
 
