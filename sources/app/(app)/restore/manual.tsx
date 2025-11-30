@@ -112,8 +112,8 @@ export default function Restore() {
 
             console.log('[Restore] ✓ Authentication successful!');
 
-            // Dismiss
-            router.back();
+            // Navigate to home/dashboard after successful login
+            router.replace('/');
 
         } catch (error) {
             console.error('[Restore] ✗ Authentication failed:', error);

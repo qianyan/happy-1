@@ -40,13 +40,14 @@ export function AuthProvider({ children, initialCredentials }: { children: React
         trackLogout();
         clearPersistence();
         await TokenStorage.removeCredentials();
-        
+
         // Update React state to ensure UI consistency
         setCredentials(null);
         setIsAuthenticated(false);
-        
+
         if (Platform.OS === 'web') {
-            window.location.reload();
+            // Redirect to home page before reload to ensure clean state
+            window.location.href = '/';
         } else {
             try {
                 await Updates.reloadAsync();
