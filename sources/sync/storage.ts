@@ -111,6 +111,8 @@ interface StorageState {
     updateSessionDraft: (sessionId: string, draft: string | null) => void;
     updateSessionPermissionMode: (sessionId: string, mode: 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan' | 'read-only' | 'safe-yolo' | 'yolo') => void;
     updateSessionModelMode: (sessionId: string, mode: 'default' | 'adaptiveUsage' | 'sonnet' | 'opus' | 'gpt-5-minimal' | 'gpt-5-low' | 'gpt-5-medium' | 'gpt-5-high' | 'gpt-5-codex-low' | 'gpt-5-codex-medium' | 'gpt-5-codex-high') => void;
+    // Machine methods
+    updateMachineLocal: (machineId: string, updates: Partial<Machine>) => void;
     // Artifact methods
     applyArtifacts: (artifacts: DecryptedArtifact[]) => void;
     addArtifact: (artifact: DecryptedArtifact) => void;
@@ -826,6 +828,36 @@ export const storage = create<StorageState>()((set, get) => {
                     mergedMachines[machine.id] = machine;
                 });
             }
+
+            // Rebuild sessionListViewData to reflect machine changes
+            const sessionListViewData = buildSessionListViewData(
+                state.sessions
+            );
+
+            return {
+                ...state,
+                machines: mergedMachines,
+                sessionListViewData
+            };
+        }),
+        updateMachineLocal: (machineId: string, updates: Partial<Machine>) => set((state) => {
+            const machine = state.machines[machineId];
+            if (!machine) return state;
+
+            // Create the updated machine with proper type safety
+            const updatedMachine: Machine = {
+                ...machine,
+                ...updates,
+                // Keep original metadata if updates.metadata is undefined
+                metadata: updates.metadata === undefined
+                    ? machine.metadata
+                    : updates.metadata
+            };
+
+            const mergedMachines = {
+                ...state.machines,
+                [machineId]: updatedMachine
+            };
 
             // Rebuild sessionListViewData to reflect machine changes
             const sessionListViewData = buildSessionListViewData(

@@ -5,13 +5,13 @@ import { Item } from '@/components/Item';
 import { ItemGroup } from '@/components/ItemGroup';
 import { ItemList } from '@/components/ItemList';
 import { Typography } from '@/constants/Typography';
-import { useSessions, useAllMachines, useMachine } from '@/sync/storage';
+import { useSessions, useAllMachines, useMachine, useSocketStatus, storage } from '@/sync/storage';
 import { Ionicons, Octicons } from '@expo/vector-icons';
 import type { Session } from '@/sync/storageTypes';
 import { machineStopDaemon, machineUpdateMetadata } from '@/sync/ops';
 import { Modal } from '@/modal';
 import { formatPathRelativeToHome, getSessionName, getSessionSubtitle } from '@/utils/sessionUtils';
-import { isMachineOnline } from '@/utils/machineUtils';
+import { isMachineOnline, getMachineStatusText } from '@/utils/machineUtils';
 import { sync } from '@/sync/sync';
 import { useUnistyles, StyleSheet } from 'react-native-unistyles';
 import { t } from '@/text';
@@ -69,6 +69,8 @@ export default function MachineDetailScreen() {
     const sessions = useSessions();
     const machine = useMachine(machineId!);
     const navigateToSession = useNavigateToSession();
+    const socketStatus = useSocketStatus();
+    const isConnected = socketStatus.status === 'connected';
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [isStoppingDaemon, setIsStoppingDaemon] = useState(false);
     const [isRenamingMachine, setIsRenamingMachine] = useState(false);
@@ -109,9 +111,14 @@ export default function MachineDetailScreen() {
         return recentPaths.slice(0, 5);
     }, [recentPaths, showAllPaths]);
 
-    // Determine daemon status from metadata
+    // Determine daemon status from metadata and connection state
     const daemonStatus = useMemo(() => {
         if (!machine) return 'unknown';
+
+        // If we're disconnected, we can't know the actual status
+        if (!isConnected) {
+            return 'unknown';
+        }
 
         // Check metadata for daemon status
         const metadata = machine.metadata as any;
@@ -121,7 +128,7 @@ export default function MachineDetailScreen() {
 
         // Use machine online status as proxy for daemon status
         return isMachineOnline(machine) ? 'likely alive' : 'stopped';
-    }, [machine]);
+    }, [machine, isConnected]);
 
     const handleStopDaemon = async () => {
         // Show confirmation modal using alert with buttons
@@ -140,8 +147,28 @@ export default function MachineDetailScreen() {
                         setIsStoppingDaemon(true);
                         try {
                             const result = await machineStopDaemon(machineId!);
+
+                            // Optimistically update local state immediately
+                            // This ensures the UI shows the stopped state right away
+                            if (machine?.metadata) {
+                                storage.getState().updateMachineLocal(machineId!, {
+                                    active: false,
+                                    metadata: {
+                                        ...machine.metadata,
+                                        daemonLastKnownStatus: 'shutting-down',
+                                        shutdownRequestedAt: Date.now(),
+                                        shutdownSource: 'happy-app'
+                                    }
+                                });
+                            } else {
+                                // Just update active flag if no metadata
+                                storage.getState().updateMachineLocal(machineId!, {
+                                    active: false
+                                });
+                            }
+
                             Modal.alert('Daemon Stopped', result.message);
-                            // Refresh to get updated metadata
+                            // Also refresh to get server-confirmed state
                             await sync.refreshMachines();
                         } catch (error) {
                             Modal.alert(t('common.error'), 'Failed to stop daemon. It may not be running.');
@@ -293,19 +320,28 @@ export default function MachineDetailScreen() {
                                 </Text>
                             </View>
                             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                                <View style={{
-                                    width: 6,
-                                    height: 6,
-                                    borderRadius: 3,
-                                    backgroundColor: isMachineOnline(machine) ? '#34C759' : '#999',
-                                    marginRight: 4
-                                }} />
-                                <Text style={[Typography.default(), {
-                                    fontSize: 12,
-                                    color: isMachineOnline(machine) ? '#34C759' : '#999'
-                                }]}>
-                                    {isMachineOnline(machine) ? t('status.online') : t('status.offline')}
-                                </Text>
+                                {(() => {
+                                    const status = getMachineStatusText(machine);
+                                    const color = status === 'online' ? '#34C759' : status === 'unknown' ? '#FF9500' : '#999';
+                                    const text = status === 'online' ? t('status.online') : status === 'unknown' ? t('status.unknown') : t('status.offline');
+                                    return (
+                                        <>
+                                            <View style={{
+                                                width: 6,
+                                                height: 6,
+                                                borderRadius: 3,
+                                                backgroundColor: color,
+                                                marginRight: 4
+                                            }} />
+                                            <Text style={[Typography.default(), {
+                                                fontSize: 12,
+                                                color: color
+                                            }]}>
+                                                {text}
+                                            </Text>
+                                        </>
+                                    );
+                                })()}
                             </View>
                         </View>
                     ),
@@ -427,25 +463,26 @@ export default function MachineDetailScreen() {
                             title={t('machine.status')}
                             detail={daemonStatus}
                             detailStyle={{
-                                color: daemonStatus === 'likely alive' ? '#34C759' : '#FF9500'
+                                color: daemonStatus === 'likely alive' ? '#34C759' :
+                                       daemonStatus === 'unknown' ? '#FF9500' : '#999'
                             }}
                             showChevron={false}
                         />
                         <Item
                             title={t('machine.stopDaemon')}
-                            titleStyle={{ 
-                                color: daemonStatus === 'stopped' ? '#999' : '#FF9500' 
+                            titleStyle={{
+                                color: (daemonStatus === 'stopped' || daemonStatus === 'unknown') ? '#999' : '#FF9500'
                             }}
-                            onPress={daemonStatus === 'stopped' ? undefined : handleStopDaemon}
-                            disabled={isStoppingDaemon || daemonStatus === 'stopped'}
+                            onPress={(daemonStatus === 'stopped' || daemonStatus === 'unknown') ? undefined : handleStopDaemon}
+                            disabled={isStoppingDaemon || daemonStatus === 'stopped' || daemonStatus === 'unknown'}
                             rightElement={
                                 isStoppingDaemon ? (
                                     <ActivityIndicator size="small" color={theme.colors.textSecondary} />
                                 ) : (
-                                    <Ionicons 
-                                        name="stop-circle" 
-                                        size={20} 
-                                        color={daemonStatus === 'stopped' ? '#999' : '#FF9500'} 
+                                    <Ionicons
+                                        name="stop-circle"
+                                        size={20}
+                                        color={(daemonStatus === 'stopped' || daemonStatus === 'unknown') ? '#999' : '#FF9500'}
                                     />
                                 )
                             }
