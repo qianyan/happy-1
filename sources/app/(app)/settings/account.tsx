@@ -271,16 +271,22 @@ export default React.memo(() => {
                     );
                 })()}
 
-                {/* Server Info */}
-                {serverInfo.isCustom && (
-                    <ItemGroup title={t('settingsAccount.server')}>
-                        <Item
-                            title={t('settingsAccount.server')}
-                            detail={serverInfo.hostname + (serverInfo.port ? `:${serverInfo.port}` : '')}
-                            showChevron={false}
-                        />
-                    </ItemGroup>
-                )}
+                {/* Server & Connection Info - Always show for debugging */}
+                <ItemGroup title={t('settingsAccount.connectionInfo')}>
+                    <Item
+                        title={t('settingsAccount.server')}
+                        detail={serverInfo.hostname + (serverInfo.port ? `:${serverInfo.port}` : '')}
+                        subtitle={serverInfo.isCustom ? t('settingsAccount.customServer') : t('settingsAccount.defaultServer')}
+                        showChevron={false}
+                        copy
+                    />
+                    <Item
+                        title={t('settingsAccount.accountId')}
+                        detail={profile.id ? profile.id.slice(0, 16) + '...' : t('settingsAccount.notAvailable')}
+                        showChevron={false}
+                        copy={!!profile.id}
+                    />
+                </ItemGroup>
 
                 {/* Backup Section */}
                 <ItemGroup

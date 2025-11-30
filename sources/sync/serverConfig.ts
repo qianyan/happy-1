@@ -37,17 +37,35 @@ function getServerPortFromUrl(): number | null {
     return null;
 }
 
-// Auto-detect server URL for local development
-// When running on web+localhost, default to local server for convenience
+/**
+ * Auto-detect server URL for local/self-hosted development.
+ *
+ * Resolution order for web:
+ * 1. If EXPO_PUBLIC_HAPPY_SERVER_URL is 'dynamic' - use webapp's host with DEFAULT_LOCAL_SERVER_PORT
+ * 2. If hostname is localhost/127.0.0.1 - use local server (traditional dev mode)
+ * 3. Otherwise - use production server
+ *
+ * The 'dynamic' mode is useful for self-hosted setups where the webapp and server
+ * run on the same machine, accessed via external hostname (e.g., http://myserver.duckdns.org:8081)
+ */
 function getDefaultServerUrl(): string {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
         const hostname = window.location.hostname;
-        if (hostname === 'localhost' || hostname === '127.0.0.1') {
-            // Check for runtime port override via URL
+        const envUrl = process.env.EXPO_PUBLIC_HAPPY_SERVER_URL;
+
+        // Special 'dynamic' mode: use the webapp's host with the server port
+        // This is useful for self-hosted setups accessed via external hostname
+        if (envUrl === 'dynamic') {
             const portFromUrl = getServerPortFromUrl();
             const port = portFromUrl ?? DEFAULT_LOCAL_SERVER_PORT;
-            // Use the same hostname that's serving the web client
-            // This ensures browser can reach the server whether inside or outside container
+            // Use http:// for non-localhost hostnames (self-hosted typically doesn't have HTTPS)
+            return `http://${hostname}:${port}`;
+        }
+
+        // Traditional localhost development
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+            const portFromUrl = getServerPortFromUrl();
+            const port = portFromUrl ?? DEFAULT_LOCAL_SERVER_PORT;
             return `http://${hostname}:${port}`;
         }
     }
@@ -68,7 +86,10 @@ export function getServerUrl(): string {
     const envUrl = process.env.EXPO_PUBLIC_HAPPY_SERVER_URL;
     const defaultUrl = getDefaultServerUrl();
 
-    const finalUrl = storedUrl || envUrl || defaultUrl;
+    // Note: If envUrl is 'dynamic', getDefaultServerUrl() already handles it
+    // and returns the dynamic URL, so we skip envUrl in that case
+    const effectiveEnvUrl = envUrl === 'dynamic' ? undefined : envUrl;
+    const finalUrl = storedUrl || effectiveEnvUrl || defaultUrl;
 
     // Debug logging to help diagnose server URL issues
     if (Platform.OS === 'web') {

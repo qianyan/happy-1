@@ -12,6 +12,8 @@ import { authQRWait } from '@/auth/authQRWait';
 import { layout } from '@/components/layout';
 import { Modal } from '@/modal';
 import { t } from '@/text';
+import { getServerUrl } from '@/sync/serverConfig';
+import axios from 'axios';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { QRCode } from '@/components/qr/QRCode';
 
@@ -119,7 +121,28 @@ export default function Restore() {
                 message: error instanceof Error ? error.message : 'Unknown error',
                 stack: error instanceof Error ? error.stack : undefined,
             });
-            Modal.alert(t('common.error'), t('connect.invalidSecretKey'));
+
+            // Distinguish between different error types
+            if (axios.isAxiosError(error)) {
+                // Network or server error from authGetToken
+                if (!error.response) {
+                    // Network error - couldn't reach the server at all
+                    const serverUrl = getServerUrl();
+                    Modal.alert(t('common.error'), t('connect.serverConnectionFailed', { server: serverUrl }));
+                } else if (error.response.status === 401 || error.response.status === 403) {
+                    // Server rejected the credentials
+                    Modal.alert(t('common.error'), t('connect.authenticationFailed'));
+                } else {
+                    // Other server error
+                    Modal.alert(t('common.error'), t('connect.serverConnectionFailed', { server: getServerUrl() }));
+                }
+            } else if (error instanceof Error && error.message.includes('Invalid secret key')) {
+                // Key format/validation error
+                Modal.alert(t('common.error'), t('connect.invalidSecretKey'));
+            } else {
+                // Unknown error - show as invalid key for backwards compatibility
+                Modal.alert(t('common.error'), t('connect.invalidSecretKey'));
+            }
         }
     };
 

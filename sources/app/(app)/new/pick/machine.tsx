@@ -4,7 +4,7 @@ import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { ItemGroup } from '@/components/ItemGroup';
 import { Item } from '@/components/Item';
 import { Typography } from '@/constants/Typography';
-import { useAllMachines } from '@/sync/storage';
+import { useAllMachines, useProfile } from '@/sync/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { isMachineOnline } from '@/utils/machineUtils';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
@@ -12,6 +12,7 @@ import { layout } from '@/components/layout';
 import { t } from '@/text';
 import { callbacks } from '../index';
 import { ItemList } from '@/components/ItemList';
+import { getServerUrl } from '@/sync/serverConfig';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -40,6 +41,40 @@ const stylesheet = StyleSheet.create((theme) => ({
         color: theme.colors.textSecondary,
         textAlign: 'center',
         ...Typography.default(),
+    },
+    emptyHelpText: {
+        fontSize: 14,
+        color: theme.colors.textSecondary,
+        textAlign: 'center',
+        marginTop: 8,
+        ...Typography.default(),
+    },
+    diagnosticBox: {
+        marginTop: 24,
+        marginHorizontal: 20,
+        padding: 16,
+        backgroundColor: theme.colors.surfaceHigh,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.divider,
+    },
+    diagnosticTitle: {
+        fontSize: 13,
+        color: theme.colors.textSecondary,
+        marginBottom: 8,
+        ...Typography.default('semiBold'),
+    },
+    diagnosticText: {
+        fontSize: 13,
+        color: theme.colors.textSecondary,
+        lineHeight: 20,
+        ...Typography.default(),
+    },
+    diagnosticCode: {
+        fontSize: 12,
+        color: theme.colors.textSecondary,
+        fontFamily: 'monospace',
+        marginTop: 4,
     },
     offlineWarning: {
         marginHorizontal: 16,
@@ -72,6 +107,8 @@ export default function MachinePickerScreen() {
     const router = useRouter();
     const params = useLocalSearchParams<{ selectedId?: string }>();
     const machines = useAllMachines();
+    const profile = useProfile();
+    const serverUrl = getServerUrl();
 
     const handleSelectMachine = (machineId: string) => {
         callbacks.onMachineSelected(machineId);
@@ -79,6 +116,9 @@ export default function MachinePickerScreen() {
     };
 
     if (machines.length === 0) {
+        // Show detailed diagnostic info when no machines are found
+        const accountDisplay = profile.username || profile.id.slice(0, 12) + '...';
+
         return (
             <>
                 <Stack.Screen
@@ -90,9 +130,39 @@ export default function MachinePickerScreen() {
                 />
                 <View style={styles.container}>
                     <View style={styles.emptyContainer}>
+                        <Ionicons
+                            name="desktop-outline"
+                            size={48}
+                            color={theme.colors.textSecondary}
+                            style={{ marginBottom: 16, opacity: 0.5 }}
+                        />
                         <Text style={styles.emptyText}>
-                            No machines available
+                            {t('newSession.noMachinesFound')}
                         </Text>
+                        <Text style={styles.emptyHelpText}>
+                            {t('newSession.noMachinesFoundHelp')}
+                        </Text>
+
+                        <View style={styles.diagnosticBox}>
+                            <Text style={styles.diagnosticTitle}>
+                                {t('newSession.noMachinesTroubleshoot')}
+                            </Text>
+                            <Text style={styles.diagnosticText}>
+                                {t('newSession.noMachinesTip1')}
+                            </Text>
+                            <Text style={styles.diagnosticText}>
+                                {t('newSession.noMachinesTip2')}
+                            </Text>
+                            <Text style={styles.diagnosticText}>
+                                {t('newSession.noMachinesTip3')}
+                            </Text>
+                            <Text style={[styles.diagnosticCode, { marginTop: 12 }]}>
+                                Account: {accountDisplay}
+                            </Text>
+                            <Text style={styles.diagnosticCode}>
+                                Server: {serverUrl}
+                            </Text>
+                        </View>
                     </View>
                 </View>
             </>

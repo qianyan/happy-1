@@ -857,15 +857,29 @@ class Sync {
 
         console.log('📊 Sync: Fetching machines...');
         const API_ENDPOINT = getServerUrl();
-        const response = await fetch(`${API_ENDPOINT}/v1/machines`, {
-            headers: {
-                'Authorization': `Bearer ${this.credentials.token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+
+        let response: Response;
+        try {
+            response = await fetch(`${API_ENDPOINT}/v1/machines`, {
+                headers: {
+                    'Authorization': `Bearer ${this.credentials.token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (error) {
+            console.error('Failed to fetch machines (network error):', error);
+            // Import Toast dynamically to avoid circular dependencies
+            const { Toast } = await import('@/toast');
+            Toast.error('Failed to fetch machines', 'Check your network connection');
+            return;
+        }
 
         if (!response.ok) {
             console.error(`Failed to fetch machines: ${response.status}`);
+            if (response.status === 401 || response.status === 403) {
+                const { Toast } = await import('@/toast');
+                Toast.error('Authentication error', 'Your session may have expired');
+            }
             return;
         }
 
