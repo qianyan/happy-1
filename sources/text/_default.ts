@@ -295,6 +295,7 @@ export const en = {
 
     session: {
         inputPlaceholder: 'Type a message ...',
+        searchPlaceholder: 'Search sessions...',
     },
 
     commandPalette: {

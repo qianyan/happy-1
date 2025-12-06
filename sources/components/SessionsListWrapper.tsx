@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, ActivityIndicator, Pressable, Text } from 'react-native';
+import { View, ActivityIndicator, Pressable, Text, TextInput } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Header } from './navigation/Header';
 import { SessionsList } from './SessionsList';
@@ -12,6 +12,7 @@ import { useRouter } from 'expo-router';
 import { StatusDot } from './StatusDot';
 import { Typography } from '@/constants/Typography';
 import { t } from '@/text';
+import { layout } from './layout';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -91,6 +92,26 @@ const stylesheet = StyleSheet.create((theme) => ({
     },
     statusDefault: {
         color: theme.colors.status.default,
+    },
+    searchContainer: {
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        paddingBottom: 8,
+        flexDirection: 'row',
+        justifyContent: 'center',
+    },
+    searchInputWrapper: {
+        flex: 1,
+        maxWidth: layout.maxWidth - 32,
+    },
+    searchInput: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        fontSize: 16,
+        color: theme.colors.text,
+        ...Typography.default(),
     },
 }));
 
@@ -201,6 +222,7 @@ export const SessionsListWrapper = React.memo(() => {
     const { theme } = useUnistyles();
     const sessionListViewData = useVisibleSessionListViewData();
     const styles = stylesheet;
+    const [searchQuery, setSearchQuery] = React.useState('');
 
     return (
         <View style={styles.container}>
@@ -213,7 +235,7 @@ export const SessionsListWrapper = React.memo(() => {
                     headerTransparent={true}
                 />
             </View>
-            
+
             {sessionListViewData === null ? (
                 <View style={styles.loadingContainerWrapper}>
                     <View style={styles.loadingContainer}>
@@ -227,7 +249,24 @@ export const SessionsListWrapper = React.memo(() => {
                     </View>
                 </View>
             ) : (
-                <SessionsList />
+                <>
+                    <View style={styles.searchContainer}>
+                        <View style={styles.searchInputWrapper}>
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder={t('session.searchPlaceholder')}
+                                placeholderTextColor={theme.colors.textSecondary}
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                returnKeyType="search"
+                                clearButtonMode="while-editing"
+                            />
+                        </View>
+                    </View>
+                    <SessionsList searchQuery={searchQuery} />
+                </>
             )}
         </View>
     );

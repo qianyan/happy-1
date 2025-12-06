@@ -295,6 +295,7 @@ export const es: TranslationStructure = {
 
     session: {
         inputPlaceholder: 'Escriba un mensaje ...',
+        searchPlaceholder: 'Buscar sesiones...',
     },
 
     commandPalette: {

@@ -295,6 +295,7 @@ export const pt: TranslationStructure = {
 
     session: {
         inputPlaceholder: 'Digite uma mensagem ...',
+        searchPlaceholder: 'Pesquisar sessões...',
     },
 
     commandPalette: {

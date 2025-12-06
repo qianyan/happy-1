@@ -399,6 +399,7 @@ export const ru: TranslationStructure = {
 
     session: {
         inputPlaceholder: 'Введите сообщение...',
+        searchPlaceholder: 'Поиск сессий...',
     },
 
     commandPalette: {

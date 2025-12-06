@@ -4,7 +4,7 @@ import { Text } from '@/components/StyledText';
 import { usePathname } from 'expo-router';
 import { SessionListViewItem } from '@/sync/storage';
 import { Ionicons } from '@expo/vector-icons';
-import { getSessionName, useSessionStatus, getSessionSubtitle, getSessionAvatarId } from '@/utils/sessionUtils';
+import { getSessionName, useSessionStatus, getSessionSubtitle, getSessionAvatarId, formatLastSeen } from '@/utils/sessionUtils';
 import { Avatar } from './Avatar';
 import { ActiveSessionsGroup } from './ActiveSessionsGroup';
 import { ActiveSessionsGroupCompact } from './ActiveSessionsGroupCompact';
@@ -74,20 +74,8 @@ const stylesheet = StyleSheet.create((theme) => ({
         paddingHorizontal: 16,
         backgroundColor: theme.colors.surface,
         marginHorizontal: 16,
-        marginBottom: 1,
-    },
-    sessionItemFirst: {
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-    },
-    sessionItemLast: {
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
-        marginBottom: 12,
-    },
-    sessionItemSingle: {
+        marginBottom: 8,
         borderRadius: 12,
-        marginBottom: 12,
     },
     sessionItemSelected: {
         backgroundColor: theme.colors.surfaceSelected,
@@ -113,6 +101,12 @@ const stylesheet = StyleSheet.create((theme) => ({
     },
     sessionTitleDisconnected: {
         color: theme.colors.textSecondary,
+    },
+    sessionTimestamp: {
+        fontSize: 12,
+        color: theme.colors.textSecondary,
+        marginLeft: 8,
+        ...Typography.default(),
     },
     sessionSubtitle: {
         fontSize: 13,
@@ -161,10 +155,14 @@ const stylesheet = StyleSheet.create((theme) => ({
     },
 }));
 
-export function SessionsList() {
+interface SessionsListProps {
+    searchQuery?: string;
+}
+
+export function SessionsList({ searchQuery = '' }: SessionsListProps) {
     const styles = stylesheet;
     const safeArea = useSafeAreaInsets();
-    const data = useVisibleSessionListViewData();
+    const rawData = useVisibleSessionListViewData();
     const pathname = usePathname();
     const isTablet = useIsTablet();
     const navigateToSession = useNavigateToSession();
@@ -172,6 +170,62 @@ export function SessionsList() {
     const router = useRouter();
     const selectable = isTablet;
     const experiments = useSetting('experiments');
+
+    // Filter data based on search query (local filtering)
+    const data = React.useMemo(() => {
+        if (!rawData || !searchQuery.trim()) {
+            return rawData;
+        }
+
+        const normalizedQuery = searchQuery.toLowerCase().trim();
+
+        // Filter sessions (flat list, no headers)
+        const filteredItems: SessionListViewItem[] = [];
+
+        for (const item of rawData) {
+            if (item.type === 'session') {
+                const session = item.session;
+                const sessionName = getSessionName(session).toLowerCase();
+                const sessionSubtitle = getSessionSubtitle(session).toLowerCase();
+                const machineHost = session.metadata?.host?.toLowerCase() || '';
+
+                // Check if session matches search query
+                if (
+                    sessionName.includes(normalizedQuery) ||
+                    sessionSubtitle.includes(normalizedQuery) ||
+                    machineHost.includes(normalizedQuery)
+                ) {
+                    filteredItems.push(item);
+                }
+            } else if (item.type === 'active-sessions') {
+                // Filter active sessions array
+                const filteredSessions = item.sessions.filter(session => {
+                    const sessionName = getSessionName(session).toLowerCase();
+                    const sessionSubtitle = getSessionSubtitle(session).toLowerCase();
+                    const machineHost = session.metadata?.host?.toLowerCase() || '';
+
+                    return (
+                        sessionName.includes(normalizedQuery) ||
+                        sessionSubtitle.includes(normalizedQuery) ||
+                        machineHost.includes(normalizedQuery)
+                    );
+                });
+
+                if (filteredSessions.length > 0) {
+                    filteredItems.push({
+                        ...item,
+                        sessions: filteredSessions,
+                    });
+                }
+            } else {
+                // Keep other item types (project-group, etc.)
+                filteredItems.push(item);
+            }
+        }
+
+        return filteredItems;
+    }, [rawData, searchQuery]);
+
     const dataWithSelected = selectable ? React.useMemo(() => {
         return data?.map(item => ({
             ...item,
@@ -205,6 +259,7 @@ export function SessionsList() {
     const renderItem = React.useCallback(({ item, index }: { item: SessionListViewItem & { selected?: boolean }, index: number }) => {
         switch (item.type) {
             case 'header':
+                // Headers no longer used, but keeping for backward compatibility
                 return (
                     <View style={styles.headerSection}>
                         <Text style={styles.headerText}>
@@ -242,21 +297,10 @@ export function SessionsList() {
                 );
 
             case 'session':
-                // Determine card styling based on position within date group
-                const prevItem = index > 0 && dataWithSelected ? dataWithSelected[index - 1] : null;
-                const nextItem = index < (dataWithSelected?.length || 0) - 1 && dataWithSelected ? dataWithSelected[index + 1] : null;
-
-                const isFirst = prevItem?.type === 'header';
-                const isLast = nextItem?.type === 'header' || nextItem == null || nextItem?.type === 'active-sessions';
-                const isSingle = isFirst && isLast;
-
                 return (
                     <SessionItem
                         session={item.session}
                         selected={item.selected}
-                        isFirst={isFirst}
-                        isLast={isLast}
-                        isSingle={isSingle}
                     />
                 );
         }
@@ -294,12 +338,9 @@ export function SessionsList() {
 }
 
 // Sub-component that handles session message logic
-const SessionItem = React.memo(({ session, selected, isFirst, isLast, isSingle }: {
+const SessionItem = React.memo(({ session, selected }: {
     session: Session;
     selected?: boolean;
-    isFirst?: boolean;
-    isLast?: boolean;
-    isSingle?: boolean;
 }) => {
     const styles = stylesheet;
     const sessionStatus = useSessionStatus(session);
@@ -312,14 +353,16 @@ const SessionItem = React.memo(({ session, selected, isFirst, isLast, isSingle }
         return getSessionAvatarId(session);
     }, [session]);
 
+    // Format the last updated time
+    const lastUpdatedText = React.useMemo(() => {
+        return formatLastSeen(session.updatedAt, false);
+    }, [session.updatedAt]);
+
     return (
         <Pressable
             style={[
                 styles.sessionItem,
                 selected && styles.sessionItemSelected,
-                isSingle ? styles.sessionItemSingle :
-                    isFirst ? styles.sessionItemFirst :
-                        isLast ? styles.sessionItemLast : {}
             ]}
             onPressIn={() => {
                 if (isTablet) {
@@ -345,13 +388,16 @@ const SessionItem = React.memo(({ session, selected, isFirst, isLast, isSingle }
                 )}
             </View>
             <View style={styles.sessionContent}>
-                {/* Title line */}
+                {/* Title line with last updated time */}
                 <View style={styles.sessionTitleRow}>
                     <Text style={[
                         styles.sessionTitle,
                         sessionStatus.isConnected ? styles.sessionTitleConnected : styles.sessionTitleDisconnected
-                    ]} numberOfLines={1}> {/* {variant !== 'no-path' ? 1 : 2} - issue is we don't have anything to take this space yet and it looks strange - if summaries were more reliably generated, we can add this. While no summary - add something like "New session" or "Empty session", and extend summary to 2 lines once we have it */}
+                    ]} numberOfLines={1}>
                         {sessionName}
+                    </Text>
+                    <Text style={styles.sessionTimestamp}>
+                        {lastUpdatedText}
                     </Text>
                 </View>
 

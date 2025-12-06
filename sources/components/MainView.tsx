@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, TextInput } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useRealtimeStatus, useFriendRequests } from '@/sync/storage';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
@@ -15,6 +15,8 @@ import { SettingsViewWrapper } from './SettingsViewWrapper';
 import { SessionsListWrapper } from './SessionsListWrapper';
 import { useSettings } from '@/sync/storage';
 import { ZenHome } from '@/-zen/ZenHome';
+import { Typography } from '@/constants/Typography';
+import { t } from '@/text';
 
 interface MainViewProps {
     variant: 'phone' | 'sidebar';
@@ -63,6 +65,21 @@ const styles = StyleSheet.create((theme) => ({
         flexBasis: 0,
         flexGrow: 1,
     },
+    searchContainer: {
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        paddingBottom: 8,
+        backgroundColor: theme.colors.groupped.background,
+    },
+    searchInput: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        fontSize: 16,
+        color: theme.colors.text,
+        ...Typography.default(),
+    },
 }));
 
 
@@ -74,6 +91,7 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     const router = useRouter();
     const friendRequests = useFriendRequests();
     const settings = useSettings();
+    const [searchQuery, setSearchQuery] = React.useState('');
 
     // Tab state management - always call hooks even if not used
     // Default to zen tab if experiments enabled, otherwise sessions
@@ -128,10 +146,22 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
             );
         }
 
-        // Sessions list
+        // Sessions list with search
         return (
             <View style={styles.sidebarContentContainer}>
-                <SessionsList />
+                <View style={styles.searchContainer}>
+                    <TextInput
+                        style={styles.searchInput}
+                        placeholder={t('session.searchPlaceholder')}
+                        placeholderTextColor={theme.colors.textSecondary}
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        returnKeyType="search"
+                    />
+                </View>
+                <SessionsList searchQuery={searchQuery} />
             </View>
         );
     }

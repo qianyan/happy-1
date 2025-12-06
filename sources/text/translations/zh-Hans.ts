@@ -297,6 +297,7 @@ export const zhHans: TranslationStructure = {
 
     session: {
         inputPlaceholder: '输入消息...',
+        searchPlaceholder: '搜索会话...',
     },
 
     commandPalette: {
