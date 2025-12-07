@@ -88,7 +88,12 @@ const updateRecentMachinePaths = (
 function NewSessionScreen() {
     const { theme } = useUnistyles();
     const router = useRouter();
-    const { prompt, dataId } = useLocalSearchParams<{ prompt?: string; dataId?: string }>();
+    const { prompt, dataId, selectedMachineId: selectedMachineIdParam, selectedPathParam } = useLocalSearchParams<{
+        prompt?: string;
+        dataId?: string;
+        selectedMachineId?: string;
+        selectedPathParam?: string;
+    }>();
 
     // Try to get data from temporary store first, fallback to direct prompt parameter
     const tempSessionData = React.useMemo(() => {
@@ -178,15 +183,29 @@ function NewSessionScreen() {
         }
     }, [machines, selectedMachineId, recentMachinePaths]);
 
+    // Handle machine and path selection from navigation params (more reliable than callbacks)
+    // Combined into a single effect to avoid race conditions between machine and path updates
     React.useEffect(() => {
-        let handler = (machineId: string) => {
-            let machine = storage.getState().machines[machineId];
-            if (machine) {
-                setSelectedMachineId(machineId);
-                // Also update the path when machine changes
-                const bestPath = getRecentPathForMachine(machineId, recentMachinePaths);
+        if (selectedMachineIdParam) {
+            setSelectedMachineId(selectedMachineIdParam);
+            // Only update path from machine's best path if no explicit path param was provided
+            if (!selectedPathParam) {
+                const bestPath = getRecentPathForMachine(selectedMachineIdParam, recentMachinePaths);
                 setSelectedPath(bestPath);
             }
+        }
+        if (selectedPathParam) {
+            // Explicit path selection always wins
+            setSelectedPath(selectedPathParam);
+        }
+    }, [selectedMachineIdParam, selectedPathParam, recentMachinePaths]);
+
+    // Legacy callback handlers (kept for backwards compatibility, but nav params are preferred)
+    React.useEffect(() => {
+        let handler = (machineId: string) => {
+            setSelectedMachineId(machineId);
+            const bestPath = getRecentPathForMachine(machineId, recentMachinePaths);
+            setSelectedPath(bestPath);
         };
         onMachineSelected = handler;
         return () => {
@@ -238,7 +257,7 @@ function NewSessionScreen() {
     //
 
     const [permissionMode, setPermissionMode] = React.useState<PermissionMode>(() => {
-        // Initialize with last used permission mode if valid, otherwise default to 'default'
+        // Initialize with last used permission mode if valid, otherwise default to YOLO mode
         const validClaudeModes: PermissionMode[] = ['default', 'acceptEdits', 'plan', 'bypassPermissions'];
         const validCodexModes: PermissionMode[] = ['default', 'read-only', 'safe-yolo', 'yolo'];
 
@@ -249,7 +268,8 @@ function NewSessionScreen() {
                 return lastUsedPermissionMode as PermissionMode;
             }
         }
-        return 'default';
+        // Default to YOLO mode (bypassPermissions for Claude, yolo for Codex)
+        return agentType === 'codex' ? 'yolo' : 'bypassPermissions';
     });
 
     const [modelMode, setModelMode] = React.useState<ModelMode>(() => {
@@ -270,12 +290,12 @@ function NewSessionScreen() {
     // Reset permission and model modes when agent type changes
     React.useEffect(() => {
         if (agentType === 'codex') {
-            // Switch to codex-compatible modes
-            setPermissionMode('default');
+            // Switch to codex-compatible modes (default to YOLO)
+            setPermissionMode('yolo');
             setModelMode('gpt-5-codex-high');
         } else {
-            // Switch to claude-compatible modes
-            setPermissionMode('default');
+            // Switch to claude-compatible modes (default to YOLO/bypassPermissions)
+            setPermissionMode('bypassPermissions');
             setModelMode('default');
         }
     }, [agentType]);

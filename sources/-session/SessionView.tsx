@@ -163,8 +163,11 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     const isCliOutdated = cliVersion && !isVersionSupported(cliVersion, MINIMUM_CLI_VERSION);
     const isAcknowledged = machineId && acknowledgedCliVersions[machineId] === cliVersion;
     const shouldShowCliWarning = isCliOutdated && !isAcknowledged;
-    // Get permission mode from session object, default to 'default'
-    const permissionMode = session.permissionMode || 'default';
+    // Get permission mode from session object, default to YOLO mode
+    // (bypassPermissions for Claude, yolo for Codex)
+    const isCodex = session.metadata?.flavor === 'codex';
+    const defaultPermissionMode = isCodex ? 'yolo' : 'bypassPermissions';
+    const permissionMode = session.permissionMode || defaultPermissionMode;
     // Get model mode from session object, default to 'default'
     const modelMode = session.modelMode || 'default';
     const sessionStatus = useSessionStatus(session);
