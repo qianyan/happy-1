@@ -39,6 +39,7 @@ import { fetchFeed } from './apiFeed';
 import { FeedItem } from './feedTypes';
 import { UserProfile } from './friendTypes';
 import { initializeTodoSync } from '../-zen/model/ops';
+import { Toast } from '@/toast';
 
 class Sync {
 
@@ -871,8 +872,6 @@ class Sync {
             });
         } catch (error) {
             console.error('Failed to fetch machines (network error):', error);
-            // Import Toast dynamically to avoid circular dependencies
-            const { Toast } = await import('@/toast');
             Toast.error('Failed to fetch machines', 'Check your network connection');
             return;
         }
@@ -880,7 +879,6 @@ class Sync {
         if (!response.ok) {
             console.error(`Failed to fetch machines: ${response.status}`);
             if (response.status === 401 || response.status === 403) {
-                const { Toast } = await import('@/toast');
                 Toast.error('Authentication error', 'Your session may have expired');
             }
             return;

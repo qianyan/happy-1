@@ -1,4 +1,5 @@
 import { AuthCredentials } from '@/auth/tokenStorage';
+import { getCurrentAuth } from '@/auth/AuthContext';
 import { sync } from '../../sync/sync';
 import { storage } from '../../sync/storage';
 import {
@@ -537,7 +538,7 @@ export async function updateTodoLinkedSessions(
     taskId: string,
     linkedSessions: TodoItem['linkedSessions']
 ): Promise<void> {
-    const auth = (await import('@/auth/AuthContext')).getCurrentAuth();
+    const auth = getCurrentAuth();
     if (!auth?.credentials) {
         console.error('No auth credentials available');
         return;
