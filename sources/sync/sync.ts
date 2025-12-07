@@ -510,6 +510,7 @@ class Sync {
             dataEncryptionKey: string | null;
             active: boolean;
             activeAt: number;
+            lastMessageAt: number | null;
             createdAt: number;
             updatedAt: number;
             lastMessage: ApiMessage | null;

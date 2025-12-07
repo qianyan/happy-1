@@ -198,9 +198,14 @@ interface ActiveSessionsGroupProps {
 export function ActiveSessionsGroup({ sessions, selectedSessionId }: ActiveSessionsGroupProps) {
     const styles = stylesheet;
 
-    // Sort sessions by updatedAt (newest first) - flat list, no grouping
+    // Sort sessions by lastMessageAt (newest first) - flat list, no grouping
+    // Fall back to createdAt if no messages yet
     const sortedSessions = React.useMemo(() => {
-        return [...sessions].sort((a, b) => b.updatedAt - a.updatedAt);
+        return [...sessions].sort((a, b) => {
+            const aTime = a.lastMessageAt ?? a.createdAt;
+            const bTime = b.lastMessageAt ?? b.createdAt;
+            return bTime - aTime;
+        });
     }, [sessions]);
 
     return (
@@ -229,10 +234,11 @@ const FlatSessionRow = React.memo(({ session, selected }: { session: Session; se
         return getSessionAvatarId(session);
     }, [session]);
 
-    // Format the last updated time
+    // Format the last message time (fall back to createdAt if no messages yet)
     const lastUpdatedText = React.useMemo(() => {
-        return formatLastSeen(session.updatedAt, false);
-    }, [session.updatedAt]);
+        const timestamp = session.lastMessageAt ?? session.createdAt;
+        return formatLastSeen(timestamp, false);
+    }, [session.lastMessageAt, session.createdAt]);
 
     return (
         <Pressable

@@ -353,10 +353,11 @@ const SessionItem = React.memo(({ session, selected }: {
         return getSessionAvatarId(session);
     }, [session]);
 
-    // Format the last updated time
+    // Format the last message time (fall back to createdAt if no messages yet)
     const lastUpdatedText = React.useMemo(() => {
-        return formatLastSeen(session.updatedAt, false);
-    }, [session.updatedAt]);
+        const timestamp = session.lastMessageAt ?? session.createdAt;
+        return formatLastSeen(timestamp, false);
+    }, [session.lastMessageAt, session.createdAt]);
 
     return (
         <Pressable
