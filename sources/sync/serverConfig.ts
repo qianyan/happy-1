@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 const serverConfigStorage = new MMKV({ id: 'server-config' });
 
 const SERVER_KEY = 'custom-server-url';
-const PRODUCTION_SERVER_URL = 'https://api.cluster-fluster.com';
+const PRODUCTION_SERVER_URL = 'https://happy-server.reily.app';
 
 // Default server port when running locally (used for local development)
 // This can be overridden at runtime via URL hash parameter
