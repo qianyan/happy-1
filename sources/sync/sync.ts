@@ -42,6 +42,8 @@ import { initializeTodoSync } from '../-zen/model/ops';
 import { Toast } from '@/toast';
 
 class Sync {
+    // Spawned agents (especially in spawn mode) can take noticeable time to connect.
+    private static readonly SESSION_READY_TIMEOUT_MS = 10000;
 
     encryption!: Encryption;
     serverID!: string;
@@ -299,6 +301,11 @@ class Sync {
         const normalizedMessage = normalizeRawMessage(localId, localId, createdAt, content);
         if (normalizedMessage) {
             this.applyMessages(sessionId, [normalizedMessage]);
+        }
+
+        const ready = await this.waitForAgentReady(sessionId);
+        if (!ready) {
+            log.log(`Session ${sessionId} not ready after timeout, sending anyway`);
         }
 
         // Send message with optional permission mode and source identifier
@@ -1603,19 +1610,19 @@ class Sync {
         } else if (updateData.body.t === 'delete-session') {
             log.log('🗑️ Delete session update received');
             const sessionId = updateData.body.sid;
-            
+
             // Remove session from storage
             storage.getState().deleteSession(sessionId);
-            
+
             // Remove encryption keys from memory
             this.encryption.removeSessionEncryption(sessionId);
-            
+
             // Remove from project manager
             projectManager.removeSession(sessionId);
-            
+
             // Clear any cached git status
             gitStatusSync.clearForSession(sessionId);
-            
+
             log.log(`🗑️ Session ${sessionId} deleted from local storage`);
         } else if (updateData.body.t === 'update-session') {
             const session = storage.getState().sessions[updateData.body.id];
@@ -2018,6 +2025,39 @@ class Sync {
                 voiceHooks.onSessionOnline(s.id, s.metadata ?? undefined);
             }
         }
+    }
+
+    /**
+     * Waits for the CLI agent to be ready by watching agentStateVersion.
+     *
+     * When a session is created, agentStateVersion starts at 0. Once the CLI
+     * connects and sends its first state update (via updateAgentState()), the
+     * version becomes > 0. This serves as a reliable signal that the CLI's
+     * WebSocket is connected and ready to receive messages.
+     */
+    private waitForAgentReady(sessionId: string, timeoutMs: number = Sync.SESSION_READY_TIMEOUT_MS): Promise<boolean> {
+        const startedAt = Date.now();
+
+        return new Promise((resolve) => {
+            const done = (ready: boolean, reason: string) => {
+                clearTimeout(timeout);
+                unsubscribe();
+                const duration = Date.now() - startedAt;
+                log.log(`Session ${sessionId} ${reason} after ${duration}ms`);
+                resolve(ready);
+            };
+
+            const check = () => {
+                const s = storage.getState().sessions[sessionId];
+                if (s && s.agentStateVersion > 0) {
+                    done(true, `ready (agentStateVersion=${s.agentStateVersion})`);
+                }
+            };
+
+            const timeout = setTimeout(() => done(false, 'ready wait timed out'), timeoutMs);
+            const unsubscribe = storage.subscribe(check);
+            check(); // Check current state immediately
+        });
     }
 }
 
