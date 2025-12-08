@@ -1,22 +1,17 @@
 import * as React from 'react';
 import { View, ActivityIndicator, TextInput } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { useRealtimeStatus, useFriendRequests } from '@/sync/storage';
+import { useRealtimeStatus } from '@/sync/storage';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { useIsTablet } from '@/utils/responsive';
-import { useRouter } from 'expo-router';
 import { EmptySessionsTablet } from './EmptySessionsTablet';
 import { SessionsList } from './SessionsList';
-import { FABWide } from './FABWide';
 import { VoiceAssistantStatusBar } from './VoiceAssistantStatusBar';
-import { TabBar, TabType } from './TabBar';
-import { InboxView } from './InboxView';
-import { SettingsViewWrapper } from './SettingsViewWrapper';
 import { SessionsListWrapper } from './SessionsListWrapper';
-import { useSettings } from '@/sync/storage';
-import { ZenHome } from '@/-zen/ZenHome';
+import { FABWide } from './FABWide';
 import { Typography } from '@/constants/Typography';
 import { t } from '@/text';
+import { useRouter } from 'expo-router';
 
 interface MainViewProps {
     variant: 'phone' | 'sidebar';
@@ -89,38 +84,11 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     const isTablet = useIsTablet();
     const realtimeStatus = useRealtimeStatus();
     const router = useRouter();
-    const friendRequests = useFriendRequests();
-    const settings = useSettings();
     const [searchQuery, setSearchQuery] = React.useState('');
-
-    // Tab state management - always call hooks even if not used
-    // Default to zen tab if experiments enabled, otherwise sessions
-    const [activeTab, setActiveTab] = React.useState<TabType>(
-        settings.experiments ? 'zen' : 'sessions'
-    );
 
     const handleNewSession = React.useCallback(() => {
         router.push('/new');
     }, [router]);
-
-    const handleTabPress = React.useCallback((tab: TabType) => {
-        setActiveTab(tab);
-    }, []);
-
-    // Regular phone mode with tabs - define this before any conditional returns
-    const renderTabContent = React.useCallback(() => {
-        switch (activeTab) {
-            case 'zen':
-                return <ZenHome />;
-            case 'inbox':
-                return <InboxView />;
-            case 'settings':
-                return <SettingsViewWrapper />;
-            case 'sessions':
-            default:
-                return <SessionsListWrapper />;
-        }
-    }, [activeTab]);
 
     // Sidebar variant
     if (variant === 'sidebar') {
@@ -174,20 +142,16 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
         return <View style={styles.emptyStateContentContainer} />;
     }
 
-    // Regular phone mode with tabs
+    // Phone mode - show sessions list directly (no tabs)
     return (
         <>
             {realtimeStatus !== 'disconnected' && (
                 <VoiceAssistantStatusBar variant="full" />
             )}
             <View style={styles.phoneContainer}>
-                {renderTabContent()}
+                <SessionsListWrapper />
             </View>
-            <TabBar
-                activeTab={activeTab}
-                onTabPress={handleTabPress}
-                inboxBadgeCount={friendRequests.length}
-            />
+            <FABWide onPress={handleNewSession} />
         </>
     );
 });

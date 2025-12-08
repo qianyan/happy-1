@@ -7,7 +7,7 @@ import { getSessionName, useSessionStatus, getSessionSubtitle, formatLastSeen } 
 import { ActiveSessionsGroup } from './ActiveSessionsGroup';
 import { ActiveSessionsGroupCompact } from './ActiveSessionsGroupCompact';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSetting } from '@/sync/storage';
+import { useSetting, useMachine } from '@/sync/storage';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { Typography } from '@/constants/Typography';
 import { Session } from '@/sync/storageTypes';
@@ -66,10 +66,10 @@ const stylesheet = StyleSheet.create((theme) => ({
         ...Typography.default(),
     },
     sessionItem: {
-        height: 78,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
+        paddingVertical: 12,
         backgroundColor: theme.colors.surface,
         marginHorizontal: 16,
         marginBottom: 8,
@@ -85,7 +85,7 @@ const stylesheet = StyleSheet.create((theme) => ({
     sessionTitleRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 2,
+        marginBottom: 4,
     },
     sessionTitle: {
         fontSize: 15,
@@ -99,16 +99,26 @@ const stylesheet = StyleSheet.create((theme) => ({
     sessionTitleDisconnected: {
         color: theme.colors.textSecondary,
     },
-    sessionTimestamp: {
-        fontSize: 12,
+    sessionSubtitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 2,
+    },
+    sessionMachineName: {
+        fontSize: 13,
+        color: theme.colors.text,
+        ...Typography.default(),
+    },
+    sessionSubtitleSeparator: {
+        fontSize: 13,
         color: theme.colors.textSecondary,
-        marginLeft: 8,
+        marginHorizontal: 4,
         ...Typography.default(),
     },
     sessionSubtitle: {
         fontSize: 13,
         color: theme.colors.textSecondary,
-        marginBottom: 4,
+        flex: 1,
         ...Typography.default(),
     },
     statusRow: {
@@ -125,6 +135,12 @@ const stylesheet = StyleSheet.create((theme) => ({
     statusText: {
         fontSize: 12,
         fontWeight: '500',
+        lineHeight: 16,
+        ...Typography.default(),
+    },
+    statusTimestamp: {
+        fontSize: 12,
+        color: theme.colors.textSecondary,
         lineHeight: 16,
         ...Typography.default(),
     },
@@ -329,6 +345,12 @@ const SessionItem = React.memo(({ session, selected }: {
     const navigateToSession = useNavigateToSession();
     const isTablet = useIsTablet();
 
+    // Get machine for display name
+    const machine = useMachine(session.metadata?.machineId || '');
+
+    // Get machine name: prefer displayName, fall back to host
+    const machineName = machine?.metadata?.displayName || session.metadata?.host || '';
+
     // Format the last message time (fall back to createdAt if no messages yet)
     const lastUpdatedText = React.useMemo(() => {
         const timestamp = session.lastMessageAt ?? session.createdAt;
@@ -353,25 +375,32 @@ const SessionItem = React.memo(({ session, selected }: {
             }}
         >
             <View style={styles.sessionContent}>
-                {/* Title line with last updated time */}
+                {/* Line 1: Machine name + path */}
+                <View style={styles.sessionSubtitleRow}>
+                    {machineName ? (
+                        <>
+                            <Text style={styles.sessionMachineName} numberOfLines={1}>
+                                {machineName}
+                            </Text>
+                            <Text style={styles.sessionSubtitleSeparator}>·</Text>
+                        </>
+                    ) : null}
+                    <Text style={styles.sessionSubtitle} numberOfLines={1}>
+                        {sessionSubtitle}
+                    </Text>
+                </View>
+
+                {/* Line 2: Title (up to 2 lines) */}
                 <View style={styles.sessionTitleRow}>
                     <Text style={[
                         styles.sessionTitle,
                         sessionStatus.isConnected ? styles.sessionTitleConnected : styles.sessionTitleDisconnected
-                    ]} numberOfLines={1}>
+                    ]} numberOfLines={2}>
                         {sessionName}
-                    </Text>
-                    <Text style={styles.sessionTimestamp}>
-                        {lastUpdatedText}
                     </Text>
                 </View>
 
-                {/* Subtitle line */}
-                <Text style={styles.sessionSubtitle} numberOfLines={1}>
-                    {sessionSubtitle}
-                </Text>
-
-                {/* Status line with dot */}
+                {/* Line 3: Status with dot + timestamp */}
                 <View style={styles.statusRow}>
                     <View style={styles.statusDotContainer}>
                         <StatusDot color={sessionStatus.statusDotColor} isPulsing={sessionStatus.isPulsing} />
@@ -381,6 +410,9 @@ const SessionItem = React.memo(({ session, selected }: {
                         { color: sessionStatus.statusColor }
                     ]}>
                         {sessionStatus.statusText}
+                    </Text>
+                    <Text style={styles.statusTimestamp}>
+                        {' · '}{lastUpdatedText}
                     </Text>
                 </View>
             </View>

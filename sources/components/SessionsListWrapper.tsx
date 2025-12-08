@@ -6,7 +6,6 @@ import { SessionsList } from './SessionsList';
 import { EmptyMainScreen } from './EmptyMainScreen';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { useSocketStatus } from '@/sync/storage';
-import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusDot } from './StatusDot';
@@ -43,12 +42,6 @@ const stylesheet = StyleSheet.create((theme) => ({
         flexGrow: 1,
     },
     headerButton: {
-        width: 32,
-        height: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    logoContainer: {
         width: 32,
         height: 32,
         alignItems: 'center',
@@ -192,7 +185,7 @@ function HeaderLeft() {
     const styles = stylesheet;
     const { theme } = useUnistyles();
     return (
-        <View style={styles.logoContainer}>
+        <View style={styles.headerButton}>
             <Image
                 source={require('@/assets/images/logo-black.png')}
                 contentFit="contain"
@@ -210,11 +203,16 @@ function HeaderRight() {
 
     return (
         <Pressable
-            onPress={() => router.push('/new')}
+            onPress={() => router.push('/settings')}
             hitSlop={15}
             style={styles.headerButton}
         >
-            <Ionicons name="add-outline" size={28} color={theme.colors.header.tint} />
+            <Image
+                source={require('@/assets/images/brutalist/Brutalism 9.png')}
+                contentFit="contain"
+                style={[{ width: 28, height: 28 }]}
+                tintColor={theme.colors.header.tint}
+            />
         </Pressable>
     );
 }
