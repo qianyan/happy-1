@@ -99,6 +99,7 @@ const stylesheet = StyleSheet.create((theme) => ({
         paddingBottom: 8,
         flexDirection: 'row',
         justifyContent: 'center',
+        backgroundColor: theme.colors.groupped.background,
     },
     searchInputWrapper: {
         flex: 1,
