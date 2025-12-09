@@ -246,7 +246,7 @@ export default function EditArtifactScreen() {
                 options={{
                     headerShown: true,
                     headerTitle: t('artifacts.edit'),
-                    headerRight: HeaderRight,
+                    headerRight: () => <HeaderRight />,
                 }}
             />
             <View style={styles.container}>

@@ -147,7 +147,7 @@ export default function NewArtifactScreen() {
                 options={{
                     headerShown: true,
                     headerTitle: t('artifacts.new'),
-                    headerRight: HeaderRight,
+                    headerRight: () => <HeaderRight />,
                 }}
             />
             <View style={styles.container}>

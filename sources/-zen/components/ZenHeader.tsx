@@ -10,12 +10,19 @@ import { View, Text, Pressable } from 'react-native';
 import { useUnistyles } from 'react-native-unistyles';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
-export const ZenHeader = React.memo(() => {
+// Note: useRouter still needed for HeaderLeft back button
+
+type ZenHeaderProps = {
+    onAddPress?: () => void;
+    showInput?: boolean;
+};
+
+export const ZenHeader = React.memo<ZenHeaderProps>(({ onAddPress, showInput }) => {
     const isTablet = useIsTablet();
     return (
         <Header
             title={isTablet ? <HeaderTitleTablet /> : <HeaderTitle />}
-            headerRight={() => <HeaderRight />}
+            headerRight={() => <HeaderRight onAddPress={onAddPress} showInput={showInput} />}
             headerLeft={isTablet ? () => null : () => <HeaderLeft />}
             headerShadowVisible={false}
             headerTransparent={true}
@@ -140,12 +147,16 @@ function HeaderLeft() {
     );
 }
 
-function HeaderRight() {
-    const router = useRouter();
+type HeaderRightProps = {
+    onAddPress?: () => void;
+    showInput?: boolean;
+};
+
+function HeaderRight({ onAddPress, showInput }: HeaderRightProps) {
     const { theme } = useUnistyles();
     return (
         <Pressable
-            onPress={() => router.push('/zen/new')}
+            onPress={onAddPress}
             hitSlop={15}
             style={{
                 width: 32,
@@ -154,7 +165,11 @@ function HeaderRight() {
                 justifyContent: 'center',
             }}
         >
-            <Ionicons name="add-outline" size={28} color={theme.colors.header.tint} />
+            <Ionicons
+                name={showInput ? "close-outline" : "add-outline"}
+                size={28}
+                color={theme.colors.header.tint}
+            />
         </Pressable>
     );
 }   
