@@ -120,7 +120,6 @@ function NewSessionScreen() {
     const lastUsedAgent = useSetting('lastUsedAgent');
     const lastUsedPermissionMode = useSetting('lastUsedPermissionMode');
     const lastUsedModelMode = useSetting('lastUsedModelMode');
-    const experimentsEnabled = useSetting('experiments');
 
     //
     // Machines state
@@ -357,8 +356,8 @@ function NewSessionScreen() {
         try {
             let actualPath = selectedPath;
             
-            // Handle worktree creation if selected and experiments are enabled
-            if (sessionType === 'worktree' && experimentsEnabled) {
+            // Handle worktree creation if selected
+            if (sessionType === 'worktree') {
                 const worktreeResult = await createWorktree(selectedMachineId, selectedPath);
                 
                 if (!worktreeResult.success) {
@@ -447,7 +446,7 @@ function NewSessionScreen() {
         } finally {
             setIsSending(false);
         }
-    }, [agentType, selectedMachineId, selectedPath, input, recentMachinePaths, sessionType, experimentsEnabled, permissionMode, modelMode]);
+    }, [agentType, selectedMachineId, selectedPath, input, recentMachinePaths, sessionType, permissionMode, modelMode]);
 
     return (
         <KeyboardAvoidingView
@@ -464,21 +463,19 @@ function NewSessionScreen() {
                 width: '100%',
                 alignSelf: 'center',
             }}>
-                {/* Session type selector - only show when experiments are enabled */}
-                {experimentsEnabled && (
+                {/* Session type selector */}
+                <View style={[
+                    { paddingHorizontal: screenWidth > 700 ? 16 : 8, flexDirection: 'row', justifyContent: 'center' }
+                ]}>
                     <View style={[
-                        { paddingHorizontal: screenWidth > 700 ? 16 : 8, flexDirection: 'row', justifyContent: 'center' }
+                        { maxWidth: layout.maxWidth, flex: 1 }
                     ]}>
-                        <View style={[
-                            { maxWidth: layout.maxWidth, flex: 1 }
-                        ]}>
-                            <SessionTypeSelector 
-                                value={sessionType}
-                                onChange={setSessionType}
-                            />
-                        </View>
+                        <SessionTypeSelector
+                            value={sessionType}
+                            onChange={setSessionType}
+                        />
                     </View>
-                )}
+                </View>
 
                 {/* Agent input */}
                 <AgentInput

@@ -5,7 +5,7 @@ import { Header } from './navigation/Header';
 import { SessionsList } from './SessionsList';
 import { EmptyMainScreen } from './EmptyMainScreen';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
-import { useSocketStatus, useSettings } from '@/sync/storage';
+import { useSocketStatus } from '@/sync/storage';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { StatusDot } from './StatusDot';
@@ -206,24 +206,21 @@ function HeaderRight() {
     const router = useRouter();
     const styles = stylesheet;
     const { theme } = useUnistyles();
-    const settings = useSettings();
 
     return (
         <View style={styles.headerRightContainer}>
-            {settings.experiments && (
-                <Pressable
-                    onPress={() => router.push('/(app)/zen')}
-                    hitSlop={15}
-                    style={styles.headerButton}
-                >
-                    <Image
-                        source={require('@/assets/images/brutalist/Brutalism 3.png')}
-                        contentFit="contain"
-                        style={[{ width: 28, height: 28 }]}
-                        tintColor={theme.colors.header.tint}
-                    />
-                </Pressable>
-            )}
+            <Pressable
+                onPress={() => router.push('/(app)/zen')}
+                hitSlop={15}
+                style={styles.headerButton}
+            >
+                <Image
+                    source={require('@/assets/images/brutalist/Brutalism 3.png')}
+                    contentFit="contain"
+                    style={[{ width: 28, height: 28 }]}
+                    tintColor={theme.colors.header.tint}
+                />
+            </Pressable>
             <Pressable
                 onPress={() => router.push('/settings')}
                 hitSlop={15}
