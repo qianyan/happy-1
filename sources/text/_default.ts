@@ -822,6 +822,9 @@ export const en = {
         codeCopied: 'Code copied',
         copyFailed: 'Copy failed',
         mermaidRenderFailed: 'Failed to render mermaid diagram',
+        mermaidSyntaxError: 'Mermaid diagram syntax error',
+        mermaidDiagram: 'Diagram',
+        shareDiagram: 'Share Diagram',
     },
 
     artifacts: {

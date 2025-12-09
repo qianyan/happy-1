@@ -832,6 +832,9 @@ export const ru: TranslationStructure = {
         codeCopied: 'Код скопирован',
         copyFailed: 'Ошибка копирования',
         mermaidRenderFailed: 'Не удалось отобразить диаграмму mermaid',
+        mermaidSyntaxError: 'Ошибка синтаксиса диаграммы Mermaid',
+        mermaidDiagram: 'Диаграмма',
+        shareDiagram: 'Поделиться диаграммой',
     },
 
     artifacts: {

@@ -822,6 +822,9 @@ export const es: TranslationStructure = {
         codeCopied: 'Código copiado',
         copyFailed: 'Error al copiar',
         mermaidRenderFailed: 'Error al renderizar el diagrama mermaid',
+        mermaidSyntaxError: 'Error de sintaxis en el diagrama Mermaid',
+        mermaidDiagram: 'Diagrama',
+        shareDiagram: 'Compartir diagrama',
     },
 
     artifacts: {
