@@ -185,6 +185,14 @@ export class SessionEncryption {
     }
 
     /**
+     * Decrypt binary blob data using session-specific encryption
+     * Returns the decrypted blob as Uint8Array, or null if decryption fails
+     */
+    async decryptBlob(data: Uint8Array): Promise<Uint8Array | null> {
+        return this.encryptor.decryptBlob(data);
+    }
+
+    /**
      * Get the underlying encryptor for blob operations
      */
     getEncryptor(): Encryptor & Decryptor {

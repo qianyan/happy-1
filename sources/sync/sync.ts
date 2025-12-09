@@ -40,7 +40,7 @@ import { FeedItem } from './feedTypes';
 import { UserProfile } from './friendTypes';
 import { initializeTodoSync } from '../-zen/model/ops';
 import { Toast } from '@/toast';
-import { uploadBlob } from './apiBlobs';
+import { uploadBlob, downloadBlob } from './apiBlobs';
 import { ImageAttachment } from '@/hooks/useImageAttachments';
 
 class Sync {
@@ -490,6 +490,44 @@ class Sync {
         this.onSessionVisible(sessionId);
 
         return { success: true, errors };
+    }
+
+    /**
+     * Download and decrypt a blob from the server
+     *
+     * @param sessionId - The session ID the blob belongs to
+     * @param blobId - The blob ID to download
+     * @returns The decrypted blob data and metadata, or null on failure
+     */
+    async downloadAndDecryptBlob(
+        sessionId: string,
+        blobId: string
+    ): Promise<{ data: Uint8Array; mimeType: string } | null> {
+        // Get encryption
+        const encryption = this.encryption.getSessionEncryption(sessionId);
+        if (!encryption) {
+            log.log(`[sync] Session encryption not available for ${sessionId}`);
+            return null;
+        }
+
+        // Download encrypted blob
+        const downloadResult = await downloadBlob(sessionId, blobId);
+        if (!downloadResult) {
+            log.log(`[sync] Failed to download blob ${blobId}`);
+            return null;
+        }
+
+        // Decrypt blob
+        const decryptedData = await encryption.decryptBlob(downloadResult.data);
+        if (!decryptedData) {
+            log.log(`[sync] Failed to decrypt blob ${blobId}`);
+            return null;
+        }
+
+        return {
+            data: decryptedData,
+            mimeType: downloadResult.mimeType,
+        };
     }
 
     applySettings = (delta: Partial<Settings>) => {
