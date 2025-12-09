@@ -22,6 +22,8 @@ import { useSetting } from '@/sync/storage';
 import { Theme } from '@/theme';
 import { t } from '@/text';
 import { Metadata } from '@/sync/storageTypes';
+import { ImageAttachmentBar } from './ImageAttachmentBar';
+import { ImageAttachment } from '@/hooks/useImageAttachments';
 
 interface AgentInputProps {
     value: string;
@@ -66,6 +68,11 @@ interface AgentInputProps {
     isSendDisabled?: boolean;
     isSending?: boolean;
     minHeight?: number;
+    // Image attachment props
+    imageAttachments?: ImageAttachment[];
+    onRemoveImageAttachment?: (id: string) => void;
+    onPickImage?: () => void;
+    uploadingImageIds?: Set<string>;
 }
 
 const MAX_CONTEXT_SIZE = 190000;
@@ -788,6 +795,15 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                 )}
                 {/* Unified panel containing input and action buttons */}
                 <View style={styles.unifiedPanel}>
+                    {/* Image attachment bar - shows thumbnails of attached images */}
+                    {props.imageAttachments && props.imageAttachments.length > 0 && props.onRemoveImageAttachment && (
+                        <ImageAttachmentBar
+                            attachments={props.imageAttachments}
+                            onRemove={props.onRemoveImageAttachment}
+                            uploadingIds={props.uploadingImageIds}
+                        />
+                    )}
+
                     {/* Input field */}
                     <View style={[styles.inputContainer, props.minHeight ? { minHeight: props.minHeight } : undefined]}>
                         <MultiTextInput
@@ -806,6 +822,33 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                     {/* Action buttons below input */}
                     <View style={styles.actionButtonsContainer}>
                         <View style={styles.actionButtonsLeft}>
+
+                            {/* Image attachment button */}
+                            {props.onPickImage && (
+                                <Pressable
+                                    onPress={() => {
+                                        hapticsLight();
+                                        props.onPickImage?.();
+                                    }}
+                                    hitSlop={{ top: 5, bottom: 10, left: 0, right: 0 }}
+                                    style={(p) => ({
+                                        flexDirection: 'row',
+                                        alignItems: 'center',
+                                        borderRadius: Platform.select({ default: 16, android: 20 }),
+                                        paddingHorizontal: 8,
+                                        paddingVertical: 6,
+                                        justifyContent: 'center',
+                                        height: 32,
+                                        opacity: p.pressed ? 0.7 : 1,
+                                    })}
+                                >
+                                    <Ionicons
+                                        name="image-outline"
+                                        size={18}
+                                        color={theme.colors.button.secondary.tint}
+                                    />
+                                </Pressable>
+                            )}
 
                             {/* Settings button */}
                             {props.onPermissionModeChange && (

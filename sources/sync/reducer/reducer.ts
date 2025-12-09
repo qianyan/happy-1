@@ -593,6 +593,17 @@ export function reducer(state: ReducerState, messages: NormalizedMessage[], agen
                 continue;
             }
 
+            // Extract text from content (handles both single text and array with images)
+            let text = '';
+            if (Array.isArray(msg.content)) {
+                // Array format - find text items and concatenate
+                const textItems = msg.content.filter(item => item.type === 'text');
+                text = textItems.map(item => item.text).join('\n');
+            } else {
+                // Single text format
+                text = msg.content.text;
+            }
+
             // Create a new message
             let mid = allocateId();
             state.messages.set(mid, {
@@ -600,7 +611,7 @@ export function reducer(state: ReducerState, messages: NormalizedMessage[], agen
                 realID: msg.id,
                 role: 'user',
                 createdAt: msg.createdAt,
-                text: msg.content.text,
+                text,
                 tool: null,
                 event: null,
                 meta: msg.meta,

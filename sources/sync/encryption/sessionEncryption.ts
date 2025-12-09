@@ -176,6 +176,22 @@ export class SessionEncryption {
     }
 
     /**
+     * Encrypt binary blob data using session-specific encryption
+     * Returns the encrypted blob as Uint8Array (version + nonce + ciphertext + auth tag)
+     */
+    async encryptBlob(data: Uint8Array): Promise<Uint8Array> {
+        const encryptedResult = await this.encryptor.encryptBlob(data);
+        return encryptedResult;
+    }
+
+    /**
+     * Get the underlying encryptor for blob operations
+     */
+    getEncryptor(): Encryptor & Decryptor {
+        return this.encryptor;
+    }
+
+    /**
      * Decrypt agent state using session-specific encryption
      */
     async decryptAgentState(version: number, encrypted: string | null | undefined): Promise<AgentState> {
