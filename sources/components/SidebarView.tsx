@@ -1,4 +1,4 @@
-import { useSocketStatus, useSettings } from '@/sync/storage';
+import { useSocketStatus } from '@/sync/storage';
 import * as React from 'react';
 import { Text, View, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -96,7 +96,6 @@ export const SidebarView = React.memo(() => {
     const headerHeight = useHeaderHeight();
     const socketStatus = useSocketStatus();
     const realtimeStatus = useRealtimeStatus();
-    const settings = useSettings();
 
     // Get connection status styling (matching sessionUtils.ts pattern)
     const getConnectionStatus = () => {
@@ -156,19 +155,17 @@ export const SidebarView = React.memo(() => {
                         />
                     </View>
                     <View style={styles.rightContainer}>
-                        {settings.experiments && (
-                            <Pressable
-                                onPress={() => router.push('/(app)/zen')}
-                                hitSlop={15}
-                            >
-                                <Image
-                                    source={require('@/assets/images/brutalist/Brutalism 3.png')}
-                                    contentFit="contain"
-                                    style={[{ width: 32, height: 32 }]}
-                                    tintColor={theme.colors.header.tint}
-                                />
-                            </Pressable>
-                        )}
+                        <Pressable
+                            onPress={() => router.push('/(app)/zen')}
+                            hitSlop={15}
+                        >
+                            <Image
+                                source={require('@/assets/images/brutalist/Brutalism 3.png')}
+                                contentFit="contain"
+                                style={[{ width: 32, height: 32 }]}
+                                tintColor={theme.colors.header.tint}
+                            />
+                        </Pressable>
                         <Pressable
                             onPress={() => router.push('/settings')}
                             hitSlop={15}
