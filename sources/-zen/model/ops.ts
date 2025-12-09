@@ -28,6 +28,7 @@ const todoLock = new AsyncLock();
 export interface TodoItem {
     id: string;
     title: string;
+    text?: string;  // Additional task details/description
     done: boolean;
     createdAt: number;
     updatedAt: number;
@@ -373,6 +374,116 @@ export async function updateTodoTitle(
             }
         } catch (error) {
             console.error('Failed to update todo title:', error);
+            // Keep optimistic update even on error
+        }
+    });
+}
+
+/**
+ * Update a todo's text/description
+ */
+export async function updateTodoText(
+    credentials: AuthCredentials,
+    id: string,
+    text: string
+): Promise<void> {
+    const currentState = storage.getState();
+    const { todos, undoneOrder, doneOrder, versions } = currentState.todoState || {
+        todos: {},
+        undoneOrder: [],
+        doneOrder: [],
+        versions: {}
+    };
+
+    const todo = todos[id];
+    if (!todo) {
+        console.error(`Todo ${id} not found`);
+        return;
+    }
+
+    const updatedTodo: TodoItem = {
+        ...todo,
+        text,
+        updatedAt: Date.now()
+    };
+
+    // Apply optimistic update immediately
+    storage.getState().applyTodos({
+        todos: { ...todos, [id]: updatedTodo },
+        undoneOrder,
+        doneOrder,
+        versions
+    });
+
+    // Sync to server inside lock
+    await todoLock.inLock(async () => {
+        try {
+            // Fetch current todo from backend with version
+            const todoKey = getTodoKey(id);
+            const todoResponse = await kvGet(credentials, todoKey);
+
+            if (!todoResponse) {
+                // Todo doesn't exist on backend, create it
+                const encrypted = await encryptTodoData(updatedTodo);
+                const newVersion = await kvSet(credentials, todoKey, encrypted, -1);
+
+                // Update version
+                const newVersions = { ...versions };
+                newVersions[todoKey] = newVersion;
+
+                storage.getState().applyTodos({
+                    todos: { ...todos, [id]: updatedTodo },
+                    undoneOrder,
+                    doneOrder,
+                    versions: newVersions
+                });
+            } else {
+                // Merge with server version - only update if text actually changed
+                let serverTodo: TodoItem;
+                try {
+                    serverTodo = await decryptTodoData(todoResponse.value) as TodoItem;
+                } catch (err) {
+                    console.error('Failed to decrypt server todo', err);
+                    serverTodo = updatedTodo; // Use our version as fallback
+                }
+
+                // Merge: keep server data but update text and timestamp
+                const mergedTodo: TodoItem = {
+                    ...serverTodo,
+                    text,
+                    updatedAt: Date.now()
+                };
+
+                // Only write if something changed
+                if (serverTodo.text !== text) {
+                    const encrypted = await encryptTodoData(mergedTodo);
+                    const newVersion = await kvSet(credentials, todoKey, encrypted, todoResponse.version);
+
+                    // Update version
+                    const newVersions = { ...versions };
+                    newVersions[todoKey] = newVersion;
+
+                    storage.getState().applyTodos({
+                        todos: { ...todos, [id]: mergedTodo },
+                        undoneOrder,
+                        doneOrder,
+                        versions: newVersions
+                    });
+                } else {
+                    // No change needed, just update version
+                    const newVersions = { ...versions };
+                    newVersions[todoKey] = todoResponse.version;
+
+                    storage.getState().applyTodos({
+                        todos: { ...todos, [id]: serverTodo },
+                        undoneOrder,
+                        doneOrder,
+                        versions: newVersions
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to update todo text:', error);
             // Keep optimistic update even on error
         }
     });

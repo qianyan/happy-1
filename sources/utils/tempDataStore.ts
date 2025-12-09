@@ -13,6 +13,7 @@ export interface NewSessionData {
     sessionType?: 'simple' | 'worktree';
     taskId?: string;
     taskTitle?: string;
+    taskText?: string;
 }
 
 // In-memory store for temporary data

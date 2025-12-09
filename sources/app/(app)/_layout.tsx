@@ -335,7 +335,6 @@ export default function RootLayout() {
             <Stack.Screen
                 name="zen/view"
                 options={{
-                    presentation: 'modal',
                     headerTitle: 'Task Details',
                     headerBackTitle: t('common.back'),
                 }}

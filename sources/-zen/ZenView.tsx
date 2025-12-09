@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, ScrollView, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, TextInput, KeyboardAvoidingView, Platform, Keyboard, useWindowDimensions } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,13 +7,14 @@ import { Typography } from '@/constants/Typography';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { storage } from '@/sync/storage';
-import { toggleTodo, updateTodoTitle, deleteTodo } from '@/-zen/model/ops';
+import { toggleTodo, updateTodoTitle, updateTodoText, deleteTodo } from '@/-zen/model/ops';
 import { useAuth } from '@/auth/AuthContext';
 import { useShallow } from 'zustand/react/shallow';
 import { clarifyPrompt } from '@/-zen/model/prompts';
 import { storeTempData, type NewSessionData } from '@/utils/tempDataStore';
 import { toCamelCase } from '@/utils/stringUtils';
 import { removeTaskLinks, getSessionsForTask } from '@/-zen/model/taskSessionLink';
+import { MarkdownView } from '@/components/markdown/MarkdownView';
 
 export const ZenView = React.memo(() => {
     const router = useRouter();
@@ -21,6 +22,8 @@ export const ZenView = React.memo(() => {
     const insets = useSafeAreaInsets();
     const params = useLocalSearchParams();
     const auth = useAuth();
+    const { width } = useWindowDimensions();
+    const isSmallScreen = width < 500;
 
     const todoId = params.id as string;
 
@@ -33,12 +36,16 @@ export const ZenView = React.memo(() => {
         return {
             id: todoItem.id,
             title: todoItem.title,
+            text: todoItem.text,
             done: todoItem.done
         };
     }));
 
-    const [isEditing, setIsEditing] = React.useState(false);
-    const [editedText, setEditedText] = React.useState(todo?.title || '');
+    const [isEditingTitle, setIsEditingTitle] = React.useState(false);
+    const [isEditingText, setIsEditingText] = React.useState(false);
+    const [editedTitle, setEditedTitle] = React.useState(todo?.title || '');
+    const [editedText, setEditedText] = React.useState(todo?.text || '');
+    const textInputRef = React.useRef<TextInput>(null);
 
     // Get linked sessions for this task
     const linkedSessions = React.useMemo(() => {
@@ -48,7 +55,8 @@ export const ZenView = React.memo(() => {
     // Update local state when todo changes
     React.useEffect(() => {
         if (todo) {
-            setEditedText(todo.title);
+            setEditedTitle(todo.title);
+            setEditedText(todo.text || '');
         }
     }, [todo]);
 
@@ -56,7 +64,7 @@ export const ZenView = React.memo(() => {
     React.useEffect(() => {
         const handleKeyPress = (event: KeyboardEvent) => {
             // Navigate to new todo when any key is pressed (except when editing)
-            if (!isEditing && event.key && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+            if (!isEditingTitle && !isEditingText && event.key && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
                 router.dismissAll();
                 router.push('/zen/new');
             }
@@ -66,18 +74,31 @@ export const ZenView = React.memo(() => {
             window.addEventListener('keypress', handleKeyPress);
             return () => window.removeEventListener('keypress', handleKeyPress);
         }
-    }, [isEditing, router]);
+    }, [isEditingTitle, isEditingText, router]);
 
     if (!todo) {
         // Todo was deleted or doesn't exist
         return null;
     }
 
-    const handleSave = async () => {
-        if (editedText.trim() && editedText !== todo.title && auth?.credentials) {
-            await updateTodoTitle(auth.credentials, todoId, editedText.trim());
+    const handleSaveTitle = async () => {
+        if (editedTitle.trim() && editedTitle !== todo.title && auth?.credentials) {
+            await updateTodoTitle(auth.credentials, todoId, editedTitle.trim());
         }
-        setIsEditing(false);
+        setIsEditingTitle(false);
+    };
+
+    const handleSaveText = async () => {
+        if (editedText !== (todo.text || '') && auth?.credentials) {
+            await updateTodoText(auth.credentials, todoId, editedText);
+        }
+        setIsEditingText(false);
+    };
+
+    const handleStartEditingText = () => {
+        setIsEditingText(true);
+        // Focus the input after state updates
+        setTimeout(() => textInputRef.current?.focus(), 50);
     };
 
     const handleToggleDone = async () => {
@@ -97,23 +118,26 @@ export const ZenView = React.memo(() => {
 
     const handleClarifyWithAI = () => {
         // Generate the task file name from the task title
-        const taskFileName = toCamelCase(editedText) || 'untitledTask';
+        const taskFileName = toCamelCase(editedTitle) || 'untitledTask';
         const taskFile = `.dev/tasks/${taskFileName}.md`;
+
+        // Build the task description including text if available
+        const taskDescription = editedText.trim()
+            ? `${editedTitle}\n\nDetails:\n${editedText}`
+            : editedTitle;
 
         // Format the prompt using the full clarifyPrompt template
         const promptText = clarifyPrompt
             .replace('{{taskFile}}', taskFile)
-            .replace('{{task}}', editedText);
-
-        // Create a display title for the prompt
-        const promptDisplayTitle = `Clarify: ${editedText}`;
+            .replace('{{task}}', taskDescription);
 
         // Store the prompt data in temporary store
         const sessionData: NewSessionData = {
             prompt: promptText,
             agentType: 'claude', // Default to Claude for clarification tasks
             taskId: todoId,
-            taskTitle: editedText
+            taskTitle: editedTitle,
+            taskText: editedText
         };
         const dataId = storeTempData(sessionData);
 
@@ -125,15 +149,18 @@ export const ZenView = React.memo(() => {
     };
 
     const handleWorkOnTask = () => {
-        // Create a simple prompt to work on the task
-        const promptText = `Work on this task: ${editedText}`;
+        // Build the prompt including text details if available
+        const promptText = editedText.trim()
+            ? `Work on this task: ${editedTitle}\n\nDetails:\n${editedText}`
+            : `Work on this task: ${editedTitle}`;
 
         // Store the prompt data in temporary store
         const sessionData: NewSessionData = {
             prompt: promptText,
             agentType: 'claude', // Default to Claude
             taskId: todoId,
-            taskTitle: editedText
+            taskTitle: editedTitle,
+            taskText: editedText
         };
         const dataId = storeTempData(sessionData);
 
@@ -158,7 +185,7 @@ export const ZenView = React.memo(() => {
                     styles.content,
                     { paddingBottom: insets.bottom + 20 }
                 ]}>
-                    {/* Checkbox and Main Content */}
+                    {/* Checkbox and Title */}
                     <View style={styles.mainSection}>
                         <Pressable
                             onPress={handleToggleDone}
@@ -176,25 +203,22 @@ export const ZenView = React.memo(() => {
                         </Pressable>
 
                         <View style={{ flex: 1 }}>
-                            {isEditing ? (
+                            {isEditingTitle ? (
                                 <TextInput
                                     style={[
-                                        styles.input,
-                                        {
-                                            color: theme.colors.text,
-                                            borderBottomColor: theme.colors.divider,
-                                        }
+                                        styles.titleInput,
+                                        { color: theme.colors.text }
                                     ]}
-                                    value={editedText}
-                                    onChangeText={setEditedText}
-                                    onBlur={handleSave}
-                                    onSubmitEditing={handleSave}
+                                    value={editedTitle}
+                                    onChangeText={setEditedTitle}
+                                    onBlur={handleSaveTitle}
+                                    onSubmitEditing={handleSaveTitle}
                                     autoFocus
                                     multiline
                                     blurOnSubmit={true}
                                 />
                             ) : (
-                                <Pressable onPress={() => setIsEditing(true)}>
+                                <Pressable onPress={() => setIsEditingTitle(true)}>
                                     <Text style={[
                                         styles.taskText,
                                         {
@@ -203,11 +227,55 @@ export const ZenView = React.memo(() => {
                                             opacity: todo.done ? 0.6 : 1,
                                         }
                                     ]}>
-                                        {editedText}
+                                        {editedTitle}
                                     </Text>
                                 </Pressable>
                             )}
                         </View>
+                    </View>
+
+                    {/* Task Details/Notes - Full height section */}
+                    <View style={styles.textSection}>
+                        {isEditingText ? (
+                            <View style={{ flex: 1 }}>
+                                <TextInput
+                                    ref={textInputRef}
+                                    style={[
+                                        styles.textInput,
+                                        { color: theme.colors.text }
+                                    ]}
+                                    value={editedText}
+                                    onChangeText={setEditedText}
+                                    onBlur={handleSaveText}
+                                    placeholder="Add details..."
+                                    placeholderTextColor={theme.colors.textSecondary}
+                                    multiline
+                                    textAlignVertical="top"
+                                    autoFocus
+                                />
+                                {Platform.OS !== 'web' && (
+                                    <Pressable
+                                        onPress={() => {
+                                            Keyboard.dismiss();
+                                            handleSaveText();
+                                        }}
+                                        style={[styles.doneButton, { backgroundColor: theme.colors.button.primary.background }]}
+                                    >
+                                        <Text style={styles.doneButtonText}>Done</Text>
+                                    </Pressable>
+                                )}
+                            </View>
+                        ) : (
+                            <Pressable onPress={handleStartEditingText} style={styles.textDisplay}>
+                                {editedText.trim() ? (
+                                    <MarkdownView markdown={editedText} />
+                                ) : (
+                                    <Text style={[styles.textPlaceholder, { color: theme.colors.textSecondary }]}>
+                                        Tap here to add details...
+                                    </Text>
+                                )}
+                            </Pressable>
+                        )}
                     </View>
 
                     {/* Actions */}
@@ -230,10 +298,14 @@ export const ZenView = React.memo(() => {
 
                         <Pressable
                             onPress={handleDelete}
-                            style={[styles.actionButton, { backgroundColor: theme.colors.textDestructive }]}
+                            style={[
+                                styles.actionButton,
+                                { backgroundColor: theme.colors.textDestructive },
+                                isSmallScreen && styles.iconOnlyButton
+                            ]}
                         >
                             <Ionicons name="trash-outline" size={20} color="#FFFFFF" />
-                            <Text style={styles.actionButtonText}>Delete</Text>
+                            {!isSmallScreen && <Text style={styles.actionButtonText}>Delete</Text>}
                         </Pressable>
                     </View>
 
@@ -258,13 +330,6 @@ export const ZenView = React.memo(() => {
                             ))}
                         </View>
                     )}
-
-                    {/* Helper Text */}
-                    <View style={styles.helperSection}>
-                        <Text style={[styles.helperText, { color: theme.colors.textSecondary }]}>
-                            Tap the task text to edit
-                        </Text>
-                    </View>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -283,7 +348,7 @@ const styles = StyleSheet.create((theme) => ({
     mainSection: {
         flexDirection: 'row',
         alignItems: 'flex-start',
-        marginBottom: 32,
+        marginBottom: 12,
     },
     checkbox: {
         width: 28,
@@ -300,13 +365,39 @@ const styles = StyleSheet.create((theme) => ({
         lineHeight: 28,
         ...Typography.default(),
     },
-    input: {
+    titleInput: {
         fontSize: 20,
         lineHeight: 28,
-        borderBottomWidth: 1,
-        paddingVertical: 8,
-        paddingHorizontal: 4,
-        minHeight: 60,
+        padding: 0,
+        ...Typography.default(),
+        ...(Platform.OS === 'web' ? {
+            outlineStyle: 'none',
+            outlineWidth: 0,
+        } as any : {}),
+    },
+    textSection: {
+        flex: 1,
+        marginBottom: 24,
+    },
+    textInput: {
+        flex: 1,
+        fontSize: 16,
+        lineHeight: 24,
+        padding: 0,
+        minHeight: 120,
+        ...Typography.default(),
+        ...(Platform.OS === 'web' ? {
+            outlineStyle: 'none',
+            outlineWidth: 0,
+        } as any : {}),
+    },
+    textDisplay: {
+        flex: 1,
+        minHeight: 120,
+    },
+    textPlaceholder: {
+        fontSize: 16,
+        lineHeight: 24,
         ...Typography.default(),
     },
     actions: {
@@ -329,14 +420,20 @@ const styles = StyleSheet.create((theme) => ({
         fontWeight: '500',
         ...Typography.default(),
     },
-    helperSection: {
-        marginTop: 32,
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderTopColor: theme.colors.divider,
+    iconOnlyButton: {
+        paddingHorizontal: 12,
     },
-    helperText: {
-        fontSize: 14,
+    doneButton: {
+        alignSelf: 'flex-end',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        marginTop: 12,
+    },
+    doneButtonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: '500',
         ...Typography.default(),
     },
     linkedSessionsSection: {
