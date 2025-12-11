@@ -282,7 +282,12 @@ export const en = {
             notGitRepo: 'Worktrees require a git repository',
             failed: ({ error }: { error: string }) => `Failed to create worktree: ${error}`,
             success: 'Worktree created successfully',
-        }
+        },
+        recentPaths: 'Recent Paths',
+        recentPathsFooter: 'Long press to remove a path',
+        removePath: 'Remove Path',
+        removePathConfirm: 'Remove this folder from your recent paths?',
+        remove: 'Remove',
     },
 
     sessionHistory: {

@@ -265,7 +265,12 @@ export const ru: TranslationStructure = {
             notGitRepo: 'Worktree требует наличия git репозитория',
             failed: ({ error }: { error: string }) => `Не удалось создать worktree: ${error}`,
             success: 'Worktree успешно создан',
-        }
+        },
+        recentPaths: 'Недавние пути',
+        recentPathsFooter: 'Удерживайте для удаления пути',
+        removePath: 'Удалить путь',
+        removePathConfirm: 'Удалить эту папку из недавних путей?',
+        remove: 'Удалить',
     },
 
     sessionHistory: {
