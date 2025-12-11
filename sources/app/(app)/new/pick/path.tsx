@@ -265,7 +265,22 @@ export default function PathPickerScreen() {
                                                 setCustomPath(path);
                                                 setTimeout(() => inputRef.current?.focus(), 50);
                                             }}
-                                            onLongPress={isInSettings ? () => handleRemovePath(path) : undefined}
+                                            rightElement={isInSettings ? (
+                                                <Pressable
+                                                    onPress={() => handleRemovePath(path)}
+                                                    hitSlop={8}
+                                                    style={({ pressed }) => ({
+                                                        opacity: pressed ? 0.5 : 1,
+                                                        padding: 4,
+                                                    })}
+                                                >
+                                                    <Ionicons
+                                                        name="close-circle"
+                                                        size={20}
+                                                        color={theme.colors.textSecondary}
+                                                    />
+                                                </Pressable>
+                                            ) : undefined}
                                             selected={isSelected}
                                             showChevron={false}
                                             pressableStyle={isSelected ? { backgroundColor: theme.colors.surfaceSelected } : undefined}
