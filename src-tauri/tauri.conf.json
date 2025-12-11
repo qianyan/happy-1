@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:8081",
-    "beforeDevCommand": "yarn start",
-    "beforeBuildCommand": "yarn expo export --platform web --output-dir dist"
+    "beforeDevCommand": "bun start",
+    "beforeBuildCommand": "bun run expo export --platform web --output-dir dist"
   },
   "app": {
     "windows": [

@@ -5,19 +5,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
-- `yarn start` - Start the Expo development server
-- `yarn ios` - Run the app on iOS simulator
-- `yarn android` - Run the app on Android emulator  
-- `yarn web` - Run the app in web browser
-- `yarn prebuild` - Generate native iOS and Android directories
-- `yarn typecheck` - Run TypeScript type checking after all changes
+- `bun start` - Start the Expo development server
+- `bun run ios` - Run the app on iOS simulator
+- `bun run android` - Run the app on Android emulator
+- `bun run web` - Run the app in web browser
+- `bun run prebuild` - Generate native iOS and Android directories
+- `bun run typecheck` - Run TypeScript type checking after all changes
 
 ### Testing
-- `yarn test` - Run tests in watch mode (Jest with jest-expo preset)
+- `bun test` - Run tests in watch mode (Jest with jest-expo preset)
 - No existing tests in the codebase yet
 
 ### Production
-- `yarn ota` - Deploy over-the-air updates via EAS Update to production branch
+- `bun run ota` - Deploy over-the-air updates via EAS Update to production branch
 
 ## Changelog Management
 
@@ -53,7 +53,7 @@ This generates `sources/changelog/changelog.json` which is used by the app.
 - Group related changes together
 - Keep descriptions concise but informative
 - Focus on what changed, not technical implementation details
-- The changelog is automatically parsed during `yarn ota` and `yarn ota:production`
+- The changelog is automatically parsed during `bun run ota` and `bun run ota:production`
 - Always improve and expand basic changelog descriptions to be more user-friendly and informative
 - Include a brief summary paragraph before bullet points for each version explaining the theme of the update
 
@@ -99,7 +99,7 @@ sources/
 ### Development Guidelines
 
 - Use **4 spaces** for indentation
-- Use **yarn** instead of npm for package management
+- Use **bun** instead of npm/yarn for package management
 - Path alias `@/*` maps to `./sources/*`
 - TypeScript strict mode is enabled - ensure all code is properly typed
 - Follow existing component patterns when creating new UI components
@@ -108,7 +108,7 @@ sources/
 - When setting screen parameters ALWAYS set them in _layout.tsx if possible this avoids layout shifts
 - **Never use Alert module from React Native, always use @sources/modal/index.ts instead**
 - **Always apply layout width constraints** from `@/components/layout` to full-screen ScrollViews and content containers for responsive design across device sizes
-- Always run `yarn typecheck` after all changes to ensure type safety
+- Always run `bun run typecheck` after all changes to ensure type safety
 
 ### Internationalization (i18n) Guidelines
 

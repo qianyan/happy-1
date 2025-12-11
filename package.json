@@ -7,12 +7,12 @@
     "start:local-server": "PUBLIC_EXPO_DANGEROUSLY_LOG_TO_SERVER_FOR_AI_AUTO_DEBUGGING=1 EXPO_PUBLIC_DEBUG=1 EXPO_PUBLIC_HAPPY_SERVER_URL=http://localhost:3005  expo start -c",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "ios:connected-device": "yarn ios -d $(xcrun devicectl list devices | grep -E \"available \\(paired\\)\" | head -1 | awk '{print $1}')",
+    "ios:connected-device": "bun run ios -d $(xcrun devicectl list devices | grep -E \"available \\(paired\\)\" | head -1 | awk '{print $1}')",
     "submit": "eas submit --platform ios",
     "web": "expo start --web",
     "test": "vitest",
     "prebuild": "rm -rf android ios && expo prebuild",
-    "ota": "APP_ENV=preview NODE_ENV=preview tsx sources/scripts/parseChangelog.ts && yarn typecheck && eas update --branch preview",
+    "ota": "APP_ENV=preview NODE_ENV=preview tsx sources/scripts/parseChangelog.ts && bun run typecheck && eas update --branch preview",
     "ota:production": "npx eas-cli@latest workflow:run ota.yaml",
     "typecheck": "tsc --noEmit",
     "postinstall": "patch-package",
@@ -168,7 +168,7 @@
     "typescript": "~5.9.2"
   },
   "private": true,
-  "packageManager": "yarn@1.22.22",
+  "packageManager": "bun@1.3.3",
   "trustedDependencies": [
     "@more-tech/react-native-libsodium",
     "esbuild",
