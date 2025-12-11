@@ -168,5 +168,10 @@
     "typescript": "~5.9.2"
   },
   "private": true,
-  "packageManager": "yarn@1.22.22"
+  "packageManager": "yarn@1.22.22",
+  "trustedDependencies": [
+    "@more-tech/react-native-libsodium",
+    "esbuild",
+    "react-native-nitro-modules"
+  ]
 }
