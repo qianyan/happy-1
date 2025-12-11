@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { ItemGroup } from '@/components/ItemGroup';
@@ -11,6 +11,8 @@ import { layout } from '@/components/layout';
 import { t } from '@/text';
 import { MultiTextInput, MultiTextInputHandle } from '@/components/MultiTextInput';
 import { callbacks } from '../index';
+import { Modal } from '@/modal';
+import { sync } from '@/sync/sync';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -134,6 +136,21 @@ export default function PathPickerScreen() {
         });
     }, [customPath, router, machine, params.machineId]);
 
+    // Handle removing a path from recent paths
+    const handleRemovePath = useCallback(async (pathToRemove: string) => {
+        const confirmed = await Modal.confirm(
+            t('newSession.removePath'),
+            t('newSession.removePathConfirm'),
+            { confirmText: t('newSession.remove'), destructive: true }
+        );
+        if (confirmed) {
+            const updatedPaths = recentMachinePaths.filter(
+                entry => !(entry.machineId === params.machineId && entry.path === pathToRemove)
+            );
+            sync.applySettings({ recentMachinePaths: updatedPaths });
+        }
+    }, [recentMachinePaths, params.machineId]);
+
     if (!machine) {
         return (
             <>
@@ -224,10 +241,14 @@ export default function PathPickerScreen() {
                         </ItemGroup>
 
                         {recentPaths.length > 0 && (
-                            <ItemGroup title="Recent Paths">
+                            <ItemGroup title={t('newSession.recentPaths')} footer={t('newSession.recentPathsFooter')}>
                                 {recentPaths.map((path, index) => {
                                     const isSelected = customPath.trim() === path;
                                     const isLast = index === recentPaths.length - 1;
+                                    // Only allow removal for paths in recentMachinePaths (not session-derived)
+                                    const isInSettings = recentMachinePaths.some(
+                                        entry => entry.machineId === params.machineId && entry.path === path
+                                    );
 
                                     return (
                                         <Item
@@ -244,6 +265,7 @@ export default function PathPickerScreen() {
                                                 setCustomPath(path);
                                                 setTimeout(() => inputRef.current?.focus(), 50);
                                             }}
+                                            onLongPress={isInSettings ? () => handleRemovePath(path) : undefined}
                                             selected={isSelected}
                                             showChevron={false}
                                             pressableStyle={isSelected ? { backgroundColor: theme.colors.surfaceSelected } : undefined}
