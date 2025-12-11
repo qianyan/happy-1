@@ -18,7 +18,7 @@ import { TextInputState, MultiTextInputHandle } from './MultiTextInput';
 import { applySuggestion } from './autocomplete/applySuggestion';
 import { GitStatusBadge, useHasMeaningfulGitStatus } from './GitStatusBadge';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { useSetting } from '@/sync/storage';
+import { useSetting, useLocalSetting } from '@/sync/storage';
 import { Theme } from '@/theme';
 import { t } from '@/text';
 import { Metadata } from '@/sync/storageTypes';
@@ -299,9 +299,12 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
     const screenWidth = useWindowDimensions().width;
 
     const hasText = props.value.trim().length > 0;
-    
+
     // Check if this is a Codex session
     const isCodex = props.metadata?.flavor === 'codex';
+
+    // Get the shiftEnterToSend setting
+    const shiftEnterToSend = useLocalSetting('shiftEnterToSend');
 
     // Calculate context warning
     const contextWarning = props.usageData?.contextSize
@@ -478,15 +481,23 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
             return true;
         }
 
-        // Original key handling
-        if (Platform.OS === 'web') {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                if (props.value.trim()) {
-                    props.onSend();
-                    return true; // Key was handled
-                }
+        // Handle Enter key for sending messages (works on all platforms)
+        if (event.key === 'Enter') {
+            // Determine if this key combo should send
+            // Default (shiftEnterToSend=false): Enter sends, Shift+Enter creates new line
+            // Alternative (shiftEnterToSend=true): Shift+Enter sends, Enter creates new line
+            const shouldSend = shiftEnterToSend ? event.shiftKey : !event.shiftKey;
+
+            if (shouldSend && props.value.trim()) {
+                props.onSend();
+                return true; // Key was handled
             }
-            // Handle Shift+Tab for permission mode switching
+            // If we're in the "new line" case, return false to let the default behavior happen
+            // (i.e., don't handle the key so the text input can create a new line)
+        }
+
+        // Handle Shift+Tab for permission mode switching (web only)
+        if (Platform.OS === 'web') {
             if (event.key === 'Tab' && event.shiftKey && props.onPermissionModeChange) {
                 const modeOrder: PermissionMode[] = isCodex
                     ? ['default', 'read-only', 'safe-yolo', 'yolo']
@@ -497,10 +508,9 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                 hapticsLight();
                 return true; // Key was handled, prevent default tab behavior
             }
-
         }
         return false; // Key was not handled
-    }, [props.value, props.onSend, props.permissionMode, props.onPermissionModeChange, suggestions, selected, handleSuggestionSelect, moveUp, moveDown, props.showAbortButton, props.onAbort, isAborting, handleAbortPress]);
+    }, [props.value, props.onSend, props.permissionMode, props.onPermissionModeChange, suggestions, selected, handleSuggestionSelect, moveUp, moveDown, props.showAbortButton, props.onAbort, isAborting, handleAbortPress, shiftEnterToSend]);
 
     // Add global keyboard handler for model mode switching on web
     React.useEffect(() => {

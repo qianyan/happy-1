@@ -201,6 +201,11 @@ export const zhHans: TranslationStructure = {
         markdownCopyV2Subtitle: '长按打开复制模态框',
         hideInactiveSessions: '隐藏非活跃会话',
         hideInactiveSessionsSubtitle: '仅在列表中显示活跃的聊天',
+        inputBehavior: '输入行为',
+        inputBehaviorDescription: '配置消息输入的键盘快捷键。',
+        shiftEnterToSend: 'Shift+Enter 发送',
+        shiftEnterToSendEnabled: 'Shift+Enter 发送，Enter 换行',
+        shiftEnterToSendDisabled: 'Enter 发送，Shift+Enter 换行',
     },
 
     errors: {

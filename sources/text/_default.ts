@@ -199,6 +199,11 @@ export const en = {
         markdownCopyV2Subtitle: 'Long press opens copy modal',
         hideInactiveSessions: 'Hide inactive sessions',
         hideInactiveSessionsSubtitle: 'Show only active chats in your list',
+        inputBehavior: 'Input Behavior',
+        inputBehaviorDescription: 'Configure how the message input handles keyboard shortcuts.',
+        shiftEnterToSend: 'Shift+Enter to Send',
+        shiftEnterToSendEnabled: 'Shift+Enter sends, Enter creates new line',
+        shiftEnterToSendDisabled: 'Enter sends, Shift+Enter creates new line',
     },
 
     errors: {

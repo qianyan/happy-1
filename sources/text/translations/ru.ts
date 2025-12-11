@@ -182,6 +182,11 @@ export const ru: TranslationStructure = {
         markdownCopyV2Subtitle: 'Долгое нажатие открывает модальное окно копирования',
         hideInactiveSessions: 'Скрывать неактивные сессии',
         hideInactiveSessionsSubtitle: 'Показывать в списке только активные чаты',
+        inputBehavior: 'Поведение ввода',
+        inputBehaviorDescription: 'Настройка горячих клавиш для ввода сообщений.',
+        shiftEnterToSend: 'Shift+Enter для отправки',
+        shiftEnterToSendEnabled: 'Shift+Enter отправляет, Enter создаёт новую строку',
+        shiftEnterToSendDisabled: 'Enter отправляет, Shift+Enter создаёт новую строку',
     },
 
     errors: {

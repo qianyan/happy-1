@@ -199,6 +199,11 @@ export const pt: TranslationStructure = {
         markdownCopyV2Subtitle: 'Pressione e segure para abrir modal de cópia',
         hideInactiveSessions: 'Ocultar sessões inativas',
         hideInactiveSessionsSubtitle: 'Mostre apenas os chats ativos na sua lista',
+        inputBehavior: 'Comportamento de entrada',
+        inputBehaviorDescription: 'Configure os atalhos de teclado para a entrada de mensagens.',
+        shiftEnterToSend: 'Shift+Enter para enviar',
+        shiftEnterToSendEnabled: 'Shift+Enter envia, Enter cria nova linha',
+        shiftEnterToSendDisabled: 'Enter envia, Shift+Enter cria nova linha',
     },
 
     errors: {

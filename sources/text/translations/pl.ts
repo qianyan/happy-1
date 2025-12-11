@@ -210,6 +210,11 @@ export const pl: TranslationStructure = {
         markdownCopyV2Subtitle: 'Długie naciśnięcie otwiera modal kopiowania',
         hideInactiveSessions: 'Ukryj nieaktywne sesje',
         hideInactiveSessionsSubtitle: 'Wyświetlaj tylko aktywne czaty na liście',
+        inputBehavior: 'Zachowanie wprowadzania',
+        inputBehaviorDescription: 'Skonfiguruj skróty klawiszowe dla wprowadzania wiadomości.',
+        shiftEnterToSend: 'Shift+Enter do wysłania',
+        shiftEnterToSendEnabled: 'Shift+Enter wysyła, Enter tworzy nową linię',
+        shiftEnterToSendDisabled: 'Enter wysyła, Shift+Enter tworzy nową linię',
     },
 
     errors: {

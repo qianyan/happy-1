@@ -12,11 +12,31 @@ export default function FeaturesSettingsScreen() {
     const [commandPaletteEnabled, setCommandPaletteEnabled] = useLocalSettingMutable('commandPaletteEnabled');
     const [markdownCopyV2, setMarkdownCopyV2] = useLocalSettingMutable('markdownCopyV2');
     const [hideInactiveSessions, setHideInactiveSessions] = useSettingMutable('hideInactiveSessions');
-    
+    const [shiftEnterToSend, setShiftEnterToSend] = useLocalSettingMutable('shiftEnterToSend');
+
     return (
         <ItemList style={{ paddingTop: 0 }}>
+            {/* Input Behavior */}
+            <ItemGroup
+                title={t('settingsFeatures.inputBehavior')}
+                footer={t('settingsFeatures.inputBehaviorDescription')}
+            >
+                <Item
+                    title={t('settingsFeatures.shiftEnterToSend')}
+                    subtitle={shiftEnterToSend ? t('settingsFeatures.shiftEnterToSendEnabled') : t('settingsFeatures.shiftEnterToSendDisabled')}
+                    icon={<Ionicons name="return-down-back-outline" size={29} color="#007AFF" />}
+                    rightElement={
+                        <Switch
+                            value={shiftEnterToSend}
+                            onValueChange={setShiftEnterToSend}
+                        />
+                    }
+                    showChevron={false}
+                />
+            </ItemGroup>
+
             {/* Experimental Features */}
-            <ItemGroup 
+            <ItemGroup
                 title={t('settingsFeatures.experiments')}
                 footer={t('settingsFeatures.experimentsDescription')}
             >
@@ -60,7 +80,7 @@ export default function FeaturesSettingsScreen() {
 
             {/* Web-only Features */}
             {Platform.OS === 'web' && (
-                <ItemGroup 
+                <ItemGroup
                     title={t('settingsFeatures.webFeatures')}
                     footer={t('settingsFeatures.webFeaturesDescription')}
                 >

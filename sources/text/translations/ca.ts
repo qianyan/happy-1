@@ -199,6 +199,11 @@ export const ca: TranslationStructure = {
         markdownCopyV2Subtitle: 'Pulsació llarga obre modal de còpia',
         hideInactiveSessions: 'Amaga les sessions inactives',
         hideInactiveSessionsSubtitle: 'Mostra només els xats actius a la llista',
+        inputBehavior: 'Comportament d\'entrada',
+        inputBehaviorDescription: 'Configura les dreceres de teclat per a l\'entrada de missatges.',
+        shiftEnterToSend: 'Shift+Enter per enviar',
+        shiftEnterToSendEnabled: 'Shift+Enter envia, Enter crea nova línia',
+        shiftEnterToSendDisabled: 'Enter envia, Shift+Enter crea nova línia',
     },
 
     errors: {
