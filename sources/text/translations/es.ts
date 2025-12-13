@@ -287,13 +287,7 @@ export const es: TranslationStructure = {
             notGitRepo: 'Los worktrees requieren un repositorio git',
             failed: ({ error }: { error: string }) => `Error al crear worktree: ${error}`,
             success: 'Worktree creado exitosamente',
-        },
-        recentPaths: 'Rutas recientes',
-        recentPathsFooter: 'Mantén presionado para eliminar una ruta',
-        removePath: 'Eliminar ruta',
-        removePathConfirm: '¿Eliminar esta carpeta de tus rutas recientes?',
-        remove: 'Eliminar',
-        fromSessions: 'De sesiones',
+        }
     },
 
     sessionHistory: {

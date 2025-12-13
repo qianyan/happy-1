@@ -298,13 +298,7 @@ export const pl: TranslationStructure = {
             notGitRepo: 'Worktree wymaga repozytorium git',
             failed: ({ error }: { error: string }) => `Nie udało się utworzyć worktree: ${error}`,
             success: 'Worktree został utworzony pomyślnie',
-        },
-        recentPaths: 'Ostatnie ścieżki',
-        recentPathsFooter: 'Przytrzymaj, aby usunąć ścieżkę',
-        removePath: 'Usuń ścieżkę',
-        removePathConfirm: 'Usunąć ten folder z ostatnich ścieżek?',
-        remove: 'Usuń',
-        fromSessions: 'Z sesji',
+        }
     },
 
     sessionHistory: {

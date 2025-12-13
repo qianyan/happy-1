@@ -289,13 +289,7 @@ export const zhHans: TranslationStructure = {
             notGitRepo: 'Worktree 需要 git 仓库',
             failed: ({ error }: { error: string }) => `创建 worktree 失败：${error}`,
             success: 'Worktree 创建成功',
-        },
-        recentPaths: '最近路径',
-        recentPathsFooter: '长按移除路径',
-        removePath: '移除路径',
-        removePathConfirm: '从最近路径中移除此文件夹？',
-        remove: '移除',
-        fromSessions: '来自会话',
+        }
     },
 
     sessionHistory: {
