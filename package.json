@@ -14,6 +14,9 @@
     "prebuild": "rm -rf android ios && expo prebuild",
     "ota": "APP_ENV=preview NODE_ENV=preview tsx sources/scripts/parseChangelog.ts && yarn typecheck && eas update --branch preview",
     "ota:production": "APP_ENV=production NODE_ENV=production tsx sources/scripts/parseChangelog.ts && yarn typecheck && eas update --branch production",
+    "web:build": "APP_ENV=production NODE_ENV=production expo export --platform web --clear",
+    "web:deploy": "rsync -avz dist devbox:/root/happy-devbox/happy/",
+    "web:production": "yarn web:build && yarn web:deploy",
     "typecheck": "tsc --noEmit",
     "postinstall": "patch-package",
     "generate-theme": "tsx sources/theme.gen.ts"
