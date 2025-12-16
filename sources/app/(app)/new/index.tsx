@@ -21,6 +21,15 @@ import { getTempData, type NewSessionData } from '@/utils/tempDataStore';
 import { linkTaskToSession } from '@/-zen/model/taskSessionLink';
 import { PermissionMode, ModelMode } from '@/components/PermissionModeSelector';
 import { useImageAttachments } from '@/hooks/useImageAttachments';
+import {
+    startRecording,
+    stopRecording,
+    isRecording,
+    onStatusChange,
+    setTranscriptionCallback,
+    setErrorCallback,
+    TranscriptionStatus
+} from '@/services/whisperTranscription';
 
 // Simple temporary state for passing selections back from picker screens
 let onMachineSelected: (machineId: string) => void = () => { };
@@ -125,6 +134,57 @@ function NewSessionScreen() {
     const headerHeight = useHeaderHeight();
     const safeArea = useSafeAreaInsets();
     const screenWidth = useWindowDimensions().width;
+
+    // Voice transcription state
+    const [transcriptionStatus, setTranscriptionStatus] = React.useState<TranscriptionStatus>('idle');
+
+    // Set up transcription callbacks
+    React.useEffect(() => {
+        // Subscribe to status changes
+        const unsubscribe = onStatusChange(setTranscriptionStatus);
+
+        // Set transcription callback to append text to input
+        setTranscriptionCallback((text) => {
+            setInput(prev => {
+                // If there's existing text, add a space before the transcribed text
+                if (prev.trim()) {
+                    return prev.trim() + ' ' + text;
+                }
+                return text;
+            });
+        });
+
+        // Set error callback
+        setErrorCallback((error) => {
+            Modal.alert(t('common.error'), error);
+        });
+
+        return () => {
+            unsubscribe();
+            setTranscriptionCallback(null);
+            setErrorCallback(null);
+        };
+    }, []);
+
+    // Handle microphone button press - toggle recording
+    const handleMicrophonePress = React.useCallback(async () => {
+        if (transcriptionStatus === 'transcribing') {
+            return; // Prevent actions during transcription
+        }
+        if (isRecording()) {
+            // Stop recording and start transcription
+            stopRecording();
+        } else {
+            // Start recording
+            await startRecording();
+        }
+    }, [transcriptionStatus]);
+
+    // Memoize mic button state to prevent flashing during transitions
+    const micButtonState = React.useMemo(() => ({
+        onMicPress: handleMicrophonePress,
+        micStatus: transcriptionStatus === 'error' ? 'idle' : transcriptionStatus
+    }), [handleMicrophonePress, transcriptionStatus]);
 
     // Load recent machine paths and last used agent from settings
     const recentMachinePaths = useSetting('recentMachinePaths');
@@ -539,6 +599,9 @@ function NewSessionScreen() {
                     onPickImage={pickImage}
                     uploadingImageIds={uploadingImageIds}
                     onPaste={handlePaste}
+                    // Voice transcription props
+                    onMicPress={micButtonState.onMicPress}
+                    micStatus={micButtonState.micStatus}
                 />
 
                 <View style={[

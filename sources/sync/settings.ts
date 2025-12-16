@@ -68,7 +68,7 @@ export const settingsDefaults: Settings = {
     hideInactiveSessions: false,
     reviewPromptAnswered: false,
     reviewPromptLikedApp: null,
-    voiceAssistantLanguage: null,
+    voiceAssistantLanguage: 'en-US',
     preferredLanguage: null,
     recentMachinePaths: [],
     lastUsedAgent: null,
