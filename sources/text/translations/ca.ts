@@ -556,46 +556,30 @@ export const ca: TranslationStructure = {
     settingsVoice: {
         // Voice settings screen
         languageTitle: 'Idioma',
-        languageDescription: 'Tria el teu idioma preferit per a les interaccions amb l\'assistent de veu. Aquesta configuració es sincronitza a tots els teus dispositius.',
+        languageDescription: 'Tria el teu idioma preferit per a la transcripció de veu. Aquesta configuració es sincronitza a tots els teus dispositius.',
         preferredLanguage: 'Idioma preferit',
-        preferredLanguageSubtitle: 'Idioma utilitzat per a les respostes de l\'assistent de veu',
+        preferredLanguageSubtitle: 'Idioma utilitzat per a la transcripció de veu',
         language: {
             searchPlaceholder: 'Cerca idiomes...',
             title: 'Idiomes',
             footer: ({ count }: { count: number }) => `${count} ${plural({ count, singular: 'idioma', plural: 'idiomes' })} disponibles`,
             autoDetect: 'Detecta automàticament',
         },
-        // ElevenLabs configuration
-        elevenLabsTitle: 'Configuració d\'ElevenLabs',
-        elevenLabsDescription: 'Configura el teu agent de veu d\'ElevenLabs. Utilitza l\'agent de producció per defecte o connecta el teu propi.',
-        useCustomAgent: 'Utilitza Agent Personalitzat',
-        useCustomAgentSubtitle: 'Connecta el teu propi agent d\'ElevenLabs en lloc del predeterminat',
-        agentId: 'Agent ID',
-        agentIdPlaceholder: 'agent_xxxxx',
-        agentIdSubtitle: 'El teu ID d\'agent d\'ElevenLabs',
-        apiKey: 'API Key',
-        apiKeyPlaceholder: 'sk_xxxxx',
-        apiKeySubtitle: 'La teva clau API d\'ElevenLabs',
-        saveCredentials: 'Desa les Credencials',
-        credentialsSaved: 'Credencials d\'ElevenLabs desades',
-        credentialsRequired: 'Tant l\'Agent ID com l\'API Key són obligatoris',
-        currentAgentId: 'Agent ID Actual',
-        usingDefaultAgent: 'Utilitzant l\'agent de producció per defecte',
-        usingCustomAgent: 'Utilitzant agent personalitzat',
-        // Custom agent credentials section
-        customAgentCredentials: 'Credencials d\'Agent Personalitzat',
-        customAgentCredentialsDescription: 'Introdueix la teva API key d\'ElevenLabs primer, després troba o crea el teu agent. Permisos requerits: "ElevenLabs Agents" (Write) i "Text to Speech" (Access).',
-        getApiKey: 'Obtenir API Key',
-        apiKeyRequired: 'Si us plau, introdueix la teva API key primer',
-        agentIdRequired: 'Si us plau, introdueix l\'Agent ID',
-        findAgent: 'Troba Agent',
-        createOrUpdateAgent: 'Crea/Actualitza',
-        agentFound: 'S\'ha trobat l\'agent "Happy Coding Assistant" i s\'ha omplert l\'ID',
-        agentNotFound: 'No s\'ha trobat cap agent "Happy Coding Assistant"',
-        agentCreated: 'S\'ha creat un nou agent "Happy Coding Assistant"',
-        agentUpdated: 'L\'agent "Happy Coding Assistant" existent s\'ha actualitzat amb l\'última configuració',
-        agentCreateFailed: 'No s\'ha pogut crear l\'agent',
-        agentButtonsHint: '"Troba Agent" cerca un agent "Happy Coding Assistant" existent. "Crea/Actualitza" crea un agent nou o actualitza l\'existent amb la configuració per defecte.',
+        // OpenAI configuration
+        openaiTitle: 'Transcripció de Veu',
+        openaiDescription: 'Utilitza OpenAI Whisper per transcriure la teva veu a text. Toca el botó del micròfon i parla per afegir text al teu missatge.',
+        openaiApiKey: 'Clau API d\'OpenAI',
+        apiKey: 'Clau API',
+        openaiApiKeyPlaceholder: 'sk-xxxxx...',
+        saveCredentials: 'Desa',
+        credentialsSaved: 'Clau API desada correctament',
+        apiKeyRequired: 'Si us plau, introdueix la teva clau API d\'OpenAI',
+        apiKeyConfigured: 'Clau API configurada',
+        apiKeyNotConfigured: 'Clau API no configurada',
+        apiKeyCredentials: 'Configuració de Clau API',
+        apiKeyCredentialsDescription: 'Introdueix la teva clau API d\'OpenAI per habilitar la transcripció de veu. La teva clau s\'emmagatzema de forma segura i només s\'utilitza per a crides a l\'API de Whisper.',
+        getApiKey: 'Obtenir Clau API',
+        whisperHint: 'La transcripció de veu utilitza l\'API d\'OpenAI Whisper. L\'ús es factura al teu compte d\'OpenAI.',
     },
 
     settingsAccount: {
@@ -933,17 +917,17 @@ export const ca: TranslationStructure = {
     },
 
     voiceAssistant: {
-        // Voice assistant status bar
+        // Voice transcription status
         status: {
-            connecting: 'Connectant...',
-            muted: 'Silenciat',
-            active: 'Actiu',
+            idle: 'Veu',
+            recording: 'Gravant...',
+            transcribing: 'Transcrivint...',
             error: 'Error',
-            default: 'Veu',
         },
-        mute: 'Silenciar',
-        unmute: 'Activar so',
-        end: 'Acabar',
+        cancel: 'Cancel·lar',
+        tapToRecord: 'Toca el micròfon per gravar',
+        releaseToTranscribe: 'Deixa anar per transcriure',
+        apiKeyRequired: 'Es requereix clau API d\'OpenAI. Ves a Configuració > Veu per configurar.',
     }
 } as const;
 

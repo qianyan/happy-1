@@ -556,46 +556,30 @@ export const en = {
     settingsVoice: {
         // Voice settings screen
         languageTitle: 'Language',
-        languageDescription: 'Choose your preferred language for voice assistant interactions. This setting syncs across all your devices.',
+        languageDescription: 'Choose your preferred language for voice transcription. This setting syncs across all your devices.',
         preferredLanguage: 'Preferred Language',
-        preferredLanguageSubtitle: 'Language used for voice assistant responses',
+        preferredLanguageSubtitle: 'Language used for voice transcription',
         language: {
             searchPlaceholder: 'Search languages...',
             title: 'Languages',
             footer: ({ count }: { count: number }) => `${count} ${plural({ count, singular: 'language', plural: 'languages' })} available`,
             autoDetect: 'Auto-detect',
         },
-        // ElevenLabs configuration
-        elevenLabsTitle: 'ElevenLabs Configuration',
-        elevenLabsDescription: 'Configure your ElevenLabs voice agent. Use the default production agent or connect your own.',
-        useCustomAgent: 'Use Custom Agent',
-        useCustomAgentSubtitle: 'Connect your own ElevenLabs agent instead of the default',
-        agentId: 'Agent ID',
-        agentIdPlaceholder: 'agent_xxxxx',
-        agentIdSubtitle: 'Your ElevenLabs agent ID',
+        // OpenAI configuration
+        openaiTitle: 'Voice Transcription',
+        openaiDescription: 'Use OpenAI Whisper to transcribe your voice to text. Tap the microphone button and speak to add text to your message.',
+        openaiApiKey: 'OpenAI API Key',
         apiKey: 'API Key',
-        apiKeyPlaceholder: 'sk_xxxxx',
-        apiKeySubtitle: 'Your ElevenLabs API key',
-        saveCredentials: 'Save Credentials',
-        credentialsSaved: 'ElevenLabs credentials saved',
-        credentialsRequired: 'Both Agent ID and API Key are required',
-        currentAgentId: 'Current Agent ID',
-        usingDefaultAgent: 'Using default production agent',
-        usingCustomAgent: 'Using custom agent',
-        // Custom agent credentials section
-        customAgentCredentials: 'Custom Agent Credentials',
-        customAgentCredentialsDescription: 'Enter your ElevenLabs API key first, then find or create your agent. Required permissions: "ElevenLabs Agents" (Write) and "Text to Speech" (Access).',
+        openaiApiKeyPlaceholder: 'sk-xxxxx...',
+        saveCredentials: 'Save',
+        credentialsSaved: 'API key saved successfully',
+        apiKeyRequired: 'Please enter your OpenAI API key',
+        apiKeyConfigured: 'API key configured',
+        apiKeyNotConfigured: 'API key not configured',
+        apiKeyCredentials: 'API Key Configuration',
+        apiKeyCredentialsDescription: 'Enter your OpenAI API key to enable voice transcription. Your key is stored securely and only used for Whisper API calls.',
         getApiKey: 'Get API Key',
-        apiKeyRequired: 'Please enter your API key first',
-        agentIdRequired: 'Please enter the Agent ID',
-        findAgent: 'Find Agent',
-        createOrUpdateAgent: 'Create/Update',
-        agentFound: 'Found "Happy Coding Assistant" agent and filled in the ID',
-        agentNotFound: 'No "Happy Coding Assistant" agent found',
-        agentCreated: 'New "Happy Coding Assistant" agent created',
-        agentUpdated: 'Existing "Happy Coding Assistant" agent updated with latest configuration',
-        agentCreateFailed: 'Failed to create agent',
-        agentButtonsHint: '"Find Agent" searches for an existing "Happy Coding Assistant" agent. "Create/Update" creates a new agent or updates the existing one with default configuration.',
+        whisperHint: 'Voice transcription uses OpenAI Whisper API. Usage is billed to your OpenAI account.',
     },
 
     settingsAccount: {
@@ -934,17 +918,17 @@ export const en = {
     },
 
     voiceAssistant: {
-        // Voice assistant status bar
+        // Voice transcription status
         status: {
-            connecting: 'Connecting...',
-            muted: 'Muted',
-            active: 'Active',
+            idle: 'Voice',
+            recording: 'Recording...',
+            transcribing: 'Transcribing...',
             error: 'Error',
-            default: 'Voice',
         },
-        mute: 'Mute',
-        unmute: 'Unmute',
-        end: 'End',
+        cancel: 'Cancel',
+        tapToRecord: 'Tap microphone to record',
+        releaseToTranscribe: 'Release to transcribe',
+        apiKeyRequired: 'OpenAI API key required. Go to Settings > Voice to configure.',
     }
 } as const;
 

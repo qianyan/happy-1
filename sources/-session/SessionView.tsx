@@ -6,15 +6,22 @@ import { ChatHeaderView } from '@/components/ChatHeaderView';
 import { ChatList } from '@/components/ChatList';
 import { Deferred } from '@/components/Deferred';
 import { EmptyMessages } from '@/components/EmptyMessages';
-import { VoiceAssistantStatusBar } from '@/components/VoiceAssistantStatusBar';
+import { RecordingStatusBar } from '@/components/RecordingStatusBar';
 import { useDraft } from '@/hooks/useDraft';
 import { useImageAttachments } from '@/hooks/useImageAttachments';
 import { Modal } from '@/modal';
-import { voiceHooks } from '@/realtime/hooks/voiceHooks';
-import { startRealtimeSession, stopRealtimeSession, updateCurrentSessionId } from '@/realtime/RealtimeSession';
+import {
+    startRecording,
+    stopRecording,
+    isRecording,
+    onStatusChange,
+    setTranscriptionCallback,
+    setErrorCallback,
+    TranscriptionStatus
+} from '@/services/whisperTranscription';
 import { gitStatusSync } from '@/sync/gitStatusSync';
 import { sessionAbort, sessionSwitch } from '@/sync/ops';
-import { storage, useIsDataReady, useLocalSetting, useRealtimeStatus, useSessionMessages, useSessionUsage, useSetting } from '@/sync/storage';
+import { storage, useIsDataReady, useLocalSetting, useSessionMessages, useSessionUsage, useSetting } from '@/sync/storage';
 import { useSession } from '@/sync/storage';
 import { Session } from '@/sync/storageTypes';
 import { sync } from '@/sync/sync';
@@ -154,7 +161,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     const isTablet = useIsTablet();
     const headerHeight = useHeaderHeight();
     const [message, setMessage] = React.useState('');
-    const realtimeStatus = useRealtimeStatus();
+    const [transcriptionStatus, setTranscriptionStatus] = React.useState<TranscriptionStatus>('idle');
     const { messages, isLoaded } = useSessionMessages(sessionId);
     const acknowledgedCliVersions = useLocalSetting('acknowledgedCliVersions');
 
@@ -230,51 +237,68 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
         },
     }), []);
 
+    // Set up transcription callbacks
+    React.useEffect(() => {
+        // Subscribe to status changes
+        const unsubscribe = onStatusChange(setTranscriptionStatus);
 
-    // Handle microphone button press - memoized to prevent button flashing
+        // Set transcription callback to append text to message
+        setTranscriptionCallback((text) => {
+            setMessage(prev => {
+                // If there's existing text, add a space before the transcribed text
+                if (prev.trim()) {
+                    return prev.trim() + ' ' + text;
+                }
+                return text;
+            });
+            tracking?.capture('voice_transcription_completed');
+        });
+
+        // Set error callback
+        setErrorCallback((error) => {
+            Modal.alert(t('common.error'), error);
+            tracking?.capture('voice_transcription_error', { error });
+        });
+
+        return () => {
+            unsubscribe();
+            setTranscriptionCallback(null);
+            setErrorCallback(null);
+        };
+    }, []);
+
+    // Handle microphone button press - toggle recording
     const handleMicrophonePress = React.useCallback(async () => {
-        if (realtimeStatus === 'connecting') {
-            return; // Prevent actions during transitions
+        if (transcriptionStatus === 'transcribing') {
+            return; // Prevent actions during transcription
         }
-        if (realtimeStatus === 'disconnected' || realtimeStatus === 'error') {
-            try {
-                const initialPrompt = voiceHooks.onVoiceStarted(sessionId);
-                await startRealtimeSession(sessionId, initialPrompt);
-                tracking?.capture('voice_session_started', { sessionId });
-            } catch (error) {
-                console.error('Failed to start realtime session:', error);
-                Modal.alert(t('common.error'), t('errors.voiceSessionFailed'));
-                tracking?.capture('voice_session_error', { error: error instanceof Error ? error.message : 'Unknown error' });
+        if (isRecording()) {
+            // Stop recording and start transcription
+            stopRecording();
+            tracking?.capture('voice_recording_stopped');
+        } else {
+            // Start recording
+            const started = await startRecording();
+            if (started) {
+                tracking?.capture('voice_recording_started');
             }
-        } else if (realtimeStatus === 'connected') {
-            await stopRealtimeSession();
-            tracking?.capture('voice_session_stopped');
-
-            // Notify voice assistant about voice session stop
-            voiceHooks.onVoiceStopped();
         }
-    }, [realtimeStatus, sessionId]);
+    }, [transcriptionStatus]);
 
-    // Memoize mic button state to prevent flashing during chat transitions
+    // Memoize mic button state to prevent flashing during transitions
     const micButtonState = useMemo(() => ({
         onMicPress: handleMicrophonePress,
-        isMicActive: realtimeStatus === 'connected' || realtimeStatus === 'connecting'
-    }), [handleMicrophonePress, realtimeStatus]);
+        micStatus: transcriptionStatus === 'error' ? 'idle' : transcriptionStatus
+    }), [handleMicrophonePress, transcriptionStatus]);
 
     // Trigger session visibility and initialize git status sync
     React.useLayoutEffect(() => {
-
         // Trigger session sync
         sync.onSessionVisible(sessionId);
 
-        // Update realtime session ID if voice is active to ensure messages go to current session
-        if (realtimeStatus === 'connected') {
-            updateCurrentSessionId(sessionId);
-        }
-
         // Initialize git status sync for this session
         gitStatusSync.getSync(sessionId);
-    }, [sessionId, realtimeStatus]);
+    }, [sessionId]);
 
     let content = (
         <>
@@ -365,7 +389,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
             onSend={handleSend}
             isSending={isSending}
             onMicPress={micButtonState.onMicPress}
-            isMicActive={micButtonState.isMicActive}
+            micStatus={micButtonState.micStatus}
             onAbort={() => sessionAbort(sessionId)}
             showAbortButton={sessionStatus.state === 'thinking' || sessionStatus.state === 'waiting'}
             onSwitchToRemote={handleSwitchToRemote}
@@ -399,8 +423,8 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
 
     return (
         <>
-            {/* Voice Assistant Status Bar - positioned as overlay at top */}
-            {!isTablet && !(isLandscape && deviceType === 'phone') && realtimeStatus !== 'disconnected' && (
+            {/* Recording Status Bar - positioned as overlay at top */}
+            {!isTablet && !(isLandscape && deviceType === 'phone') && transcriptionStatus !== 'idle' && (
                 <View style={{
                     position: 'absolute',
                     top: 0, // Position at top since header is handled by parent
@@ -408,7 +432,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
                     right: 0,
                     zIndex: 999 // Below header but above content
                 }}>
-                    <VoiceAssistantStatusBar variant="full" />
+                    <RecordingStatusBar status={transcriptionStatus} />
                 </View>
             )}
 
@@ -418,7 +442,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
                     onPress={handleDismissCliWarning}
                     style={{
                         position: 'absolute',
-                        top: safeArea.top + headerHeight + ((!isTablet && realtimeStatus !== 'disconnected') ? 48 : 0) + 8, // Position below header and voice bar if present
+                        top: safeArea.top + headerHeight + ((!isTablet && transcriptionStatus !== 'idle') ? 48 : 0) + 8, // Position below header and recording bar if present
                         alignSelf: 'center',
                         backgroundColor: '#FFF3CD',
                         borderRadius: 100, // Fully rounded pill

@@ -114,9 +114,7 @@ describe('settings', () => {
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
-                elevenLabsUseCustomAgent: false,
-                elevenLabsAgentId: null,
-                elevenLabsApiKey: null,
+                openaiApiKey: null,
             };
             const delta: Partial<Settings> = {
                 viewInline: true
@@ -150,9 +148,7 @@ describe('settings', () => {
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
-                elevenLabsUseCustomAgent: false,
-                elevenLabsAgentId: null,
-                elevenLabsApiKey: null,
+                openaiApiKey: null,
             };
             const delta: Partial<Settings> = {};
             expect(applySettings(currentSettings, delta)).toEqual({
@@ -184,9 +180,7 @@ describe('settings', () => {
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
-                elevenLabsUseCustomAgent: false,
-                elevenLabsAgentId: null,
-                elevenLabsApiKey: null,
+                openaiApiKey: null,
             };
             const delta: Partial<Settings> = {
                 viewInline: false
@@ -220,9 +214,7 @@ describe('settings', () => {
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
-                elevenLabsUseCustomAgent: false,
-                elevenLabsAgentId: null,
-                elevenLabsApiKey: null,
+                openaiApiKey: null,
             };
             expect(applySettings(currentSettings, {})).toEqual({
                 ...settingsDefaults,
@@ -268,9 +260,7 @@ describe('settings', () => {
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
-                elevenLabsUseCustomAgent: false,
-                elevenLabsAgentId: null,
-                elevenLabsApiKey: null,
+                openaiApiKey: null,
             };
             const delta: any = {
                 viewInline: false,
@@ -325,9 +315,7 @@ describe('settings', () => {
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
-                elevenLabsUseCustomAgent: false,
-                elevenLabsAgentId: null,
-                elevenLabsApiKey: null,
+                openaiApiKey: null,
             });
         });
 

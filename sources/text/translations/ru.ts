@@ -566,46 +566,30 @@ export const ru: TranslationStructure = {
     settingsVoice: {
         // Voice settings screen
         languageTitle: 'Язык',
-        languageDescription: 'Выберите предпочтительный язык для взаимодействия с голосовым помощником. Эта настройка синхронизируется на всех ваших устройствах.',
-        preferredLanguage: 'Предпочтительный язык',
-        preferredLanguageSubtitle: 'Язык, используемый для ответов голосового помощника',
+        languageDescription: 'Выберите предпочтительный язык для транскрипции голоса. Эта настройка синхронизируется на всех ваших устройствах.',
+        preferredLanguage: 'Предпочтительный Язык',
+        preferredLanguageSubtitle: 'Язык, используемый для транскрипции голоса',
         language: {
             searchPlaceholder: 'Поиск языков...',
             title: 'Языки',
             footer: ({ count }: { count: number }) => `Доступно ${count} ${plural({ count, one: 'язык', few: 'языка', many: 'языков' })}`,
             autoDetect: 'Автоопределение',
         },
-        // ElevenLabs configuration
-        elevenLabsTitle: 'Настройка ElevenLabs',
-        elevenLabsDescription: 'Настройте своего голосового агента ElevenLabs. Используйте стандартный рабочий агент или подключите свой собственный.',
-        useCustomAgent: 'Использовать Пользовательский Агент',
-        useCustomAgentSubtitle: 'Подключите своего собственного агента ElevenLabs вместо стандартного',
-        agentId: 'Agent ID',
-        agentIdPlaceholder: 'agent_xxxxx',
-        agentIdSubtitle: 'Ваш ID агента ElevenLabs',
-        apiKey: 'API Key',
-        apiKeyPlaceholder: 'sk_xxxxx',
-        apiKeySubtitle: 'Ваш ключ API ElevenLabs',
-        saveCredentials: 'Сохранить Учётные Данные',
-        credentialsSaved: 'Учётные данные ElevenLabs сохранены',
-        credentialsRequired: 'Требуется указать и Agent ID, и API Key',
-        currentAgentId: 'Текущий Agent ID',
-        usingDefaultAgent: 'Используется стандартный рабочий агент',
-        usingCustomAgent: 'Используется пользовательский агент',
-        // Custom agent credentials section
-        customAgentCredentials: 'Учётные Данные Пользовательского Агента',
-        customAgentCredentialsDescription: 'Сначала введите свой API key ElevenLabs, затем найдите или создайте своего агента. Необходимые разрешения: "ElevenLabs Agents" (Write) и "Text to Speech" (Access).',
-        getApiKey: 'Получить API Key',
-        apiKeyRequired: 'Пожалуйста, сначала введите свой API key',
-        agentIdRequired: 'Пожалуйста, введите Agent ID',
-        findAgent: 'Найти Агента',
-        createOrUpdateAgent: 'Создать/Обновить',
-        agentFound: 'Найден агент "Happy Coding Assistant" и заполнен ID',
-        agentNotFound: 'Агент "Happy Coding Assistant" не найден',
-        agentCreated: 'Создан новый агент "Happy Coding Assistant"',
-        agentUpdated: 'Существующий агент "Happy Coding Assistant" обновлён последней конфигурацией',
-        agentCreateFailed: 'Не удалось создать агента',
-        agentButtonsHint: '"Найти Агента" ищет существующего агента "Happy Coding Assistant". "Создать/Обновить" создаёт нового агента или обновляет существующего стандартной конфигурацией.',
+        // OpenAI configuration
+        openaiTitle: 'Транскрипция Голоса',
+        openaiDescription: 'Используйте OpenAI Whisper для транскрипции вашего голоса в текст. Нажмите кнопку микрофона и говорите, чтобы добавить текст к вашему сообщению.',
+        openaiApiKey: 'API ключ OpenAI',
+        apiKey: 'API Ключ',
+        openaiApiKeyPlaceholder: 'sk-xxxxx...',
+        saveCredentials: 'Сохранить',
+        credentialsSaved: 'API ключ успешно сохранён',
+        apiKeyRequired: 'Пожалуйста, введите ваш API ключ OpenAI',
+        apiKeyConfigured: 'API ключ настроен',
+        apiKeyNotConfigured: 'API ключ не настроен',
+        apiKeyCredentials: 'Настройка API Ключа',
+        apiKeyCredentialsDescription: 'Введите ваш API ключ OpenAI для включения транскрипции голоса. Ваш ключ хранится безопасно и используется только для вызовов API Whisper.',
+        getApiKey: 'Получить API Ключ',
+        whisperHint: 'Транскрипция голоса использует API OpenAI Whisper. Использование тарифицируется на вашем аккаунте OpenAI.',
     },
 
     settingsAccount: {
@@ -956,17 +940,17 @@ export const ru: TranslationStructure = {
     },
 
     voiceAssistant: {
-        // Voice assistant status bar
+        // Voice transcription status
         status: {
-            connecting: 'Подключение...',
-            muted: 'Без звука',
-            active: 'Активен',
+            idle: 'Голос',
+            recording: 'Запись...',
+            transcribing: 'Транскрипция...',
             error: 'Ошибка',
-            default: 'Голос',
         },
-        mute: 'Выкл. звук',
-        unmute: 'Вкл. звук',
-        end: 'Завершить',
+        cancel: 'Отмена',
+        tapToRecord: 'Нажмите микрофон для записи',
+        releaseToTranscribe: 'Отпустите для транскрипции',
+        apiKeyRequired: 'Требуется API ключ OpenAI. Перейдите в Настройки > Голос для настройки.',
     }
 } as const;
 

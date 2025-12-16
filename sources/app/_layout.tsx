@@ -19,7 +19,6 @@ import { PostHogProvider } from 'posthog-react-native';
 import { tracking } from '@/track/tracking';
 import { syncRestore } from '@/sync/sync';
 import { useTrackScreens } from '@/track/useTrackScreens';
-import { RealtimeProvider } from '@/realtime/RealtimeProvider';
 import { FaviconPermissionIndicator } from '@/components/web/FaviconPermissionIndicator';
 import { CommandPaletteProvider } from '@/components/CommandPalette/CommandPaletteProvider';
 import { StatusBarProvider } from '@/components/StatusBarProvider';
@@ -216,11 +215,9 @@ export default function RootLayout() {
                             <ModalProvider>
                                 <ToastProvider>
                                     <CommandPaletteProvider>
-                                        <RealtimeProvider>
-                                            <HorizontalSafeAreaWrapper>
-                                                <SidebarNavigator />
-                                            </HorizontalSafeAreaWrapper>
-                                        </RealtimeProvider>
+                                        <HorizontalSafeAreaWrapper>
+                                            <SidebarNavigator />
+                                        </HorizontalSafeAreaWrapper>
                                     </CommandPaletteProvider>
                                 </ToastProvider>
                             </ModalProvider>

@@ -1,12 +1,10 @@
 import * as React from 'react';
 import { View, ActivityIndicator, TextInput } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
-import { useRealtimeStatus } from '@/sync/storage';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { useIsTablet } from '@/utils/responsive';
 import { EmptySessionsTablet } from './EmptySessionsTablet';
 import { SessionsList } from './SessionsList';
-import { VoiceAssistantStatusBar } from './VoiceAssistantStatusBar';
 import { SessionsListWrapper } from './SessionsListWrapper';
 import { FABWide } from './FABWide';
 import { Typography } from '@/constants/Typography';
@@ -82,7 +80,6 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     const { theme } = useUnistyles();
     const sessionListViewData = useVisibleSessionListViewData();
     const isTablet = useIsTablet();
-    const realtimeStatus = useRealtimeStatus();
     const router = useRouter();
     const [searchQuery, setSearchQuery] = React.useState('');
 
@@ -146,9 +143,6 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     // Phone mode - show sessions list directly (no tabs)
     return (
         <>
-            {realtimeStatus !== 'disconnected' && (
-                <VoiceAssistantStatusBar variant="full" />
-            )}
             <View style={styles.phoneContainer}>
                 <SessionsListWrapper />
             </View>

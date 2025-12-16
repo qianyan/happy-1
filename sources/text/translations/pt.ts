@@ -556,46 +556,30 @@ export const pt: TranslationStructure = {
     settingsVoice: {
         // Voice settings screen
         languageTitle: 'Idioma',
-        languageDescription: 'Escolha seu idioma preferido para interações com o assistente de voz. Esta configuração sincroniza em todos os seus dispositivos.',
-        preferredLanguage: 'Idioma preferido',
-        preferredLanguageSubtitle: 'Idioma usado para respostas do assistente de voz',
+        languageDescription: 'Escolha seu idioma preferido para transcrição de voz. Esta configuração sincroniza em todos os seus dispositivos.',
+        preferredLanguage: 'Idioma Preferido',
+        preferredLanguageSubtitle: 'Idioma usado para transcrição de voz',
         language: {
             searchPlaceholder: 'Buscar idiomas...',
             title: 'Idiomas',
             footer: ({ count }: { count: number }) => `${count} ${plural({ count, singular: 'idioma', plural: 'idiomas' })} disponíveis`,
             autoDetect: 'Detectar automaticamente',
         },
-        // ElevenLabs configuration
-        elevenLabsTitle: 'Configuração do ElevenLabs',
-        elevenLabsDescription: 'Configure seu agente de voz do ElevenLabs. Use o agente de produção padrão ou conecte o seu próprio.',
-        useCustomAgent: 'Usar Agente Personalizado',
-        useCustomAgentSubtitle: 'Conecte seu próprio agente do ElevenLabs em vez do padrão',
-        agentId: 'Agent ID',
-        agentIdPlaceholder: 'agent_xxxxx',
-        agentIdSubtitle: 'Seu ID de agente do ElevenLabs',
-        apiKey: 'API Key',
-        apiKeyPlaceholder: 'sk_xxxxx',
-        apiKeySubtitle: 'Sua chave API do ElevenLabs',
-        saveCredentials: 'Salvar Credenciais',
-        credentialsSaved: 'Credenciais do ElevenLabs salvas',
-        credentialsRequired: 'Tanto o Agent ID quanto o API Key são obrigatórios',
-        currentAgentId: 'Agent ID Atual',
-        usingDefaultAgent: 'Usando o agente de produção padrão',
-        usingCustomAgent: 'Usando agente personalizado',
-        // Custom agent credentials section
-        customAgentCredentials: 'Credenciais de Agente Personalizado',
-        customAgentCredentialsDescription: 'Insira sua API key do ElevenLabs primeiro, depois encontre ou crie seu agente. Permissões necessárias: "ElevenLabs Agents" (Write) e "Text to Speech" (Access).',
-        getApiKey: 'Obter API Key',
-        apiKeyRequired: 'Por favor, insira sua API key primeiro',
-        agentIdRequired: 'Por favor, insira o Agent ID',
-        findAgent: 'Encontrar Agente',
-        createOrUpdateAgent: 'Criar/Atualizar',
-        agentFound: 'Encontrado agente "Happy Coding Assistant" e preenchido o ID',
-        agentNotFound: 'Nenhum agente "Happy Coding Assistant" encontrado',
-        agentCreated: 'Novo agente "Happy Coding Assistant" criado',
-        agentUpdated: 'Agente "Happy Coding Assistant" existente atualizado com a configuração mais recente',
-        agentCreateFailed: 'Falha ao criar agente',
-        agentButtonsHint: '"Encontrar Agente" pesquisa por um agente "Happy Coding Assistant" existente. "Criar/Atualizar" cria um novo agente ou atualiza o existente com a configuração padrão.',
+        // OpenAI configuration
+        openaiTitle: 'Transcrição de Voz',
+        openaiDescription: 'Use o OpenAI Whisper para transcrever sua voz em texto. Toque no botão do microfone e fale para adicionar texto à sua mensagem.',
+        openaiApiKey: 'Chave API do OpenAI',
+        apiKey: 'Chave API',
+        openaiApiKeyPlaceholder: 'sk-xxxxx...',
+        saveCredentials: 'Salvar',
+        credentialsSaved: 'Chave API salva com sucesso',
+        apiKeyRequired: 'Por favor, insira sua chave API do OpenAI',
+        apiKeyConfigured: 'Chave API configurada',
+        apiKeyNotConfigured: 'Chave API não configurada',
+        apiKeyCredentials: 'Configuração da Chave API',
+        apiKeyCredentialsDescription: 'Insira sua chave API do OpenAI para habilitar a transcrição de voz. Sua chave é armazenada com segurança e usada apenas para chamadas da API Whisper.',
+        getApiKey: 'Obter Chave API',
+        whisperHint: 'A transcrição de voz usa a API OpenAI Whisper. O uso é cobrado em sua conta OpenAI.',
     },
 
     settingsAccount: {
@@ -933,17 +917,17 @@ export const pt: TranslationStructure = {
     },
 
     voiceAssistant: {
-        // Voice assistant status bar
+        // Voice transcription status
         status: {
-            connecting: 'Conectando...',
-            muted: 'Mudo',
-            active: 'Ativo',
+            idle: 'Voz',
+            recording: 'Gravando...',
+            transcribing: 'Transcrevendo...',
             error: 'Erro',
-            default: 'Voz',
         },
-        mute: 'Silenciar',
-        unmute: 'Ativar som',
-        end: 'Encerrar',
+        cancel: 'Cancelar',
+        tapToRecord: 'Toque no microfone para gravar',
+        releaseToTranscribe: 'Solte para transcrever',
+        apiKeyRequired: 'Chave API do OpenAI necessária. Vá para Configurações > Voz para configurar.',
     }
 } as const;
 

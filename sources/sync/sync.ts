@@ -27,7 +27,6 @@ import { config } from '@/config';
 import { log } from '@/log';
 import { gitStatusSync } from './gitStatusSync';
 import { projectManager } from './projectManager';
-import { voiceHooks } from '@/realtime/hooks/voiceHooks';
 import { Message } from './typesMessage';
 import { EncryptionCache } from './encryption/encryptionCache';
 import { systemPrompt } from './prompt/systemPrompt';
@@ -200,12 +199,6 @@ class Sync {
 
         // Also invalidate git status sync for this session
         gitStatusSync.getSync(sessionId).invalidate();
-
-        // Notify voice assistant about session visibility
-        const session = storage.getState().sessions[sessionId];
-        if (session) {
-            voiceHooks.onSessionFocus(sessionId, session.metadata || undefined);
-        }
     }
 
 
@@ -1866,14 +1859,6 @@ class Sync {
                 // Invalidate git status when agent state changes (files may have been modified)
                 if (updateData.body.agentState) {
                     gitStatusSync.invalidate(updateData.body.id);
-
-                    // Check for new permission requests and notify voice assistant
-                    if (agentState?.requests && Object.keys(agentState.requests).length > 0) {
-                        const requestIds = Object.keys(agentState.requests);
-                        const firstRequest = agentState.requests[requestIds[0]];
-                        const toolName = firstRequest?.tool;
-                        voiceHooks.onPermissionRequested(updateData.body.id, requestIds[0], toolName, firstRequest?.arguments);
-                    }
                 }
             }
         } else if (updateData.body.t === 'update-account') {
@@ -2195,44 +2180,13 @@ class Sync {
     //
 
     private applyMessages = (sessionId: string, messages: NormalizedMessage[]) => {
-        const result = storage.getState().applyMessages(sessionId, messages);
-        let m: Message[] = [];
-        for (let messageId of result.changed) {
-            const message = storage.getState().sessionMessages[sessionId].messagesMap[messageId];
-            if (message) {
-                m.push(message);
-            }
-        }
-        if (m.length > 0) {
-            voiceHooks.onMessages(sessionId, m);
-        }
-        if (result.hasReadyEvent) {
-            voiceHooks.onReady(sessionId);
-        }
+        storage.getState().applyMessages(sessionId, messages);
     }
 
     private applySessions = (sessions: (Omit<Session, "presence"> & {
         presence?: "online" | number;
     })[]) => {
-        const active = storage.getState().getActiveSessions();
         storage.getState().applySessions(sessions);
-        const newActive = storage.getState().getActiveSessions();
-        this.applySessionDiff(active, newActive);
-    }
-
-    private applySessionDiff = (active: Session[], newActive: Session[]) => {
-        let wasActive = new Set(active.map(s => s.id));
-        let isActive = new Set(newActive.map(s => s.id));
-        for (let s of active) {
-            if (!isActive.has(s.id)) {
-                voiceHooks.onSessionOffline(s.id, s.metadata ?? undefined);
-            }
-        }
-        for (let s of newActive) {
-            if (!wasActive.has(s.id)) {
-                voiceHooks.onSessionOnline(s.id, s.metadata ?? undefined);
-            }
-        }
     }
 
     /**

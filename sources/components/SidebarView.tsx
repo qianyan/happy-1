@@ -7,8 +7,6 @@ import { useHeaderHeight } from '@/utils/responsive';
 import { Typography } from '@/constants/Typography';
 import { StatusDot } from './StatusDot';
 import { FABWide } from './FABWide';
-import { VoiceAssistantStatusBar } from './VoiceAssistantStatusBar';
-import { useRealtimeStatus } from '@/sync/storage';
 import { MainView } from './MainView';
 import { Image } from 'expo-image';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
@@ -95,7 +93,6 @@ export const SidebarView = React.memo(() => {
     const router = useRouter();
     const headerHeight = useHeaderHeight();
     const socketStatus = useSocketStatus();
-    const realtimeStatus = useRealtimeStatus();
 
     // Get connection status styling (matching sessionUtils.ts pattern)
     const getConnectionStatus = () => {
@@ -198,9 +195,6 @@ export const SidebarView = React.memo(() => {
                         )}
                     </View>
                 </View>
-                {realtimeStatus !== 'disconnected' && (
-                    <VoiceAssistantStatusBar variant="sidebar" />
-                )}
                 <MainView variant="sidebar" />
             </View>
             <FABWide onPress={handleNewSession} />

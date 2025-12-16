@@ -33,7 +33,7 @@ interface AgentInputProps {
     onSend: () => void;
     sendIcon?: React.ReactNode;
     onMicPress?: () => void;
-    isMicActive?: boolean;
+    micStatus?: 'idle' | 'recording' | 'transcribing';
     permissionMode?: PermissionMode;
     onPermissionModeChange?: (mode: PermissionMode) => void;
     modelMode?: ModelMode;
@@ -1071,7 +1071,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                         <View
                             style={[
                                 styles.sendButton,
-                                (hasText || props.isSending || (props.onMicPress && !props.isMicActive))
+                                (hasText || props.isSending || props.micStatus === 'recording' || (props.onMicPress && props.micStatus === 'idle'))
                                     ? styles.sendButtonActive
                                     : styles.sendButtonInactive
                             ]}
@@ -1093,11 +1093,22 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                         props.onMicPress?.();
                                     }
                                 }}
-                                disabled={props.isSendDisabled || props.isSending || (!hasText && !props.onMicPress)}
+                                disabled={props.isSendDisabled || props.isSending || props.micStatus === 'transcribing' || (!hasText && !props.onMicPress)}
                             >
                                 {props.isSending ? (
                                     <ActivityIndicator
                                         size="small"
+                                        color={theme.colors.button.primary.tint}
+                                    />
+                                ) : props.micStatus === 'transcribing' ? (
+                                    <ActivityIndicator
+                                        size="small"
+                                        color={theme.colors.button.primary.tint}
+                                    />
+                                ) : props.micStatus === 'recording' ? (
+                                    <Ionicons
+                                        name="stop"
+                                        size={18}
                                         color={theme.colors.button.primary.tint}
                                     />
                                 ) : hasText ? (
@@ -1110,7 +1121,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                             { marginTop: Platform.OS === 'web' ? 2 : 0 }
                                         ]}
                                     />
-                                ) : props.onMicPress && !props.isMicActive ? (
+                                ) : props.onMicPress ? (
                                     <Image
                                         source={require('@/assets/images/icon-voice-white.png')}
                                         style={{

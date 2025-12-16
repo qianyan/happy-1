@@ -558,46 +558,30 @@ export const zhHans: TranslationStructure = {
     settingsVoice: {
         // Voice settings screen
         languageTitle: '语言',
-        languageDescription: '选择您希望语音助手交互使用的语言。此设置将在您的所有设备间同步。',
+        languageDescription: '选择您希望语音转录使用的语言。此设置将在您的所有设备间同步。',
         preferredLanguage: '首选语言',
-        preferredLanguageSubtitle: '语音助手响应使用的语言',
+        preferredLanguageSubtitle: '用于语音转录的语言',
         language: {
             searchPlaceholder: '搜索语言...',
             title: '语言',
             footer: ({ count }: { count: number }) => `${count} 种可用语言`,
             autoDetect: '自动检测',
         },
-        // ElevenLabs configuration
-        elevenLabsTitle: 'ElevenLabs 配置',
-        elevenLabsDescription: '配置您的 ElevenLabs 语音代理。使用默认生产代理或连接您自己的代理。',
-        useCustomAgent: '使用自定义代理',
-        useCustomAgentSubtitle: '连接您自己的 ElevenLabs 代理而不是默认代理',
-        agentId: 'Agent ID',
-        agentIdPlaceholder: 'agent_xxxxx',
-        agentIdSubtitle: '您的 ElevenLabs 代理 ID',
-        apiKey: 'API Key',
-        apiKeyPlaceholder: 'sk_xxxxx',
-        apiKeySubtitle: '您的 ElevenLabs API 密钥',
-        saveCredentials: '保存凭据',
-        credentialsSaved: 'ElevenLabs 凭据已保存',
-        credentialsRequired: 'Agent ID 和 API Key 都是必需的',
-        currentAgentId: '当前 Agent ID',
-        usingDefaultAgent: '使用默认生产代理',
-        usingCustomAgent: '使用自定义代理',
-        // Custom agent credentials section
-        customAgentCredentials: '自定义代理凭据',
-        customAgentCredentialsDescription: '首先输入您的 ElevenLabs API key，然后查找或创建您的代理。所需权限："ElevenLabs Agents"（Write）和 "Text to Speech"（Access）。',
-        getApiKey: '获取 API Key',
-        apiKeyRequired: '请先输入您的 API key',
-        agentIdRequired: '请输入 Agent ID',
-        findAgent: '查找代理',
-        createOrUpdateAgent: '创建/更新',
-        agentFound: '找到 "Happy Coding Assistant" 代理并填入 ID',
-        agentNotFound: '未找到 "Happy Coding Assistant" 代理',
-        agentCreated: '已创建新的 "Happy Coding Assistant" 代理',
-        agentUpdated: '现有 "Happy Coding Assistant" 代理已使用最新配置更新',
-        agentCreateFailed: '创建代理失败',
-        agentButtonsHint: '"查找代理" 搜索现有的 "Happy Coding Assistant" 代理。"创建/更新" 创建新代理或使用默认配置更新现有代理。',
+        // OpenAI configuration
+        openaiTitle: '语音转录',
+        openaiDescription: '使用 OpenAI Whisper 将您的语音转录为文本。点击麦克风按钮并说话，以将文本添加到您的消息中。',
+        openaiApiKey: 'OpenAI API 密钥',
+        apiKey: 'API 密钥',
+        openaiApiKeyPlaceholder: 'sk-xxxxx...',
+        saveCredentials: '保存',
+        credentialsSaved: 'API 密钥保存成功',
+        apiKeyRequired: '请输入您的 OpenAI API 密钥',
+        apiKeyConfigured: 'API 密钥已配置',
+        apiKeyNotConfigured: 'API 密钥未配置',
+        apiKeyCredentials: 'API 密钥配置',
+        apiKeyCredentialsDescription: '输入您的 OpenAI API 密钥以启用语音转录。您的密钥安全存储，仅用于 Whisper API 调用。',
+        getApiKey: '获取 API 密钥',
+        whisperHint: '语音转录使用 OpenAI Whisper API。使用费用将计入您的 OpenAI 账户。',
     },
 
     settingsAccount: {
@@ -935,16 +919,16 @@ export const zhHans: TranslationStructure = {
     },
 
     voiceAssistant: {
-        // Voice assistant status bar
+        // Voice transcription status
         status: {
-            connecting: '连接中...',
-            muted: '已静音',
-            active: '活跃',
+            idle: '语音',
+            recording: '录音中...',
+            transcribing: '转录中...',
             error: '错误',
-            default: '语音',
         },
-        mute: '静音',
-        unmute: '取消静音',
-        end: '结束',
+        cancel: '取消',
+        tapToRecord: '点击麦克风开始录音',
+        releaseToTranscribe: '松开以转录',
+        apiKeyRequired: '需要 OpenAI API 密钥。前往 设置 > 语音 进行配置。',
     }
 } as const;

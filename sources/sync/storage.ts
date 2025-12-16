@@ -16,7 +16,6 @@ import type { PermissionMode } from '@/components/PermissionModeSelector';
 import type { CustomerInfo } from './revenueCat/types';
 import React from "react";
 import { sync } from "./sync";
-import { getCurrentRealtimeSessionId, getVoiceSession } from '@/realtime/RealtimeSession';
 import { isMutableTool } from "@/components/tools/knownTools";
 import { projectManager } from "./projectManager";
 import { DecryptedArtifact } from "./artifactTypes";
@@ -82,8 +81,6 @@ interface StorageState {
     feedHasMore: boolean;
     feedLoaded: boolean;  // True after initial feed fetch
     friendsLoaded: boolean;  // True after initial friends fetch
-    realtimeStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
-    realtimeMicMuted: boolean;
     socketStatus: 'disconnected' | 'connecting' | 'connected' | 'error';
     socketLastConnectedAt: number | null;
     socketLastDisconnectedAt: number | null;
@@ -106,9 +103,6 @@ interface StorageState {
     applyGitStatus: (sessionId: string, status: GitStatus | null) => void;
     applyNativeUpdateStatus: (status: { available: boolean; updateUrl?: string } | null) => void;
     isMutableToolCall: (sessionId: string, callId: string) => boolean;
-    setRealtimeStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
-    setRealtimeMicMuted: (muted: boolean) => void;
-    toggleRealtimeMicMuted: () => void;
     setSocketStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => void;
     getActiveSessions: () => Session[];
     updateSessionDraft: (sessionId: string, draft: string | null) => void;
@@ -211,8 +205,6 @@ export const storage = create<StorageState>()((set, get) => {
         sessionListViewData: null,
         sessionMessages: {},
         sessionGitStatus: {},
-        realtimeStatus: 'disconnected',
-        realtimeMicMuted: false,
         socketStatus: 'disconnected',
         socketLastConnectedAt: null,
         socketLastDisconnectedAt: null,
@@ -322,36 +314,6 @@ export const storage = create<StorageState>()((set, get) => {
                 const existingSessionMessages = updatedSessionMessages[session.id];
                 if (existingSessionMessages && newSession.agentState &&
                     (!oldSession || newSession.agentStateVersion > (oldSession.agentStateVersion || 0))) {
-
-                    // Check for NEW permission requests before processing
-                    const currentRealtimeSessionId = getCurrentRealtimeSessionId();
-                    const voiceSession = getVoiceSession();
-
-                    // console.log('[REALTIME DEBUG] Permission check:', {
-                    //     currentRealtimeSessionId,
-                    //     sessionId: session.id,
-                    //     match: currentRealtimeSessionId === session.id,
-                    //     hasVoiceSession: !!voiceSession,
-                    //     oldRequests: Object.keys(oldSession?.agentState?.requests || {}),
-                    //     newRequests: Object.keys(newSession.agentState?.requests || {})
-                    // });
-
-                    if (currentRealtimeSessionId === session.id && voiceSession) {
-                        const oldRequests = oldSession?.agentState?.requests || {};
-                        const newRequests = newSession.agentState?.requests || {};
-
-                        // Find NEW permission requests only
-                        for (const [requestId, request] of Object.entries(newRequests)) {
-                            if (!oldRequests[requestId]) {
-                                // This is a NEW permission request
-                                const toolName = request.tool;
-                                // console.log('[REALTIME DEBUG] Sending permission notification for:', toolName);
-                                voiceSession.sendTextMessage(
-                                    `Claude is requesting permission to use the ${toolName} tool`
-                                );
-                            }
-                        }
-                    }
 
                     // Process new AgentState through reducer
                     const reducerResult = reducer(existingSessionMessages.reducerState, [], newSession.agentState);
@@ -632,20 +594,6 @@ export const storage = create<StorageState>()((set, get) => {
         applyNativeUpdateStatus: (status: { available: boolean; updateUrl?: string } | null) => set((state) => ({
             ...state,
             nativeUpdateStatus: status
-        })),
-        setRealtimeStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => set((state) => ({
-            ...state,
-            realtimeStatus: status,
-            // Reset mic muted state when disconnecting
-            realtimeMicMuted: status === 'disconnected' ? false : state.realtimeMicMuted
-        })),
-        setRealtimeMicMuted: (muted: boolean) => set((state) => ({
-            ...state,
-            realtimeMicMuted: muted
-        })),
-        toggleRealtimeMicMuted: () => set((state) => ({
-            ...state,
-            realtimeMicMuted: !state.realtimeMicMuted
         })),
         setSocketStatus: (status: 'disconnected' | 'connecting' | 'connected' | 'error') => set((state) => {
             const now = Date.now();
@@ -1179,14 +1127,6 @@ export function useArtifactsCount(): number {
 
 export function useEntitlement(id: KnownEntitlements): boolean {
     return storage(useShallow((state) => state.purchases.entitlements[id] ?? false));
-}
-
-export function useRealtimeStatus(): 'disconnected' | 'connecting' | 'connected' | 'error' {
-    return storage(useShallow((state) => state.realtimeStatus));
-}
-
-export function useRealtimeMicMuted(): boolean {
-    return storage(useShallow((state) => state.realtimeMicMuted));
 }
 
 export function useSocketStatus() {
