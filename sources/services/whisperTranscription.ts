@@ -233,20 +233,21 @@ export async function stopRecording(): Promise<void> {
 
     setStatus('transcribing');
 
+    const recorder = mediaRecorder;
     return new Promise((resolve) => {
-        mediaRecorder!.onstop = async () => {
+        recorder.onstop = async () => {
             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
             audioChunks = [];
 
             // Stop all tracks
-            mediaRecorder!.stream.getTracks().forEach(track => track.stop());
+            recorder.stream.getTracks().forEach(track => track.stop());
             mediaRecorder = null;
 
             await transcribeAudio(audioBlob);
             resolve();
         };
 
-        mediaRecorder.stop();
+        recorder.stop();
     });
 }
 
