@@ -1777,9 +1777,13 @@ class Sync {
                     // Update session
                     const session = storage.getState().sessions[updateData.body.sid];
                     if (session) {
+                        // Only update lastMessageAt if this is a real displayable message
+                        // (normalizeRawMessage returns null for meta messages, system messages, etc.)
                         this.applySessions([{
                             ...session,
                             updatedAt: updateData.createdAt,
+                            // Update lastMessageAt only for real messages to ensure proper sorting
+                            lastMessageAt: lastMessage ? decrypted.createdAt : session.lastMessageAt,
                             seq: updateData.seq
                         }])
                     } else {
