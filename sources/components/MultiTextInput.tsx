@@ -116,30 +116,32 @@ export const MultiTextInput = React.forwardRef<MultiTextInputHandle, MultiTextIn
     }, [onKeyPress]);
 
     const handleTextChange = React.useCallback((text: string) => {
-        // On native, if Enter was handled (e.g., for sending), strip any trailing newline
-        // that was inserted despite preventDefault() (which doesn't work on native TextInput)
-        let processedText = text;
+        // On native, if Enter was handled (e.g., for sending), the parent likely cleared
+        // the input. But the native TextInput doesn't know this and fires onChangeText
+        // with the OLD text + newline. We need to ignore this stale update entirely.
         if (enterHandledRef.current) {
             enterHandledRef.current = false;
-            // Strip trailing newline that was inserted by the native TextInput
-            if (processedText.endsWith('\n')) {
-                processedText = processedText.slice(0, -1);
-            }
+            // The text coming in is stale (old text + newline from before parent cleared it)
+            // Don't propagate this change - the parent has already set the correct value
+            // Just sync our internal selection to match the current (cleared) value
+            const currentLength = value.length;
+            selectionRef.current = { start: currentLength, end: currentLength };
+            return;
         }
 
         // When text changes, assume cursor moves to end
-        const selection = { start: processedText.length, end: processedText.length };
+        const selection = { start: text.length, end: text.length };
         selectionRef.current = selection;
 
-        onChangeText(processedText);
+        onChangeText(text);
 
         if (onStateChange) {
-            onStateChange({ text: processedText, selection });
+            onStateChange({ text, selection });
         }
         if (onSelectionChange) {
             onSelectionChange(selection);
         }
-    }, [onChangeText, onStateChange, onSelectionChange]);
+    }, [value, onChangeText, onStateChange, onSelectionChange]);
 
     const handleSelectionChange = React.useCallback((e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
         if (e.nativeEvent.selection) {
