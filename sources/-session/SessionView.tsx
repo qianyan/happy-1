@@ -196,6 +196,9 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     const [uploadingImageIds, setUploadingImageIds] = React.useState<Set<string>>(new Set());
     const [isSending, setIsSending] = React.useState(false);
 
+    // Ref to track current selection for cursor-aware transcription insertion
+    const selectionRef = React.useRef<{ start: number; end: number }>({ start: 0, end: 0 });
+
     // Handle dismissing CLI version warning
     const handleDismissCliWarning = React.useCallback(() => {
         if (machineId && cliVersion) {
@@ -242,14 +245,33 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
         // Subscribe to status changes
         const unsubscribe = onStatusChange(setTranscriptionStatus);
 
-        // Set transcription callback to append text to message
+        // Set transcription callback to insert text at cursor position
         setTranscriptionCallback((text) => {
             setMessage(prev => {
-                // If there's existing text, add a space before the transcribed text
-                if (prev.trim()) {
-                    return prev.trim() + ' ' + text;
+                const { start, end } = selectionRef.current;
+
+                // If text is empty, just return the transcribed text
+                if (!prev) {
+                    return text;
                 }
-                return text;
+
+                // Insert at cursor position
+                const before = prev.slice(0, start);
+                const after = prev.slice(end);
+
+                // Add space before if there's text before and it doesn't end with whitespace
+                const needsSpaceBefore = before.length > 0 && !/\s$/.test(before);
+                // Add space after if there's text after and it doesn't start with whitespace
+                const needsSpaceAfter = after.length > 0 && !/^\s/.test(after);
+
+                const insertText = (needsSpaceBefore ? ' ' : '') + text + (needsSpaceAfter ? ' ' : '');
+                const newText = before + insertText + after;
+
+                // Update selection ref to position cursor after inserted text
+                const newCursorPos = start + insertText.length;
+                selectionRef.current = { start: newCursorPos, end: newCursorPos };
+
+                return newText;
             });
             tracking?.capture('voice_transcription_completed');
         });
@@ -411,6 +433,8 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
                 contextSize: session.latestUsage.contextSize
             } : undefined}
             alwaysShowContextSize={alwaysShowContextSize}
+            // Selection tracking for cursor-aware transcription insertion
+            onSelectionChange={(selection) => { selectionRef.current = selection; }}
             // Image attachment props
             imageAttachments={imageAttachments}
             onRemoveImageAttachment={removeImageAttachment}

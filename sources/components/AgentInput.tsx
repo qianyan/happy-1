@@ -74,6 +74,8 @@ interface AgentInputProps {
     onPickImage?: () => void;
     uploadingImageIds?: Set<string>;
     onPaste?: (event: ClipboardEvent) => void;
+    // Selection change callback for cursor-aware text insertion
+    onSelectionChange?: (selection: { start: number; end: number }) => void;
 }
 
 const MAX_CONTEXT_SIZE = 190000;
@@ -332,7 +334,9 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
     const handleInputStateChange = React.useCallback((newState: TextInputState) => {
         // console.log('📝 Input state changed:', JSON.stringify(newState));
         setInputState(newState);
-    }, []);
+        // Notify parent of selection changes for cursor-aware text insertion
+        props.onSelectionChange?.(newState.selection);
+    }, [props.onSelectionChange]);
 
     // Use the tracked selection from inputState
     const activeWord = useActiveWord(inputState.text, inputState.selection, props.autocompletePrefixes);
@@ -1067,11 +1071,61 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                             <GitStatusButton sessionId={props.sessionId} onPress={props.onFileViewerPress} />
                         </View>
 
-                        {/* Send/Voice button */}
+                        {/* Voice button - always visible when onMicPress is provided */}
+                        {props.onMicPress && (
+                            <View
+                                style={[
+                                    styles.sendButton,
+                                    props.micStatus === 'recording' || props.micStatus === 'idle'
+                                        ? styles.sendButtonActive
+                                        : styles.sendButtonInactive
+                                ]}
+                            >
+                                <Pressable
+                                    style={(p) => ({
+                                        width: '100%',
+                                        height: '100%',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        opacity: p.pressed ? 0.7 : 1,
+                                    })}
+                                    hitSlop={{ top: 5, bottom: 10, left: 0, right: 0 }}
+                                    onPress={() => {
+                                        hapticsLight();
+                                        props.onMicPress?.();
+                                    }}
+                                    disabled={props.micStatus === 'transcribing'}
+                                >
+                                    {props.micStatus === 'transcribing' ? (
+                                        <ActivityIndicator
+                                            size="small"
+                                            color={theme.colors.button.primary.tint}
+                                        />
+                                    ) : props.micStatus === 'recording' ? (
+                                        <Ionicons
+                                            name="stop"
+                                            size={18}
+                                            color={theme.colors.button.primary.tint}
+                                        />
+                                    ) : (
+                                        <Image
+                                            source={require('@/assets/images/icon-voice-white.png')}
+                                            style={{
+                                                width: 24,
+                                                height: 24,
+                                            }}
+                                            tintColor={theme.colors.button.primary.tint}
+                                        />
+                                    )}
+                                </Pressable>
+                            </View>
+                        )}
+
+                        {/* Send button */}
                         <View
                             style={[
                                 styles.sendButton,
-                                (hasText || props.isSending || props.micStatus === 'recording' || (props.onMicPress && props.micStatus === 'idle'))
+                                (hasText || props.isSending)
                                     ? styles.sendButtonActive
                                     : styles.sendButtonInactive
                             ]}
@@ -1087,48 +1141,14 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                 hitSlop={{ top: 5, bottom: 10, left: 0, right: 0 }}
                                 onPress={() => {
                                     hapticsLight();
-                                    if (hasText) {
-                                        props.onSend();
-                                    } else {
-                                        props.onMicPress?.();
-                                    }
+                                    props.onSend();
                                 }}
-                                disabled={props.isSendDisabled || props.isSending || props.micStatus === 'transcribing' || (!hasText && !props.onMicPress)}
+                                disabled={props.isSendDisabled || props.isSending || !hasText}
                             >
                                 {props.isSending ? (
                                     <ActivityIndicator
                                         size="small"
                                         color={theme.colors.button.primary.tint}
-                                    />
-                                ) : props.micStatus === 'transcribing' ? (
-                                    <ActivityIndicator
-                                        size="small"
-                                        color={theme.colors.button.primary.tint}
-                                    />
-                                ) : props.micStatus === 'recording' ? (
-                                    <Ionicons
-                                        name="stop"
-                                        size={18}
-                                        color={theme.colors.button.primary.tint}
-                                    />
-                                ) : hasText ? (
-                                    <Octicons
-                                        name="arrow-up"
-                                        size={16}
-                                        color={theme.colors.button.primary.tint}
-                                        style={[
-                                            styles.sendButtonIcon,
-                                            { marginTop: Platform.OS === 'web' ? 2 : 0 }
-                                        ]}
-                                    />
-                                ) : props.onMicPress ? (
-                                    <Image
-                                        source={require('@/assets/images/icon-voice-white.png')}
-                                        style={{
-                                            width: 24,
-                                            height: 24,
-                                        }}
-                                        tintColor={theme.colors.button.primary.tint}
                                     />
                                 ) : (
                                     <Octicons
