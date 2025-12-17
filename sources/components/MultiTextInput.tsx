@@ -57,6 +57,8 @@ export const MultiTextInput = React.forwardRef<MultiTextInputHandle, MultiTextIn
     // Track latest selection in a ref
     const selectionRef = React.useRef({ start: 0, end: 0 });
     const inputRef = React.useRef<TextInput>(null);
+    // Track if Enter key was handled (to strip trailing newline on native)
+    const enterHandledRef = React.useRef(false);
 
     const handleKeyPress = React.useCallback((e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
         if (!onKeyPress) return;
@@ -100,25 +102,39 @@ export const MultiTextInput = React.forwardRef<MultiTextInputHandle, MultiTextIn
                 key: normalizedKey,
                 shiftKey: (nativeEvent as any).shiftKey || false
             };
-            
+
             const handled = onKeyPress(keyEvent);
             if (handled) {
                 e.preventDefault();
+                // Mark Enter as handled so we can strip trailing newline in handleTextChange
+                // On native, preventDefault doesn't actually prevent the newline from being inserted
+                if (normalizedKey === 'Enter') {
+                    enterHandledRef.current = true;
+                }
             }
         }
     }, [onKeyPress]);
 
     const handleTextChange = React.useCallback((text: string) => {
+        // On native, if Enter was handled (e.g., for sending), strip any trailing newline
+        // that was inserted despite preventDefault() (which doesn't work on native TextInput)
+        let processedText = text;
+        if (enterHandledRef.current) {
+            enterHandledRef.current = false;
+            // Strip trailing newline that was inserted by the native TextInput
+            if (processedText.endsWith('\n')) {
+                processedText = processedText.slice(0, -1);
+            }
+        }
+
         // When text changes, assume cursor moves to end
-        const selection = { start: text.length, end: text.length };
+        const selection = { start: processedText.length, end: processedText.length };
         selectionRef.current = selection;
-        
-        console.log('📝 MultiTextInput.native: Text changed:', JSON.stringify({ text, selection }));
-        
-        onChangeText(text);
-        
+
+        onChangeText(processedText);
+
         if (onStateChange) {
-            onStateChange({ text, selection });
+            onStateChange({ text: processedText, selection });
         }
         if (onSelectionChange) {
             onSelectionChange(selection);
