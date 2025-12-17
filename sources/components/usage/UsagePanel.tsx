@@ -11,6 +11,7 @@ import { getUsageForPeriod, calculateTotals, UsageDataPoint } from '@/sync/apiUs
 import { Ionicons } from '@expo/vector-icons';
 import { HappyError } from '@/utils/errors';
 import { t } from '@/text';
+import { layout } from '@/components/layout';
 
 type TimePeriod = 'today' | '7days' | '30days';
 
@@ -202,6 +203,8 @@ export const UsagePanel: React.FC<{ sessionId?: string }> = ({ sessionId }) => {
     
     return (
         <ScrollView style={styles.container}>
+            <View style={{ alignItems: 'center' }}>
+                <View style={{ width: '100%', maxWidth: layout.maxWidth }}>
             {/* Period Selector */}
             <View style={styles.periodSelector}>
                 {(['today', '7days', '30days'] as TimePeriod[]).map((p) => (
@@ -278,6 +281,8 @@ export const UsagePanel: React.FC<{ sessionId?: string }> = ({ sessionId }) => {
                     </View>
                 </ItemGroup>
             )}
+                </View>
+            </View>
         </ScrollView>
     );
 };

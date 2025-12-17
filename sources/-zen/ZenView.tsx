@@ -15,6 +15,7 @@ import { storeTempData, type NewSessionData } from '@/utils/tempDataStore';
 import { toCamelCase } from '@/utils/stringUtils';
 import { removeTaskLinks, getSessionsForTask } from '@/-zen/model/taskSessionLink';
 import { MarkdownView } from '@/components/markdown/MarkdownView';
+import { layout } from '@/components/layout';
 
 export const ZenView = React.memo(() => {
     const router = useRouter();
@@ -181,10 +182,11 @@ export const ZenView = React.memo(() => {
                 contentContainerStyle={{ flexGrow: 1 }}
                 keyboardShouldPersistTaps="handled"
             >
-                <View style={[
-                    styles.content,
-                    { paddingBottom: insets.bottom + 20 }
-                ]}>
+                <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'center' }}>
+                    <View style={[
+                        styles.content,
+                        { paddingBottom: insets.bottom + 20, maxWidth: layout.maxWidth, flex: 1 }
+                    ]}>
                     {/* Checkbox and Title */}
                     <View style={styles.mainSection}>
                         <Pressable
@@ -330,6 +332,7 @@ export const ZenView = React.memo(() => {
                             ))}
                         </View>
                     )}
+                    </View>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
