@@ -202,8 +202,25 @@ export async function startRecording(): Promise<boolean> {
     }
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+        // Request audio with optimized constraints for speech
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                sampleRate: 16000,      // 16kHz is optimal for speech (Whisper's native rate)
+                channelCount: 1,        // Mono is sufficient for speech
+                echoCancellation: true, // Improve speech clarity
+                noiseSuppression: true, // Reduce background noise
+            }
+        });
+
+        // Try to use opus codec for better compression, fall back to webm
+        const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+            ? 'audio/webm;codecs=opus'
+            : 'audio/webm';
+
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType,
+            audioBitsPerSecond: 32000,  // 32kbps is sufficient for speech
+        });
         audioChunks = [];
 
         mediaRecorder.ondataavailable = (event) => {

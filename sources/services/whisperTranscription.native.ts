@@ -224,14 +224,15 @@ export async function startRecording(): Promise<boolean> {
             allowsRecording: true,
         });
 
-        // Create recorder with settings that produce m4a format (matching working config)
+        // Create recorder with optimized settings for speech transcription
+        // Using 16kHz mono at 32kbps - optimal for Whisper and ~8x smaller files
         audioRecorder = new AudioModule.AudioRecorder({
             extension: '.m4a',
-            sampleRate: 44100,
+            sampleRate: 16000,  // 16kHz is optimal for speech (Whisper's native rate)
             numberOfChannels: 1,
-            bitRate: 128000,
+            bitRate: 32000,     // 32kbps is sufficient for speech quality
             ios: {
-                audioQuality: AudioQuality.HIGH,
+                audioQuality: AudioQuality.MEDIUM,  // Medium quality is fine for speech
             },
             android: {
                 audioEncoder: 'aac',
