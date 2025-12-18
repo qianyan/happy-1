@@ -445,6 +445,10 @@ function NewSessionScreen() {
             return;
         }
 
+        // Clear input immediately for better UX (matches SessionView behavior)
+        const currentInput = input;
+        setInput('');
+
         setIsSending(true);
         try {
             let actualPath = selectedPath;
@@ -521,7 +525,7 @@ function NewSessionScreen() {
 
                     const sendResult = await sync.sendMessageWithImages(
                         result.sessionId,
-                        input,
+                        currentInput,
                         currentImages,
                         (imageId) => {
                             setUploadingImageIds(prev => {
@@ -538,7 +542,7 @@ function NewSessionScreen() {
 
                     setUploadingImageIds(new Set());
                 } else {
-                    await sync.sendMessage(result.sessionId, input);
+                    await sync.sendMessage(result.sessionId, currentInput);
                 }
 
                 // Navigate to session
