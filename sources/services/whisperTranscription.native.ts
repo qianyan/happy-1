@@ -5,7 +5,8 @@
  */
 
 import { AudioModule, AudioQuality, setAudioModeAsync } from 'expo-audio';
-import * as FileSystem from 'expo-file-system/legacy';
+import { File } from 'expo-file-system';
+import { fetch } from 'expo/fetch';
 import { storage } from '@/sync/storage';
 
 // Transcription status
@@ -130,7 +131,7 @@ function getWhisperLanguageCode(preference: string): string | null {
 
 /**
  * Transcribe audio using OpenAI Whisper API
- * Uses FileSystem.uploadAsync for reliable file uploads on Android
+ * Uses expo/fetch with File blob for reliable uploads on Android
  */
 async function transcribeAudio(fileUri: string): Promise<void> {
     const apiKey = getOpenAIApiKey();
@@ -141,43 +142,40 @@ async function transcribeAudio(fileUri: string): Promise<void> {
     }
 
     try {
-        // Build parameters for the upload
-        const parameters: Record<string, string> = {
-            model: 'whisper-1',
-        };
+        // Create File from URI - File implements Blob so can be used directly
+        const file = new File(fileUri);
+
+        // Build FormData with the audio file
+        const formData = new FormData();
+        // File implements Blob, so we can pass it directly
+        formData.append('file', file as unknown as globalThis.Blob, file.name || 'recording.m4a');
+        formData.append('model', 'whisper-1');
 
         // Add language hint if configured
         const settings = storage.getState().settings;
         if (settings.voiceAssistantLanguage) {
             const languageCode = getWhisperLanguageCode(settings.voiceAssistantLanguage);
             if (languageCode) {
-                parameters.language = languageCode;
+                formData.append('language', languageCode);
             }
         }
 
-        // Use FileSystem.uploadAsync for reliable multipart upload on Android
-        const uploadResult = await FileSystem.uploadAsync(
-            'https://api.openai.com/v1/audio/transcriptions',
-            fileUri,
-            {
-                httpMethod: 'POST',
-                uploadType: FileSystem.FileSystemUploadType.MULTIPART,
-                fieldName: 'file',
-                mimeType: 'audio/mp4',  // Standard MIME type for M4A/MPEG-4 audio
-                parameters,
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                },
-            }
-        );
+        // Use expo/fetch for reliable file upload
+        const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+            },
+            body: formData,
+        });
 
-        if (uploadResult.status !== 200) {
-            const errorData = JSON.parse(uploadResult.body || '{}');
-            const errorMessage = errorData.error?.message || `API error: ${uploadResult.status}`;
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            const errorMessage = errorData.error?.message || `API error: ${response.status}`;
             throw new Error(errorMessage);
         }
 
-        const data = JSON.parse(uploadResult.body);
+        const data = await response.json();
         const transcribedText = data.text?.trim() || '';
 
         setStatus('idle');
