@@ -127,7 +127,8 @@ export default function PathPickerScreen() {
                 .forEach(item => paths.push(item.path));
         }
 
-        return paths;
+        // Filter out .dev/worktree paths (internal worktree directories)
+        return paths.filter(path => !path.includes('.dev/worktree'));
     }, [sessions, params.machineId, recentMachinePaths]);
 
     // Filter recent paths based on customPath input (case-insensitive search)
