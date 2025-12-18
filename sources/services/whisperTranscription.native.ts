@@ -236,7 +236,7 @@ export async function startRecording(): Promise<boolean> {
             },
             android: {
                 audioEncoder: 'aac',
-                outputFormat: 'aac_adts',
+                outputFormat: 'mpeg4',
             },
         });
 
