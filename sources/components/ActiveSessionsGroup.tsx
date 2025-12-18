@@ -17,7 +17,6 @@ import { CompactGitStatus } from './CompactGitStatus';
 import { ProjectGitStatus } from './ProjectGitStatus';
 import { t } from '@/text';
 import { useNavigateToSession } from '@/hooks/useNavigateToSession';
-import { useIsTablet } from '@/utils/responsive';
 
 const stylesheet = StyleSheet.create((theme, runtime) => ({
     container: {
@@ -237,7 +236,6 @@ export const FlatSessionRow = React.memo(({ session, selected }: { session: Sess
     const sessionName = getSessionName(session);
     const sessionSubtitle = getSessionSubtitle(session);
     const navigateToSession = useNavigateToSession();
-    const isTablet = useIsTablet();
 
     // Get machine for display name
     const machine = useMachine(session.metadata?.machineId || '');
@@ -258,15 +256,8 @@ export const FlatSessionRow = React.memo(({ session, selected }: { session: Sess
                 { marginHorizontal: 16, marginBottom: 8, borderRadius: 12 },
                 selected && styles.sessionRowSelected
             ]}
-            onPressIn={() => {
-                if (isTablet) {
-                    navigateToSession(session.id);
-                }
-            }}
             onPress={() => {
-                if (!isTablet) {
-                    navigateToSession(session.id);
-                }
+                navigateToSession(session.id);
             }}
         >
             <View style={styles.sessionContent}>
@@ -351,7 +342,6 @@ const CompactSessionRow = React.memo(({ session, selected, showBorder }: { sessi
     const sessionStatus = useSessionStatus(session);
     const sessionName = getSessionName(session);
     const navigateToSession = useNavigateToSession();
-    const isTablet = useIsTablet();
 
     return (
         <Pressable
@@ -360,15 +350,8 @@ const CompactSessionRow = React.memo(({ session, selected, showBorder }: { sessi
                 showBorder && styles.sessionRowWithBorder,
                 selected && styles.sessionRowSelected
             ]}
-            onPressIn={() => {
-                if (isTablet) {
-                    navigateToSession(session.id);
-                }
-            }}
             onPress={() => {
-                if (!isTablet) {
-                    navigateToSession(session.id);
-                }
+                navigateToSession(session.id);
             }}
         >
             <View style={styles.sessionContent}>
