@@ -1272,39 +1272,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@elevenlabs/client@npm:0.5.0":
-  version: 0.5.0
-  resolution: "@elevenlabs/client@npm:0.5.0"
-  dependencies:
-    livekit-client: "npm:^2.11.4"
-  checksum: 10c0/44c07c8162b0d26af7a45640a217efb85f01015c094d61fe7b3a2cea6634f7ba9a81a21785b3be7354a545837c981f7325ed4d25d2d9900cd299f14312a428ca
-  languageName: node
-  linkType: hard
-
-"@elevenlabs/react-native@npm:^0.2.1":
-  version: 0.2.1
-  resolution: "@elevenlabs/react-native@npm:0.2.1"
-  peerDependencies:
-    "@livekit/react-native": ^2.7.0
-    "@livekit/react-native-webrtc": ^125.0.0
-    livekit-client: ^2.11.0
-    react: ">=17.0.0"
-    react-native: ">=0.70.0"
-  checksum: 10c0/ead240af839a82af98adc519da0a7d411d50ed8be88af580ca202f3bc7533a980da7a55d91a58769b032f019d750b21a4a65ec62e25a02ddef2f9ad3a9341990
-  languageName: node
-  linkType: hard
-
-"@elevenlabs/react@npm:^0.5.0":
-  version: 0.5.0
-  resolution: "@elevenlabs/react@npm:0.5.0"
-  dependencies:
-    "@elevenlabs/client": "npm:0.5.0"
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 10c0/1ca5ecc9cfcf9bdeb63a3ee996d6b4c4f5b9fa211e72ebfcd5333520fdbc53b976d4f39b849018f3c513f162fdcb3b422f529c0f2f0946db564123d99d415a3f
-  languageName: node
-  linkType: hard
-
 "@esbuild/aix-ppc64@npm:0.25.6":
   version: 0.25.6
   resolution: "@esbuild/aix-ppc64@npm:0.25.6"
@@ -8737,8 +8704,6 @@ __metadata:
   dependencies:
     "@babel/core": "npm:^7.25.2"
     "@config-plugins/react-native-webrtc": "npm:^12.0.0"
-    "@elevenlabs/react": "npm:^0.5.0"
-    "@elevenlabs/react-native": "npm:^0.2.1"
     "@expo/config-plugins": "npm:~54.0.1"
     "@expo/ngrok": "npm:^4.1.0"
     "@expo/ui": "npm:~0.2.0-beta.3"
@@ -10186,7 +10151,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"livekit-client@npm:^2.11.4, livekit-client@npm:^2.15.4":
+"livekit-client@npm:^2.15.4":
   version: 2.15.4
   resolution: "livekit-client@npm:2.15.4"
   dependencies:
