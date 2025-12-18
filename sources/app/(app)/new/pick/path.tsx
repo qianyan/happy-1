@@ -56,6 +56,17 @@ const stylesheet = StyleSheet.create((theme) => ({
         borderWidth: 0.5,
         borderColor: theme.colors.divider,
     },
+    pathInputInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    pathInputText: {
+        flex: 1,
+    },
+    clearButton: {
+        padding: 4,
+        marginLeft: 4,
+    },
 }));
 
 export default function PathPickerScreen() {
@@ -118,6 +129,13 @@ export default function PathPickerScreen() {
 
         return paths;
     }, [sessions, params.machineId, recentMachinePaths]);
+
+    // Filter recent paths based on customPath input (case-insensitive search)
+    const filteredRecentPaths = useMemo(() => {
+        const searchTerm = customPath.trim().toLowerCase();
+        if (!searchTerm) return recentPaths;
+        return recentPaths.filter(path => path.toLowerCase().includes(searchTerm));
+    }, [recentPaths, customPath]);
 
 
     const handleSelectPath = React.useCallback(() => {
@@ -207,27 +225,47 @@ export default function PathPickerScreen() {
                         <ItemGroup title="Enter Path">
                             <View style={styles.pathInputContainer}>
                                 <View style={[styles.pathInput, { paddingVertical: 8 }]}>
-                                    <MultiTextInput
-                                        ref={inputRef}
-                                        value={customPath}
-                                        onChangeText={setCustomPath}
-                                        placeholder="Enter path (e.g. /home/user/projects)"
-                                        maxHeight={76}
-                                        paddingTop={8}
-                                        paddingBottom={8}
-                                        // onSubmitEditing={handleSelectPath}
-                                        // blurOnSubmit={true}
-                                        // returnKeyType="done"
-                                    />
+                                    <View style={styles.pathInputInner}>
+                                        <View style={styles.pathInputText}>
+                                            <MultiTextInput
+                                                ref={inputRef}
+                                                value={customPath}
+                                                onChangeText={setCustomPath}
+                                                placeholder="Enter path (e.g. /home/user/projects)"
+                                                maxHeight={76}
+                                                paddingTop={8}
+                                                paddingBottom={8}
+                                                // onSubmitEditing={handleSelectPath}
+                                                // blurOnSubmit={true}
+                                                // returnKeyType="done"
+                                            />
+                                        </View>
+                                        {customPath.length > 0 && (
+                                            <Pressable
+                                                onPress={() => {
+                                                    setCustomPath('');
+                                                    inputRef.current?.focus();
+                                                }}
+                                                style={styles.clearButton}
+                                                hitSlop={8}
+                                            >
+                                                <Ionicons
+                                                    name="close-circle"
+                                                    size={18}
+                                                    color={theme.colors.textSecondary}
+                                                />
+                                            </Pressable>
+                                        )}
+                                    </View>
                                 </View>
                             </View>
                         </ItemGroup>
 
-                        {recentPaths.length > 0 && (
+                        {filteredRecentPaths.length > 0 && (
                             <ItemGroup title="Recent Paths">
-                                {recentPaths.map((path, index) => {
+                                {filteredRecentPaths.map((path, index) => {
                                     const isSelected = customPath.trim() === path;
-                                    const isLast = index === recentPaths.length - 1;
+                                    const isLast = index === filteredRecentPaths.length - 1;
 
                                     return (
                                         <Item

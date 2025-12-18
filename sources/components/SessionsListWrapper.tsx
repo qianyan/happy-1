@@ -13,6 +13,7 @@ import { Typography } from '@/constants/Typography';
 import { t } from '@/text';
 import { layout } from './layout';
 import { UpdateBanner } from './UpdateBanner';
+import { Ionicons } from '@expo/vector-icons';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -105,13 +106,24 @@ const stylesheet = StyleSheet.create((theme) => ({
         maxWidth: layout.maxWidth - 32,
     },
     searchInput: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        fontSize: 16,
+        color: theme.colors.text,
+        ...Typography.default(),
+    },
+    searchInputContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
         backgroundColor: theme.colors.surface,
         borderRadius: 10,
         paddingHorizontal: 12,
         paddingVertical: 10,
-        fontSize: 16,
-        color: theme.colors.text,
-        ...Typography.default(),
+    },
+    clearButton: {
+        padding: 4,
+        marginLeft: 4,
     },
 }));
 
@@ -273,18 +285,32 @@ export const SessionsListWrapper = React.memo(() => {
                 <>
                     <View style={styles.searchContainer}>
                         <View style={styles.searchInputWrapper}>
-                            <TextInput
-                                style={styles.searchInput}
-                                placeholder={t('session.searchPlaceholder')}
-                                placeholderTextColor={theme.colors.textSecondary}
-                                value={searchQuery}
-                                onChangeText={setSearchQuery}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                                spellCheck={false}
-                                returnKeyType="search"
-                                clearButtonMode="while-editing"
-                            />
+                            <View style={styles.searchInputContainer}>
+                                <TextInput
+                                    style={styles.searchInput}
+                                    placeholder={t('session.searchPlaceholder')}
+                                    placeholderTextColor={theme.colors.textSecondary}
+                                    value={searchQuery}
+                                    onChangeText={setSearchQuery}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    spellCheck={false}
+                                    returnKeyType="search"
+                                />
+                                {searchQuery.length > 0 && (
+                                    <Pressable
+                                        onPress={() => setSearchQuery('')}
+                                        style={styles.clearButton}
+                                        hitSlop={8}
+                                    >
+                                        <Ionicons
+                                            name="close-circle"
+                                            size={18}
+                                            color={theme.colors.textSecondary}
+                                        />
+                                    </Pressable>
+                                )}
+                            </View>
                         </View>
                     </View>
                     <SessionsList searchQuery={searchQuery} />
