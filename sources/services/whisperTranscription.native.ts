@@ -4,7 +4,8 @@
  * Records audio using expo-audio and transcribes it using OpenAI's Whisper API.
  */
 
-import { AudioModule, setAudioModeAsync, RecordingPresets } from 'expo-audio';
+import { AudioModule, AudioQuality, setAudioModeAsync } from 'expo-audio';
+import * as FileSystem from 'expo-file-system/legacy';
 import { storage } from '@/sync/storage';
 
 // Transcription status
@@ -127,17 +128,11 @@ function getWhisperLanguageCode(preference: string): string | null {
     return languageMap[preference] || null;
 }
 
-// Native file object type for React Native FormData
-type NativeFileObject = {
-    uri: string;
-    type: string;
-    name: string;
-};
-
 /**
  * Transcribe audio using OpenAI Whisper API
+ * Uses FileSystem.uploadAsync for reliable file uploads on Android
  */
-async function transcribeAudio(file: NativeFileObject): Promise<void> {
+async function transcribeAudio(fileUri: string): Promise<void> {
     const apiKey = getOpenAIApiKey();
     if (!apiKey) {
         setStatus('error');
@@ -146,36 +141,43 @@ async function transcribeAudio(file: NativeFileObject): Promise<void> {
     }
 
     try {
-        const formData = new FormData();
-        // React Native's FormData handles { uri, type, name } objects
-        formData.append('file', file as any);
-        formData.append('model', 'whisper-1');
+        // Build parameters for the upload
+        const parameters: Record<string, string> = {
+            model: 'whisper-1',
+        };
 
         // Add language hint if configured
         const settings = storage.getState().settings;
         if (settings.voiceAssistantLanguage) {
             const languageCode = getWhisperLanguageCode(settings.voiceAssistantLanguage);
             if (languageCode) {
-                formData.append('language', languageCode);
+                parameters.language = languageCode;
             }
         }
 
-        // Send to OpenAI Whisper API
-        const apiResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-            },
-            body: formData,
-        });
+        // Use FileSystem.uploadAsync for reliable multipart upload on Android
+        const uploadResult = await FileSystem.uploadAsync(
+            'https://api.openai.com/v1/audio/transcriptions',
+            fileUri,
+            {
+                httpMethod: 'POST',
+                uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+                fieldName: 'file',
+                mimeType: 'audio/mp4',  // Standard MIME type for M4A/MPEG-4 audio
+                parameters,
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                },
+            }
+        );
 
-        if (!apiResponse.ok) {
-            const errorData = await apiResponse.json().catch(() => ({}));
-            const errorMessage = errorData.error?.message || `API error: ${apiResponse.status}`;
+        if (uploadResult.status !== 200) {
+            const errorData = JSON.parse(uploadResult.body || '{}');
+            const errorMessage = errorData.error?.message || `API error: ${uploadResult.status}`;
             throw new Error(errorMessage);
         }
 
-        const data = await apiResponse.json();
+        const data = JSON.parse(uploadResult.body);
         const transcribedText = data.text?.trim() || '';
 
         setStatus('idle');
@@ -224,9 +226,21 @@ export async function startRecording(): Promise<boolean> {
             allowsRecording: true,
         });
 
-        // Create recorder with HIGH_QUALITY preset for maximum compatibility
-        // This produces M4A with AAC on both iOS and Android
-        audioRecorder = new AudioModule.AudioRecorder(RecordingPresets.HIGH_QUALITY);
+        // Create recorder with optimized settings for speech transcription
+        // Using 16kHz mono at 32kbps - optimal for Whisper and ~8x smaller files
+        audioRecorder = new AudioModule.AudioRecorder({
+            extension: '.m4a',
+            sampleRate: 16000,  // 16kHz is optimal for speech (Whisper's native rate)
+            numberOfChannels: 1,
+            bitRate: 32000,     // 32kbps is sufficient for speech quality
+            ios: {
+                audioQuality: AudioQuality.MEDIUM,
+            },
+            android: {
+                audioEncoder: 'aac',
+                outputFormat: 'mpeg4',
+            },
+        });
 
         // Prepare and start recording
         await audioRecorder.prepareToRecordAsync();
@@ -264,15 +278,8 @@ export async function stopRecording(): Promise<void> {
         }
 
         if (uri) {
-            // Create a native file object for React Native FormData
-            // This format { uri, type, name } is what RN's FormData expects
-            // HIGH_QUALITY preset produces .m4a on both platforms
-            const fileName = uri.split('/').pop() || `recording_${Date.now()}.m4a`;
-            await transcribeAudio({
-                uri: uri,
-                type: 'audio/m4a',
-                name: fileName,
-            });
+            // Use FileSystem.uploadAsync for reliable file upload
+            await transcribeAudio(uri);
         } else {
             setStatus('idle');
         }
