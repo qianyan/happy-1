@@ -4,8 +4,7 @@
  * Records audio using expo-audio and transcribes it using OpenAI's Whisper API.
  */
 
-import { AudioModule, AudioQuality, setAudioModeAsync } from 'expo-audio';
-import { Platform } from 'react-native';
+import { AudioModule, setAudioModeAsync, RecordingPresets } from 'expo-audio';
 import { storage } from '@/sync/storage';
 
 // Transcription status
@@ -225,23 +224,9 @@ export async function startRecording(): Promise<boolean> {
             allowsRecording: true,
         });
 
-        // Create recorder with optimized settings for speech transcription
-        // Using 16kHz mono - optimal for Whisper
-        // iOS: M4A with AAC (works reliably)
-        // Android: WebM container (supported by OpenAI Whisper)
-        audioRecorder = new AudioModule.AudioRecorder({
-            extension: Platform.OS === 'ios' ? '.m4a' : '.webm',
-            sampleRate: 16000,  // 16kHz is optimal for speech (Whisper's native rate)
-            numberOfChannels: 1,
-            bitRate: 32000,     // 32kbps is sufficient for speech quality
-            ios: {
-                audioQuality: AudioQuality.MEDIUM,  // Medium quality is fine for speech
-            },
-            android: {
-                audioEncoder: 'default',
-                outputFormat: 'webm',
-            },
-        });
+        // Create recorder with HIGH_QUALITY preset for maximum compatibility
+        // This produces M4A with AAC on both iOS and Android
+        audioRecorder = new AudioModule.AudioRecorder(RecordingPresets.HIGH_QUALITY);
 
         // Prepare and start recording
         await audioRecorder.prepareToRecordAsync();
@@ -281,13 +266,11 @@ export async function stopRecording(): Promise<void> {
         if (uri) {
             // Create a native file object for React Native FormData
             // This format { uri, type, name } is what RN's FormData expects
-            const isIOS = Platform.OS === 'ios';
-            const ext = isIOS ? 'm4a' : 'webm';
-            const mimeType = isIOS ? 'audio/m4a' : 'audio/webm';
-            const fileName = uri.split('/').pop() || `recording_${Date.now()}.${ext}`;
+            // HIGH_QUALITY preset produces .m4a on both platforms
+            const fileName = uri.split('/').pop() || `recording_${Date.now()}.m4a`;
             await transcribeAudio({
                 uri: uri,
-                type: mimeType,
+                type: 'audio/m4a',
                 name: fileName,
             });
         } else {
