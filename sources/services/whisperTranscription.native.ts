@@ -5,6 +5,7 @@
  */
 
 import { AudioModule, AudioQuality, setAudioModeAsync } from 'expo-audio';
+import { Platform } from 'react-native';
 import { storage } from '@/sync/storage';
 
 // Transcription status
@@ -225,9 +226,11 @@ export async function startRecording(): Promise<boolean> {
         });
 
         // Create recorder with optimized settings for speech transcription
-        // Using 16kHz mono at 32kbps - optimal for Whisper and ~8x smaller files
+        // Using 16kHz mono - optimal for Whisper
+        // iOS: M4A with AAC (works reliably)
+        // Android: WebM container (supported by OpenAI Whisper)
         audioRecorder = new AudioModule.AudioRecorder({
-            extension: '.m4a',
+            extension: Platform.OS === 'ios' ? '.m4a' : '.webm',
             sampleRate: 16000,  // 16kHz is optimal for speech (Whisper's native rate)
             numberOfChannels: 1,
             bitRate: 32000,     // 32kbps is sufficient for speech quality
@@ -235,8 +238,8 @@ export async function startRecording(): Promise<boolean> {
                 audioQuality: AudioQuality.MEDIUM,  // Medium quality is fine for speech
             },
             android: {
-                audioEncoder: 'aac',
-                outputFormat: 'mpeg4',
+                audioEncoder: 'default',
+                outputFormat: 'webm',
             },
         });
 
@@ -278,10 +281,13 @@ export async function stopRecording(): Promise<void> {
         if (uri) {
             // Create a native file object for React Native FormData
             // This format { uri, type, name } is what RN's FormData expects
-            const fileName = uri.split('/').pop() || `recording_${Date.now()}.m4a`;
+            const isIOS = Platform.OS === 'ios';
+            const ext = isIOS ? 'm4a' : 'webm';
+            const mimeType = isIOS ? 'audio/m4a' : 'audio/webm';
+            const fileName = uri.split('/').pop() || `recording_${Date.now()}.${ext}`;
             await transcribeAudio({
                 uri: uri,
-                type: 'audio/m4a',
+                type: mimeType,
                 name: fileName,
             });
         } else {
