@@ -307,6 +307,10 @@ export const ca: TranslationStructure = {
 
     commandPalette: {
         placeholder: 'Escriu una comanda o cerca...',
+        startRecording: 'Iniciar gravació de veu',
+        startRecordingSubtitle: 'Gravar i transcriure la teva veu',
+        stopRecording: 'Aturar gravació',
+        stopRecordingSubtitle: 'Aturar gravació i transcriure',
     },
 
     server: {

@@ -411,6 +411,10 @@ export const ru: TranslationStructure = {
 
     commandPalette: {
         placeholder: 'Введите команду или поиск...',
+        startRecording: 'Начать запись голоса',
+        startRecordingSubtitle: 'Записать и транскрибировать голос',
+        stopRecording: 'Остановить запись',
+        stopRecordingSubtitle: 'Остановить запись и транскрибировать',
     },
 
     agentInput: {

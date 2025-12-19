@@ -309,6 +309,10 @@ export const zhHans: TranslationStructure = {
 
     commandPalette: {
         placeholder: '输入命令或搜索...',
+        startRecording: '开始语音录制',
+        startRecordingSubtitle: '录制并转录您的语音',
+        stopRecording: '停止录制',
+        stopRecordingSubtitle: '停止录制并转录',
     },
 
     server: {

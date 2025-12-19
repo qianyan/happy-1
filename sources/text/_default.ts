@@ -307,6 +307,10 @@ export const en = {
 
     commandPalette: {
         placeholder: 'Type a command or search...',
+        startRecording: 'Start Voice Recording',
+        startRecordingSubtitle: 'Record and transcribe your voice',
+        stopRecording: 'Stop Recording',
+        stopRecordingSubtitle: 'Stop recording and transcribe',
     },
 
     server: {

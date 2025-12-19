@@ -1,5 +1,6 @@
 import { AgentContentView } from '@/components/AgentContentView';
 import { AgentInput } from '@/components/AgentInput';
+import { MultiTextInputHandle } from '@/components/MultiTextInput';
 import { ModelMode } from '@/components/PermissionModeSelector';
 import { getSuggestions } from '@/components/autocomplete/suggestions';
 import { ChatHeaderView } from '@/components/ChatHeaderView';
@@ -200,6 +201,9 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     // Ref to track current selection for cursor-aware transcription insertion
     const selectionRef = React.useRef<{ start: number; end: number }>({ start: 0, end: 0 });
 
+    // Ref to focus input after transcription
+    const inputRef = React.useRef<MultiTextInputHandle>(null);
+
     // Ref to track if we're in auto-send mode (long-press recording)
     // When true, transcription completion will automatically send the message
     const autoSendModeRef = React.useRef(false);
@@ -294,6 +298,8 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
 
                     return newText;
                 });
+                // Focus input after transcription for easy submission
+                inputRef.current?.focus();
                 tracking?.capture('voice_transcription_completed', { auto_send: false });
             }
         });
@@ -447,6 +453,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
 
     const input = (
         <AgentInput
+            ref={inputRef}
             placeholder={t('session.inputPlaceholder')}
             value={message}
             onChangeText={setMessage}

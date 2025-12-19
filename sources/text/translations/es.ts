@@ -307,6 +307,10 @@ export const es: TranslationStructure = {
 
     commandPalette: {
         placeholder: 'Escriba un comando o busque...',
+        startRecording: 'Iniciar grabación de voz',
+        startRecordingSubtitle: 'Grabar y transcribir tu voz',
+        stopRecording: 'Detener grabación',
+        stopRecordingSubtitle: 'Detener grabación y transcribir',
     },
 
     server: {

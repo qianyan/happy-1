@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useRouter, useSegments, useGlobalSearchParams } from 'expo-router';
 import { Modal } from '@/modal';
@@ -12,6 +12,13 @@ import { useNavigateToSession } from '@/hooks/useNavigateToSession';
 import { sessionKill, sessionDelete } from '@/sync/ops';
 import { t } from '@/text';
 import { getSessionName } from '@/utils/sessionUtils';
+import {
+    startRecording,
+    stopRecording,
+    isRecording,
+    onStatusChange,
+    TranscriptionStatus
+} from '@/services/whisperTranscription';
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -28,6 +35,13 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     const isOnSessionPage = (segments as string[]).includes('session') && params.id;
     const currentSessionId = isOnSessionPage ? params.id : null;
     const currentSession = useSession(currentSessionId ?? '');
+
+    // Track voice recording status for command palette display
+    const [voiceStatus, setVoiceStatus] = useState<TranscriptionStatus>('idle');
+    useEffect(() => {
+        const unsubscribe = onStatusChange(setVoiceStatus);
+        return unsubscribe;
+    }, []);
 
     // Define available commands
     const commands = useMemo((): Command[] => {
@@ -109,6 +123,30 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         // Current session commands (only show when on a session page)
         if (currentSession && currentSessionId) {
             const sessionName = getSessionName(currentSession);
+
+            // Voice recording toggle (only when not transcribing)
+            if (voiceStatus !== 'transcribing') {
+                const isCurrentlyRecording = voiceStatus === 'recording';
+                cmds.push({
+                    id: 'toggle-voice-recording',
+                    title: isCurrentlyRecording
+                        ? t('commandPalette.stopRecording')
+                        : t('commandPalette.startRecording'),
+                    subtitle: isCurrentlyRecording
+                        ? t('commandPalette.stopRecordingSubtitle')
+                        : t('commandPalette.startRecordingSubtitle'),
+                    icon: isCurrentlyRecording ? 'stop-circle-outline' : 'mic-outline',
+                    category: 'Current Session',
+                    shortcut: '⌘⇧V',
+                    action: async () => {
+                        if (isRecording()) {
+                            stopRecording();
+                        } else {
+                            await startRecording();
+                        }
+                    }
+                });
+            }
 
             // Archive session (only for active/connected sessions)
             if (currentSession.active) {
@@ -202,7 +240,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         }
 
         return cmds;
-    }, [router, logout, sessions, currentSession, currentSessionId, navigateToSession]);
+    }, [router, logout, sessions, currentSession, currentSessionId, navigateToSession, voiceStatus]);
 
     const showCommandPalette = useCallback(() => {
         if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
@@ -271,12 +309,28 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         );
     }, [currentSession, currentSessionId, router, commandPaletteEnabled]);
 
+    // Handler for voice recording toggle shortcut (⌘⇧V)
+    const handleToggleVoiceRecording = useCallback(async () => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        // Only allow voice recording when on a session page
+        if (!currentSession || !currentSessionId) return;
+        // Don't toggle if currently transcribing
+        if (voiceStatus === 'transcribing') return;
+
+        if (isRecording()) {
+            stopRecording();
+        } else {
+            await startRecording();
+        }
+    }, [currentSession, currentSessionId, commandPaletteEnabled, voiceStatus]);
+
     // Keyboard shortcut handlers
     const keyboardHandlers = useMemo(() => ({
         onNewSession: handleNewSession,
         onArchiveSession: handleArchiveSession,
         onDeleteSession: handleDeleteSession,
-    }), [handleNewSession, handleArchiveSession, handleDeleteSession]);
+        onToggleVoiceRecording: handleToggleVoiceRecording,
+    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording]);
 
     // Set up global keyboard handler only if feature is enabled
     useGlobalKeyboard(
