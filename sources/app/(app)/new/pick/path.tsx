@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { ItemGroup } from '@/components/ItemGroup';
 import { Item } from '@/components/Item';
 import { Typography } from '@/constants/Typography';
@@ -80,6 +80,17 @@ export default function PathPickerScreen() {
     const recentMachinePaths = useSetting('recentMachinePaths');
 
     const [customPath, setCustomPath] = useState(params.selectedPath || '');
+
+    // Auto-focus the input when the screen gains focus
+    useFocusEffect(
+        React.useCallback(() => {
+            // Small delay to ensure the screen is fully mounted
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }, [])
+    );
 
     // Get the selected machine
     const machine = useMemo(() => {

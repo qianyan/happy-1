@@ -295,13 +295,13 @@ function RenderTableBlockNative(props: {
     const columnCount = props.headers.length;
 
     return (
-        <View style={[style.tableContainerNative, props.first && style.first, props.last && style.last]}>
-            <ScrollView
+        <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={true}
                 nestedScrollEnabled={true}
             >
-                <View style={style.tableColumnsContainer}>
+                <View style={[style.tableContainerNative, props.first && style.first, props.last && style.last]}>
+            <View style={style.tableColumnsContainer}>
                     {props.headers.map((header, colIndex) => (
                         <View key={`col-${colIndex}`} style={style.tableColumn}>
                             {/* Header cell */}
@@ -328,8 +328,8 @@ function RenderTableBlockNative(props: {
                         </View>
                     ))}
                 </View>
-            </ScrollView>
         </View>
+            </ScrollView>
     );
 }
 
@@ -558,6 +558,7 @@ const style = StyleSheet.create((theme) => ({
         alignSelf: 'stretch',
     },
     tableContainerNative: {
+        alignSelf: 'flex-start',
         marginVertical: 8,
         borderWidth: 1,
         borderColor: theme.colors.divider,
