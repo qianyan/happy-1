@@ -3,6 +3,7 @@ import { parseMarkdownSpans } from './parseMarkdownSpans';
 import { Link } from 'expo-router';
 import * as React from 'react';
 import { Pressable, ScrollView, View, Platform } from 'react-native';
+import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
 import { StyleSheet } from 'react-native-unistyles';
 import { Text } from '../StyledText';
 import { Typography } from '@/constants/Typography';
@@ -36,13 +37,15 @@ export const MarkdownView = React.memo((props: {
     const selectable = Platform.OS === 'web' || !markdownCopyV2;
     const router = useRouter();
 
-    const handleLongPress = React.useCallback(() => {
-        try {
-            const textId = storeTempText(props.markdown);
-            router.push(`/text-selection?textId=${textId}`);
-        } catch (error) {
-            console.error('Error storing text for selection:', error);
-            Modal.alert('Error', 'Failed to open text selection. Please try again.');
+    const handleLongPressGesture = React.useCallback((event: { nativeEvent: { state: number } }) => {
+        if (event.nativeEvent.state === State.ACTIVE) {
+            try {
+                const textId = storeTempText(props.markdown);
+                router.push(`/text-selection?textId=${textId}`);
+            } catch (error) {
+                console.error('Error storing text for selection:', error);
+                Modal.alert('Error', 'Failed to open text selection. Please try again.');
+            }
         }
     }, [props.markdown, router]);
     const renderContent = () => {
@@ -85,7 +88,16 @@ export const MarkdownView = React.memo((props: {
         return renderContent();
     }
     
-    return <Pressable style={{ width: '100%' }} onLongPress={handleLongPress} delayLongPress={500}>{renderContent()}</Pressable>;
+    return (
+        <LongPressGestureHandler
+            onHandlerStateChange={handleLongPressGesture}
+            minDurationMs={500}
+        >
+            <View style={{ width: '100%' }}>
+                {renderContent()}
+            </View>
+        </LongPressGestureHandler>
+    );
 });
 
 function RenderTextBlock(props: { spans: MarkdownSpan[], first: boolean, last: boolean, selectable: boolean }) {
@@ -228,9 +240,9 @@ function RenderTableBlock(props: {
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={true}
-                contentContainerStyle={{ minWidth: '100%' }}
+                nestedScrollEnabled={true}
             >
-                <View style={{ flexDirection: 'column', minWidth: '100%' }}>
+                <View style={{ flexDirection: 'column' }}>
                     <View style={style.tableRow}>
                         {props.headers.map((header, index) => (
                             <View key={`header-${index}`} style={[style.tableCell, style.tableHeaderCell]}>
@@ -478,8 +490,7 @@ const style = StyleSheet.create((theme) => ({
         borderWidth: 1,
         borderColor: theme.colors.divider,
         borderRadius: 8,
-        width: '100%',
-        alignSelf: 'stretch',
+        overflow: 'hidden',
     },
     tableRow: {
         flexDirection: 'row',
@@ -489,8 +500,7 @@ const style = StyleSheet.create((theme) => ({
     tableCell: {
         paddingHorizontal: 12,
         paddingVertical: 8,
-        flex: 1,
-        flexBasis: 0,
+        minWidth: 80,
     },
     tableHeaderCell: {
         backgroundColor: theme.colors.surfaceHigh,
