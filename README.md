@@ -1,3 +1,17 @@
+> **This is a personal fork of [Happy](https://github.com/slopus/happy) - the open source mobile and web client for Claude Code.**
+>
+> All credit goes to the original authors at [happy.engineering](https://happy.engineering). I've made some tweaks for my own self-hosted setup, but my changes are too fragmented to submit as a proper PR upstream. If you're looking for the official version, please visit [github.com/slopus/happy](https://github.com/slopus/happy).
+>
+> **Fork Changes:**
+> - Changed webapp URL to `happy.reily.app` for self-hosted deployment
+> - Voice recording improvements (press-and-hold, auto-send)
+> - iOS fixes (Enter key handling, scroll selection, session sorting)
+> - Android voice recording fixes for OpenAI Whisper compatibility
+> - Markdown rendering improvements (tables, code blocks, links)
+> - Switched from yarn to bun
+
+---
+
 <div align="center"><img src="/logo.png" width="200" title="Happy Coder" alt="Happy Coder"/></div>
 
 <h1 align="center">
