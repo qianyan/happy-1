@@ -32,6 +32,8 @@ interface AgentInputProps {
     onSend: () => void;
     sendIcon?: React.ReactNode;
     onMicPress?: () => void;
+    onMicLongPressStart?: () => void;  // Called when long press is detected (starts auto-send mode)
+    onMicPressOut?: () => void;         // Called when finger is released (stops recording in auto-send mode)
     micStatus?: 'idle' | 'recording' | 'transcribing';
     permissionMode?: PermissionMode;
     onPermissionModeChange?: (mode: PermissionMode) => void;
@@ -1093,6 +1095,13 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                         hapticsLight();
                                         props.onMicPress?.();
                                     }}
+                                    onLongPress={() => {
+                                        props.onMicLongPressStart?.();
+                                    }}
+                                    onPressOut={() => {
+                                        props.onMicPressOut?.();
+                                    }}
+                                    delayLongPress={500}
                                     disabled={props.micStatus === 'transcribing'}
                                 >
                                     {props.micStatus === 'transcribing' ? (

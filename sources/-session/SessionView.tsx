@@ -7,6 +7,7 @@ import { ChatList } from '@/components/ChatList';
 import { Deferred } from '@/components/Deferred';
 import { EmptyMessages } from '@/components/EmptyMessages';
 import { RecordingStatusBar } from '@/components/RecordingStatusBar';
+import { hapticsHeavy } from '@/components/haptics';
 import { useDraft } from '@/hooks/useDraft';
 import { useImageAttachments } from '@/hooks/useImageAttachments';
 import { Modal } from '@/modal';
@@ -199,6 +200,10 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     // Ref to track current selection for cursor-aware transcription insertion
     const selectionRef = React.useRef<{ start: number; end: number }>({ start: 0, end: 0 });
 
+    // Ref to track if we're in auto-send mode (long-press recording)
+    // When true, transcription completion will automatically send the message
+    const autoSendModeRef = React.useRef(false);
+
     // Handle dismissing CLI version warning
     const handleDismissCliWarning = React.useCallback(() => {
         if (machineId && cliVersion) {
@@ -247,37 +252,56 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
 
         // Set transcription callback to insert text at cursor position
         setTranscriptionCallback((text) => {
-            setMessage(prev => {
-                const { start, end } = selectionRef.current;
+            // Check if we're in auto-send mode (long-press recording)
+            const shouldAutoSend = autoSendModeRef.current;
 
-                // If text is empty, just return the transcribed text
-                if (!prev) {
-                    return text;
-                }
+            // Reset auto-send mode immediately
+            autoSendModeRef.current = false;
 
-                // Insert at cursor position
-                const before = prev.slice(0, start);
-                const after = prev.slice(end);
+            if (shouldAutoSend && text.trim()) {
+                // In auto-send mode: send the transcribed text directly
+                // Note: We clear any existing draft text and send only the transcription
+                setMessage('');
+                clearDraft();
+                sync.sendMessage(sessionId, text.trim());
+                tracking?.capture('voice_transcription_completed', { auto_send: true });
+                trackMessageSent();
+            } else {
+                // Normal mode: insert text at cursor position
+                setMessage(prev => {
+                    const { start, end } = selectionRef.current;
 
-                // Add space before if there's text before and it doesn't end with whitespace
-                const needsSpaceBefore = before.length > 0 && !/\s$/.test(before);
-                // Add space after if there's text after and it doesn't start with whitespace
-                const needsSpaceAfter = after.length > 0 && !/^\s/.test(after);
+                    // If text is empty, just return the transcribed text
+                    if (!prev) {
+                        return text;
+                    }
 
-                const insertText = (needsSpaceBefore ? ' ' : '') + text + (needsSpaceAfter ? ' ' : '');
-                const newText = before + insertText + after;
+                    // Insert at cursor position
+                    const before = prev.slice(0, start);
+                    const after = prev.slice(end);
 
-                // Update selection ref to position cursor after inserted text
-                const newCursorPos = start + insertText.length;
-                selectionRef.current = { start: newCursorPos, end: newCursorPos };
+                    // Add space before if there's text before and it doesn't end with whitespace
+                    const needsSpaceBefore = before.length > 0 && !/\s$/.test(before);
+                    // Add space after if there's text after and it doesn't start with whitespace
+                    const needsSpaceAfter = after.length > 0 && !/^\s/.test(after);
 
-                return newText;
-            });
-            tracking?.capture('voice_transcription_completed');
+                    const insertText = (needsSpaceBefore ? ' ' : '') + text + (needsSpaceAfter ? ' ' : '');
+                    const newText = before + insertText + after;
+
+                    // Update selection ref to position cursor after inserted text
+                    const newCursorPos = start + insertText.length;
+                    selectionRef.current = { start: newCursorPos, end: newCursorPos };
+
+                    return newText;
+                });
+                tracking?.capture('voice_transcription_completed', { auto_send: false });
+            }
         });
 
         // Set error callback
         setErrorCallback((error) => {
+            // Reset auto-send mode on error
+            autoSendModeRef.current = false;
             Modal.alert(t('common.error'), error);
             tracking?.capture('voice_transcription_error', { error });
         });
@@ -287,7 +311,7 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
             setTranscriptionCallback(null);
             setErrorCallback(null);
         };
-    }, []);
+    }, [sessionId, clearDraft]);
 
     // Handle microphone button press - toggle recording
     const handleMicrophonePress = React.useCallback(async () => {
@@ -307,11 +331,41 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
         }
     }, [transcriptionStatus]);
 
+    // Handle long press on mic button - start auto-send mode recording
+    const handleMicLongPressStart = React.useCallback(async () => {
+        if (transcriptionStatus !== 'idle') {
+            return; // Only start from idle state
+        }
+        // Enable auto-send mode
+        autoSendModeRef.current = true;
+        // Provide haptic feedback to indicate auto-send mode
+        hapticsHeavy();
+        // Start recording
+        const started = await startRecording();
+        if (started) {
+            tracking?.capture('voice_recording_started', { auto_send_mode: true });
+        } else {
+            // Reset auto-send mode if recording failed to start
+            autoSendModeRef.current = false;
+        }
+    }, [transcriptionStatus]);
+
+    // Handle press out on mic button - stop recording if in auto-send mode
+    const handleMicPressOut = React.useCallback(() => {
+        // Only stop if we're currently recording and in auto-send mode
+        if (isRecording() && autoSendModeRef.current) {
+            stopRecording();
+            tracking?.capture('voice_recording_stopped', { auto_send_mode: true });
+        }
+    }, []);
+
     // Memoize mic button state to prevent flashing during transitions
     const micButtonState = useMemo(() => ({
         onMicPress: handleMicrophonePress,
+        onMicLongPressStart: handleMicLongPressStart,
+        onMicPressOut: handleMicPressOut,
         micStatus: transcriptionStatus === 'error' ? 'idle' : transcriptionStatus
-    }), [handleMicrophonePress, transcriptionStatus]);
+    }), [handleMicrophonePress, handleMicLongPressStart, handleMicPressOut, transcriptionStatus]);
 
     // Trigger session visibility and initialize git status sync
     React.useLayoutEffect(() => {
@@ -411,6 +465,8 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
             onSend={handleSend}
             isSending={isSending}
             onMicPress={micButtonState.onMicPress}
+            onMicLongPressStart={micButtonState.onMicLongPressStart}
+            onMicPressOut={micButtonState.onMicPressOut}
             micStatus={micButtonState.micStatus}
             onAbort={() => sessionAbort(sessionId)}
             showAbortButton={sessionStatus.state === 'thinking' || sessionStatus.state === 'waiting'}
