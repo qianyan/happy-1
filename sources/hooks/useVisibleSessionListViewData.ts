@@ -1,9 +1,17 @@
 import * as React from 'react';
 import { SessionListViewItem, useSessionListViewData, useSetting } from '@/sync/storage';
 
-export function useVisibleSessionListViewData(): SessionListViewItem[] | null {
+interface UseVisibleSessionListViewDataOptions {
+    /** When true, shows all sessions regardless of hideInactiveSessions setting */
+    showAllSessions?: boolean;
+}
+
+export function useVisibleSessionListViewData(options?: UseVisibleSessionListViewDataOptions): SessionListViewItem[] | null {
     const data = useSessionListViewData();
-    const hideInactiveSessions = useSetting('hideInactiveSessions');
+    const hideInactiveSessionsSetting = useSetting('hideInactiveSessions');
+
+    // Override the setting when showAllSessions is true (e.g., when searching)
+    const hideInactiveSessions = options?.showAllSessions ? false : hideInactiveSessionsSetting;
 
     return React.useMemo(() => {
         if (!data) {

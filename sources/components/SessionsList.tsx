@@ -65,7 +65,9 @@ interface SessionsListProps {
 export function SessionsList({ searchQuery = '' }: SessionsListProps) {
     const styles = stylesheet;
     const safeArea = useSafeAreaInsets();
-    const rawData = useVisibleSessionListViewData();
+    // When searching, show all sessions (including archived) regardless of hideInactiveSessions setting
+    const isSearching = searchQuery.trim().length > 0;
+    const rawData = useVisibleSessionListViewData({ showAllSessions: isSearching });
     const pathname = usePathname();
     const isTablet = useIsTablet();
     const compactSessionView = useSetting('compactSessionView');
