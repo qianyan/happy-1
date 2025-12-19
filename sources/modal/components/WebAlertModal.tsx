@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import React, { useEffect, useCallback, useRef } from 'react';
+import { View, Text, Pressable, Platform } from 'react-native';
 import { BaseModal } from './BaseModal';
 import { AlertModalConfig, ConfirmModalConfig } from '../types';
 import { Typography } from '@/constants/Typography';
@@ -15,15 +15,8 @@ interface WebAlertModalProps {
 export function WebAlertModal({ config, onClose, onConfirm }: WebAlertModalProps) {
     const { theme } = useUnistyles();
     const isConfirm = config.type === 'confirm';
-    
-    const handleButtonPress = (buttonIndex: number) => {
-        if (isConfirm && onConfirm) {
-            onConfirm(buttonIndex === 1);
-        } else if (!isConfirm && config.buttons?.[buttonIndex]?.onPress) {
-            config.buttons[buttonIndex].onPress!();
-        }
-        onClose();
-    };
+    // Ref to prevent double-handling of button press (keyboard + click)
+    const handledRef = useRef(false);
 
     const buttons = isConfirm
         ? [
@@ -31,6 +24,60 @@ export function WebAlertModal({ config, onClose, onConfirm }: WebAlertModalProps
             { text: config.confirmText || 'OK', style: config.destructive ? 'destructive' as const : 'default' as const }
         ]
         : config.buttons || [{ text: 'OK', style: 'default' as const }];
+
+    const handleButtonPress = useCallback((buttonIndex: number) => {
+        if (handledRef.current) return;
+        handledRef.current = true;
+
+        if (isConfirm && onConfirm) {
+            onConfirm(buttonIndex === 1);
+        } else if (!isConfirm && config.type === 'alert' && config.buttons?.[buttonIndex]?.onPress) {
+            config.buttons[buttonIndex].onPress!();
+        }
+        onClose();
+    }, [isConfirm, onConfirm, onClose, config]);
+
+    // Keyboard support: Enter to confirm, Escape to cancel
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (handledRef.current) return;
+
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                // Find the default/destructive button (non-cancel) and press it
+                // For confirm dialogs, this is index 1; for alerts, find first non-cancel
+                if (isConfirm) {
+                    handleButtonPress(1); // Confirm button
+                } else {
+                    // For alert dialogs, find the first non-cancel button, or just the first button
+                    const defaultIndex = buttons.findIndex(b => b.style !== 'cancel');
+                    handleButtonPress(defaultIndex >= 0 ? defaultIndex : 0);
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                // Find and press the cancel button, or just close
+                if (isConfirm) {
+                    handleButtonPress(0); // Cancel button
+                } else {
+                    const cancelIndex = buttons.findIndex(b => b.style === 'cancel');
+                    if (cancelIndex >= 0) {
+                        handleButtonPress(cancelIndex);
+                    } else {
+                        // No cancel button, just close
+                        handledRef.current = true;
+                        onClose();
+                    }
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isConfirm, buttons, handleButtonPress, onClose]);
 
     const styles = StyleSheet.create({
         container: {
