@@ -75,8 +75,9 @@ export function WebAlertModal({ config, onClose, onConfirm }: WebAlertModalProps
             }
         };
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        // Use capture phase to handle keys before other elements (like text inputs)
+        window.addEventListener('keydown', handleKeyDown, true);
+        return () => window.removeEventListener('keydown', handleKeyDown, true);
     }, [isConfirm, buttons, handleButtonPress, onClose]);
 
     const styles = StyleSheet.create({
