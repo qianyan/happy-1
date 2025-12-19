@@ -275,7 +275,7 @@ export const darkTheme = {
             primary: {
                 background: '#000000',
                 tint: '#FFFFFF',
-                disabled: '#C0C0C0',
+                disabled: '#48484A',
             },
             secondary: {
                 tint: '#8E8E93',
