@@ -283,37 +283,45 @@ function RenderTableBlockWeb(props: {
     );
 }
 
-// Native implementation with horizontal scroll for wide tables
+// Native implementation using column-based layout for consistent column widths
+// Each column is a vertical stack, and columns are laid out horizontally
+// This ensures each column sizes to its widest content
 function RenderTableBlockNative(props: {
     headers: string[],
     rows: string[][],
     first: boolean,
     last: boolean
 }) {
+    const columnCount = props.headers.length;
+
     return (
         <View style={[style.tableContainerNative, props.first && style.first, props.last && style.last]}>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={true}
                 nestedScrollEnabled={true}
-                contentContainerStyle={{ minWidth: '100%' }}
             >
-                <View style={{ flexDirection: 'column', minWidth: '100%' }}>
-                    <View style={style.tableRow}>
-                        {props.headers.map((header, index) => (
-                            <View key={`header-${index}`} style={[style.tableCell, style.tableCellFlex, style.tableHeaderCell]}>
+                <View style={style.tableColumnsContainer}>
+                    {props.headers.map((header, colIndex) => (
+                        <View key={`col-${colIndex}`} style={style.tableColumn}>
+                            {/* Header cell */}
+                            <View style={[style.tableCell, style.tableHeaderCell, style.tableCellBorderBottom, colIndex < columnCount - 1 && style.tableCellBorderRight]}>
                                 <Text style={style.tableHeaderText}>
                                     <RenderSpans spans={parseMarkdownSpans(header, false)} baseStyle={style.tableHeaderText} />
                                 </Text>
                             </View>
-                        ))}
-                    </View>
-                    {props.rows.map((row, rowIndex) => (
-                        <View key={`row-${rowIndex}`} style={style.tableRow}>
-                            {row.map((cell, cellIndex) => (
-                                <View key={`cell-${rowIndex}-${cellIndex}`} style={[style.tableCell, style.tableCellFlex]}>
+                            {/* Data cells for this column */}
+                            {props.rows.map((row, rowIndex) => (
+                                <View
+                                    key={`cell-${colIndex}-${rowIndex}`}
+                                    style={[
+                                        style.tableCell,
+                                        colIndex < columnCount - 1 && style.tableCellBorderRight,
+                                        rowIndex < props.rows.length - 1 && style.tableCellBorderBottom
+                                    ]}
+                                >
                                     <Text style={style.tableCellText}>
-                                        <RenderSpans spans={parseMarkdownSpans(cell, false)} baseStyle={style.tableCellText} />
+                                        <RenderSpans spans={parseMarkdownSpans(row[colIndex] || '', false)} baseStyle={style.tableCellText} />
                                     </Text>
                                 </View>
                             ))}
@@ -554,8 +562,13 @@ const style = StyleSheet.create((theme) => ({
         borderWidth: 1,
         borderColor: theme.colors.divider,
         borderRadius: 8,
-        width: '100%',
-        alignSelf: 'stretch',
+        overflow: 'hidden',
+    },
+    tableColumnsContainer: {
+        flexDirection: 'row',
+    },
+    tableColumn: {
+        flexDirection: 'column',
     },
     tableRow: {
         flexDirection: 'row',
@@ -569,6 +582,14 @@ const style = StyleSheet.create((theme) => ({
     tableCellFlex: {
         flex: 1,
         flexBasis: 0,
+    },
+    tableCellBorderRight: {
+        borderRightWidth: 1,
+        borderRightColor: theme.colors.divider,
+    },
+    tableCellBorderBottom: {
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.divider,
     },
     tableHeaderCell: {
         backgroundColor: theme.colors.surfaceHigh,
