@@ -566,6 +566,7 @@ const style = StyleSheet.create((theme) => ({
     },
     tableColumnsContainer: {
         flexDirection: 'row',
+        alignItems: 'flex-start',
     },
     tableColumn: {
         flexDirection: 'column',
