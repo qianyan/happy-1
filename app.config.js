@@ -62,7 +62,7 @@ export default {
                     "data": [
                         {
                             "scheme": "https",
-                            "host": "app.happy.engineering",
+                            "host": "happy.reily.app",
                             "pathPrefix": "/"
                         }
                     ],
