@@ -235,17 +235,31 @@ function RenderTableBlock(props: {
     first: boolean,
     last: boolean
 }) {
+    // Use native HTML table on web for proper table layout
+    if (Platform.OS === 'web') {
+        return <RenderTableBlockWeb {...props} />;
+    }
+    return <RenderTableBlockNative {...props} />;
+}
+
+// Web implementation using native HTML table
+function RenderTableBlockWeb(props: {
+    headers: string[],
+    rows: string[][],
+    first: boolean,
+    last: boolean
+}) {
     return (
         <View style={[style.tableContainer, props.first && style.first, props.last && style.last]}>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={true}
-                nestedScrollEnabled={true}
+                contentContainerStyle={{ minWidth: '100%' }}
             >
-                <View style={{ flexDirection: 'column' }}>
+                <View style={{ flexDirection: 'column', minWidth: '100%' }}>
                     <View style={style.tableRow}>
                         {props.headers.map((header, index) => (
-                            <View key={`header-${index}`} style={[style.tableCell, style.tableHeaderCell]}>
+                            <View key={`header-${index}`} style={[style.tableCell, style.tableCellFlex, style.tableHeaderCell]}>
                                 <Text style={style.tableHeaderText}>
                                     <RenderSpans spans={parseMarkdownSpans(header, false)} baseStyle={style.tableHeaderText} />
                                 </Text>
@@ -255,7 +269,49 @@ function RenderTableBlock(props: {
                     {props.rows.map((row, rowIndex) => (
                         <View key={`row-${rowIndex}`} style={style.tableRow}>
                             {row.map((cell, cellIndex) => (
-                                <View key={`cell-${rowIndex}-${cellIndex}`} style={style.tableCell}>
+                                <View key={`cell-${rowIndex}-${cellIndex}`} style={[style.tableCell, style.tableCellFlex]}>
+                                    <Text style={style.tableCellText}>
+                                        <RenderSpans spans={parseMarkdownSpans(cell, false)} baseStyle={style.tableCellText} />
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+                    ))}
+                </View>
+            </ScrollView>
+        </View>
+    );
+}
+
+// Native implementation with horizontal scroll for wide tables
+function RenderTableBlockNative(props: {
+    headers: string[],
+    rows: string[][],
+    first: boolean,
+    last: boolean
+}) {
+    return (
+        <View style={[style.tableContainerNative, props.first && style.first, props.last && style.last]}>
+            <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={true}
+                nestedScrollEnabled={true}
+                contentContainerStyle={{ minWidth: '100%' }}
+            >
+                <View style={{ flexDirection: 'column', minWidth: '100%' }}>
+                    <View style={style.tableRow}>
+                        {props.headers.map((header, index) => (
+                            <View key={`header-${index}`} style={[style.tableCell, style.tableCellFlex, style.tableHeaderCell]}>
+                                <Text style={style.tableHeaderText}>
+                                    <RenderSpans spans={parseMarkdownSpans(header, false)} baseStyle={style.tableHeaderText} />
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                    {props.rows.map((row, rowIndex) => (
+                        <View key={`row-${rowIndex}`} style={style.tableRow}>
+                            {row.map((cell, cellIndex) => (
+                                <View key={`cell-${rowIndex}-${cellIndex}`} style={[style.tableCell, style.tableCellFlex]}>
                                     <Text style={style.tableCellText}>
                                         <RenderSpans spans={parseMarkdownSpans(cell, false)} baseStyle={style.tableCellText} />
                                     </Text>
@@ -490,7 +546,16 @@ const style = StyleSheet.create((theme) => ({
         borderWidth: 1,
         borderColor: theme.colors.divider,
         borderRadius: 8,
-        overflow: 'hidden',
+        width: '100%',
+        alignSelf: 'stretch',
+    },
+    tableContainerNative: {
+        marginVertical: 8,
+        borderWidth: 1,
+        borderColor: theme.colors.divider,
+        borderRadius: 8,
+        width: '100%',
+        alignSelf: 'stretch',
     },
     tableRow: {
         flexDirection: 'row',
@@ -500,7 +565,10 @@ const style = StyleSheet.create((theme) => ({
     tableCell: {
         paddingHorizontal: 12,
         paddingVertical: 8,
-        minWidth: 80,
+    },
+    tableCellFlex: {
+        flex: 1,
+        flexBasis: 0,
     },
     tableHeaderCell: {
         backgroundColor: theme.colors.surfaceHigh,
