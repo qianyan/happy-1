@@ -580,6 +580,7 @@ const style = StyleSheet.create((theme) => ({
     tableCell: {
         paddingHorizontal: 12,
         paddingVertical: 8,
+        minHeight: 40, // Ensures consistent row height even with smaller inline code
     },
     tableCellFlex: {
         flex: 1,
