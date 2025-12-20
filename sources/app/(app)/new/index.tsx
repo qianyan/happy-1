@@ -3,7 +3,7 @@ import { View, Text, Platform, Pressable, useWindowDimensions } from 'react-nati
 import { Typography } from '@/constants/Typography';
 import { useAllMachines, storage, useSetting } from '@/sync/storage';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useUnistyles } from 'react-native-unistyles';
 import { layout } from '@/components/layout';
 import { t } from '@/text';
@@ -486,6 +486,41 @@ function NewSessionScreen() {
             ref.current?.focus();
         }
     }, []);
+
+    // Keyboard shortcuts for selecting path (Cmd+Shift+P) and machine (Cmd+Shift+M) - Web only
+    React.useEffect(() => {
+        if (Platform.OS !== 'web') {
+            return;
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const isModifierPressed = e.metaKey || e.ctrlKey;
+            const isShiftPressed = e.shiftKey;
+
+            // Cmd+Shift+P - Open path selector
+            if (isModifierPressed && isShiftPressed && e.key.toLowerCase() === 'p') {
+                e.preventDefault();
+                e.stopPropagation();
+                if (selectedMachineId) {
+                    router.navigate(`/new/pick/path?machineId=${selectedMachineId}`);
+                }
+                return;
+            }
+
+            // Cmd+Shift+M - Open machine selector
+            if (isModifierPressed && isShiftPressed && e.key.toLowerCase() === 'm') {
+                e.preventDefault();
+                e.stopPropagation();
+                router.navigate('/new/pick/machine');
+                return;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selectedMachineId, router]);
 
     // Create
     const doCreate = React.useCallback(async () => {

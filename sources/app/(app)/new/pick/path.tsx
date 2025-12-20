@@ -164,6 +164,35 @@ export default function PathPickerScreen() {
         });
     }, [customPath, router, machine, params.machineId]);
 
+    // Handle keyboard events in path input
+    const handleKeyPress = React.useCallback((event: { key: string; shiftKey: boolean }) => {
+        // Enter - Submit the path (same as clicking checkmark)
+        if (event.key === 'Enter') {
+            handleSelectPath();
+            return true; // Handled - prevent newline
+        }
+
+        // Tab - Autocomplete with first available path suggestion
+        if (event.key === 'Tab' && !event.shiftKey) {
+            const pathsToUse = filteredRecentPaths.length > 0 ? filteredRecentPaths : (recentPaths.length === 0 ? (() => {
+                const homeDir = machine?.metadata?.homeDir || '/home';
+                return [
+                    homeDir,
+                    `${homeDir}/projects`,
+                    `${homeDir}/Documents`,
+                    `${homeDir}/Desktop`
+                ];
+            })() : []);
+
+            if (pathsToUse.length > 0) {
+                setCustomPath(pathsToUse[0]);
+                return true; // Handled - prevent default tab behavior
+            }
+        }
+
+        return false; // Not handled
+    }, [handleSelectPath, filteredRecentPaths, recentPaths, machine]);
+
     if (!machine) {
         return (
             <>
@@ -247,9 +276,7 @@ export default function PathPickerScreen() {
                                                 maxHeight={76}
                                                 paddingTop={8}
                                                 paddingBottom={8}
-                                                // onSubmitEditing={handleSelectPath}
-                                                // blurOnSubmit={true}
-                                                // returnKeyType="done"
+                                                onKeyPress={handleKeyPress}
                                             />
                                         </View>
                                         {customPath.length > 0 && (
