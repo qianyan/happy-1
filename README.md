@@ -8,6 +8,7 @@
 > - iOS fixes (Enter key handling, scroll selection, session sorting)
 > - Android voice recording fixes for OpenAI Whisper compatibility
 > - Markdown rendering improvements (tables, code blocks, links)
+> - Keyboard shortcuts for web app (see below)
 > - Switched from yarn to bun
 
 ---
@@ -91,6 +92,53 @@ We're engineers scattered across Bay Area coffee shops and hacker houses, consta
 
 - **[Documentation Website](https://happy.engineering/docs/)** - Learn how to use Happy Coder effectively
 - **[Edit docs at github.com/slopus/slopus.github.io](https://github.com/slopus/slopus.github.io)** - Help improve our documentation and guides
+
+## Keyboard Shortcuts (Web Only)
+
+Happy Coder includes keyboard shortcuts for power users on the web version.
+
+### Global Shortcuts
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + K` | Open command palette |
+| `Cmd/Ctrl + Shift + O` | Create new session |
+| `Cmd/Ctrl + Shift + A` | Archive current session |
+| `Cmd/Ctrl + Backspace` | Delete current session |
+| `Cmd/Ctrl + Shift + V` | Toggle voice recording |
+
+### New Session Screen (`/new`)
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + Shift + P` | Open path selector |
+| `Cmd/Ctrl + Shift + M` | Open machine selector |
+
+### Path Selector
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Confirm and select path |
+| `Tab` | Autocomplete with first suggestion |
+
+### Message Input
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Send message (or `Shift + Enter` if configured) |
+| `Shift + Enter` | New line (or send if configured) |
+| `Shift + Tab` | Cycle permission mode |
+| `Cmd/Ctrl + M` | Cycle model mode |
+| `Arrow Up/Down` | Navigate autocomplete suggestions |
+| `Tab` | Select autocomplete suggestion |
+| `Escape` | Close suggestions / Abort current operation |
+
+### Dialogs
+| Shortcut | Action |
+|----------|--------|
+| `Enter` | Confirm / OK |
+| `Escape` | Cancel / Close |
+
+### Zen Mode (Tasks)
+| Shortcut | Action |
+|----------|--------|
+| `T` | Open new task input (when not typing) |
 
 ## License
 
