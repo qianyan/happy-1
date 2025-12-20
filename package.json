@@ -157,7 +157,6 @@
     "@types/react": "~19.1.10",
     "babel-plugin-transform-remove-console": "^6.9.4",
     "patch-package": "^8.0.0",
-    "playwright": "^1.57.0",
     "react-test-renderer": "19.0.0",
     "tsx": "^4.20.4",
     "typescript": "~5.9.2"
