@@ -213,6 +213,10 @@ export const MultiTextInput = React.forwardRef<MultiTextInputHandle, MultiTextIn
                 autoCorrect="off"
                 spellCheck="false"
                 autoComplete="off"
+                // Disable password manager autofill
+                data-1p-ignore="true"
+                data-lpignore="true"
+                data-form-type="other"
             />
         </View>
     );
