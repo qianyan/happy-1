@@ -476,16 +476,16 @@ function NewSessionScreen() {
         return machines.find(m => m.id === selectedMachineId);
     }, [selectedMachineId, machines]);
 
-    // Autofocus
-    React.useLayoutEffect(() => {
-        if (Platform.OS === 'ios') {
-            setTimeout(() => {
+    // Autofocus on initial mount and when screen gains focus (e.g., navigating back)
+    useFocusEffect(
+        React.useCallback(() => {
+            // Small delay to ensure the screen is fully mounted/focused
+            const timer = setTimeout(() => {
                 ref.current?.focus();
-            }, 800);
-        } else {
-            ref.current?.focus();
-        }
-    }, []);
+            }, Platform.OS === 'ios' ? 300 : 100);
+            return () => clearTimeout(timer);
+        }, [])
+    );
 
     // Keyboard shortcuts for selecting path (Cmd+Shift+P) and machine (Cmd+Shift+M) - Web only
     React.useEffect(() => {

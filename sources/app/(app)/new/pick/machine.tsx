@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
+import React, { useState, useMemo, useRef } from 'react';
+import { View, Text, ScrollView, ActivityIndicator, Pressable } from 'react-native';
+import { Stack, useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { ItemGroup } from '@/components/ItemGroup';
 import { Item } from '@/components/Item';
 import { Typography } from '@/constants/Typography';
@@ -13,6 +13,7 @@ import { t } from '@/text';
 import { callbacks } from '../index';
 import { ItemList } from '@/components/ItemList';
 import { getServerUrl } from '@/sync/serverConfig';
+import { MultiTextInput, MultiTextInputHandle } from '@/components/MultiTextInput';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -29,6 +30,34 @@ const stylesheet = StyleSheet.create((theme) => ({
     contentWrapper: {
         width: '100%',
         maxWidth: layout.maxWidth,
+    },
+    searchInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+    },
+    searchInput: {
+        flex: 1,
+        backgroundColor: theme.colors.input.background,
+        borderRadius: 10,
+        paddingHorizontal: 12,
+        minHeight: 36,
+        position: 'relative',
+        borderWidth: 0.5,
+        borderColor: theme.colors.divider,
+    },
+    searchInputInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    searchInputText: {
+        flex: 1,
+    },
+    clearButton: {
+        padding: 4,
+        marginLeft: 4,
     },
     emptyContainer: {
         flex: 1,
@@ -109,6 +138,36 @@ export default function MachinePickerScreen() {
     const machines = useAllMachines();
     const profile = useProfile();
     const serverUrl = getServerUrl();
+    const inputRef = useRef<MultiTextInputHandle>(null);
+
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Auto-focus the input when the screen gains focus
+    useFocusEffect(
+        React.useCallback(() => {
+            // Small delay to ensure the screen is fully mounted
+            const timer = setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }, [])
+    );
+
+    // Filter machines based on search query
+    const filteredMachines = useMemo(() => {
+        const query = searchQuery.trim().toLowerCase();
+        if (!query) return machines;
+
+        return machines.filter(machine => {
+            const displayName = machine.metadata?.displayName || '';
+            const hostName = machine.metadata?.host || '';
+            const machineId = machine.id || '';
+
+            return displayName.toLowerCase().includes(query) ||
+                   hostName.toLowerCase().includes(query) ||
+                   machineId.toLowerCase().includes(query);
+        });
+    }, [machines, searchQuery]);
 
     const handleSelectMachine = (machineId: string) => {
         // Dismiss back to /new with the selected machine ID as a param
@@ -118,6 +177,29 @@ export default function MachinePickerScreen() {
             params: { selectedMachineId: machineId }
         });
     };
+
+    // Handle keyboard events in search input
+    const handleKeyPress = React.useCallback((event: { key: string; shiftKey: boolean }) => {
+        // Enter - Select the first available machine (if any)
+        if (event.key === 'Enter') {
+            if (filteredMachines.length > 0) {
+                handleSelectMachine(filteredMachines[0].id);
+            }
+            return true; // Handled - prevent newline
+        }
+
+        // Tab - Autocomplete with first available machine name
+        if (event.key === 'Tab' && !event.shiftKey) {
+            if (filteredMachines.length > 0) {
+                const firstMachine = filteredMachines[0];
+                const displayName = firstMachine.metadata?.displayName || firstMachine.metadata?.host || firstMachine.id;
+                setSearchQuery(displayName);
+                return true; // Handled - prevent default tab behavior
+            }
+        }
+
+        return false; // Not handled
+    }, [filteredMachines, handleSelectMachine]);
 
     if (machines.length === 0) {
         // Show detailed diagnostic info when no machines are found
@@ -175,8 +257,61 @@ export default function MachinePickerScreen() {
 
     return (
         <>
+            <Stack.Screen
+                options={{
+                    headerShown: true,
+                    headerTitle: 'Select Machine',
+                    headerBackTitle: t('common.back')
+                }}
+            />
             <ItemList>
-                {machines.length === 0 && (
+                {/* Search input */}
+                <ItemGroup title={t('machine.searchMachines')}>
+                    <View style={styles.searchInputContainer}>
+                        <View style={[styles.searchInput, { paddingVertical: 8 }]}>
+                            <View style={styles.searchInputInner}>
+                                <View style={styles.searchInputText}>
+                                    <MultiTextInput
+                                        ref={inputRef}
+                                        value={searchQuery}
+                                        onChangeText={setSearchQuery}
+                                        placeholder={t('machine.searchByNameOrHostname')}
+                                        maxHeight={76}
+                                        paddingTop={8}
+                                        paddingBottom={8}
+                                        onKeyPress={handleKeyPress}
+                                    />
+                                </View>
+                                {searchQuery.length > 0 && (
+                                    <Pressable
+                                        onPress={() => {
+                                            setSearchQuery('');
+                                            inputRef.current?.focus();
+                                        }}
+                                        style={styles.clearButton}
+                                        hitSlop={8}
+                                    >
+                                        <Ionicons
+                                            name="close-circle"
+                                            size={18}
+                                            color={theme.colors.textSecondary}
+                                        />
+                                    </Pressable>
+                                )}
+                            </View>
+                        </View>
+                    </View>
+                </ItemGroup>
+
+                {filteredMachines.length === 0 && searchQuery && (
+                    <View style={styles.emptyContainer}>
+                        <Text style={styles.emptyText}>
+                            {t('machine.noMachinesMatchingSearch', { searchQuery })}
+                        </Text>
+                    </View>
+                )}
+
+                {filteredMachines.length === 0 && !searchQuery && (
                     <View style={styles.offlineWarning}>
                         <Text style={styles.offlineWarningTitle}>
                             All machines offline
@@ -189,42 +324,46 @@ export default function MachinePickerScreen() {
                     </View>
                 )}
 
-                <ItemGroup>
-                    {machines.map((machine) => {
-                        const displayName = machine.metadata?.displayName || machine.metadata?.host || machine.id;
-                        const hostName = machine.metadata?.host || machine.id;
-                        const offline = !isMachineOnline(machine);
-                        const isSelected = params.selectedId === machine.id;
+                {filteredMachines.length > 0 && (
+                    <ItemGroup title={searchQuery ? t('machine.searchResults') : t('machine.availableMachines')}>
+                        {filteredMachines.map((machine, index) => {
+                            const displayName = machine.metadata?.displayName || machine.metadata?.host || machine.id;
+                            const hostName = machine.metadata?.host || machine.id;
+                            const offline = !isMachineOnline(machine);
+                            const isSelected = params.selectedId === machine.id;
+                            const isFirst = index === 0;
 
-                        return (
-                            <Item
-                                key={machine.id}
-                                title={displayName}
-                                subtitle={displayName !== hostName ? hostName : undefined}
-                                leftElement={
-                                    <Ionicons
-                                        name="desktop-outline"
-                                        size={24}
-                                        color={offline ? theme.colors.textSecondary : theme.colors.text}
-                                    />
-                                }
-                                detail={offline ? 'offline' : 'online'}
-                                detailStyle={{
-                                    color: offline ? theme.colors.status.disconnected : theme.colors.status.connected
-                                }}
-                                titleStyle={{
-                                    color: offline ? theme.colors.textSecondary : theme.colors.text
-                                }}
-                                subtitleStyle={{
-                                    color: theme.colors.textSecondary
-                                }}
-                                selected={isSelected}
-                                onPress={() => handleSelectMachine(machine.id)}
-                                showChevron={false}
-                            />
-                        );
-                    })}
-                </ItemGroup>
+                            return (
+                                <Item
+                                    key={machine.id}
+                                    title={displayName}
+                                    subtitle={displayName !== hostName ? hostName : undefined}
+                                    leftElement={
+                                        <Ionicons
+                                            name="desktop-outline"
+                                            size={24}
+                                            color={offline ? theme.colors.textSecondary : theme.colors.text}
+                                        />
+                                    }
+                                    detail={offline ? 'offline' : 'online'}
+                                    detailStyle={{
+                                        color: offline ? theme.colors.status.disconnected : theme.colors.status.connected
+                                    }}
+                                    titleStyle={{
+                                        color: offline ? theme.colors.textSecondary : theme.colors.text
+                                    }}
+                                    subtitleStyle={{
+                                        color: theme.colors.textSecondary
+                                    }}
+                                    selected={isSelected || (!!searchQuery && isFirst)}
+                                    onPress={() => handleSelectMachine(machine.id)}
+                                    showChevron={false}
+                                    pressableStyle={(isSelected || (searchQuery && isFirst)) ? { backgroundColor: theme.colors.surfaceSelected } : undefined}
+                                />
+                            );
+                        })}
+                    </ItemGroup>
+                )}
             </ItemList>
         </>
     );

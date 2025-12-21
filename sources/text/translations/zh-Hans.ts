@@ -753,6 +753,12 @@ export const zhHans: TranslationStructure = {
         launchNewSessionInDirectory: '在目录中启动新会话',
         offlineUnableToSpawn: '设备离线时无法启动',
         offlineHelp: '• 确保您的计算机在线\n• 运行 `happy daemon status` 进行诊断\n• 您是否在运行最新的 CLI 版本？请使用 `npm install -g happy-coder@latest` 升级',
+        // Machine selector search
+        searchMachines: '搜索设备',
+        searchByNameOrHostname: '按名称或主机名搜索',
+        searchResults: '搜索结果',
+        availableMachines: '可用设备',
+        noMachinesMatchingSearch: ({ searchQuery }: { searchQuery: string }) => `未找到匹配"${searchQuery}"的设备`,
         daemon: '守护进程',
         status: '状态',
         pingDaemon: 'Ping 守护进程',

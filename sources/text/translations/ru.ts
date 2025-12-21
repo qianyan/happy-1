@@ -749,6 +749,12 @@ export const ru: TranslationStructure = {
         offlineUnableToSpawn: 'Запуск отключен: машина offline',
         offlineHelp: '• Убедитесь, что компьютер online\n• Выполните `happy daemon status` для диагностики\n• Используете последнюю версию CLI? Обновите командой `npm install -g happy-coder@latest`',
         launchNewSessionInDirectory: 'Запустить новую сессию в папке',
+        // Machine selector search
+        searchMachines: 'Поиск машин',
+        searchByNameOrHostname: 'Поиск по имени или хосту',
+        searchResults: 'Результаты поиска',
+        availableMachines: 'Доступные машины',
+        noMachinesMatchingSearch: ({ searchQuery }: { searchQuery: string }) => `Машины по запросу «${searchQuery}» не найдены`,
         daemon: 'Daemon',
         status: 'Статус',
         pingDaemon: 'Ping daemon',

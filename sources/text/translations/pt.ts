@@ -751,6 +751,12 @@ export const pt: TranslationStructure = {
         offlineUnableToSpawn: 'Inicializador desativado enquanto a máquina está offline',
         offlineHelp: '• Verifique se seu computador está online\n• Execute `happy daemon status` para diagnosticar\n• Você está usando a versão mais recente do CLI? Atualize com `npm install -g happy-coder@latest`',
         launchNewSessionInDirectory: 'Iniciar nova sessão no diretório',
+        // Machine selector search
+        searchMachines: 'Buscar Máquinas',
+        searchByNameOrHostname: 'Buscar por nome ou hostname',
+        searchResults: 'Resultados da busca',
+        availableMachines: 'Máquinas disponíveis',
+        noMachinesMatchingSearch: ({ searchQuery }: { searchQuery: string }) => `Nenhuma máquina encontrada correspondendo a "${searchQuery}"`,
         daemon: 'Daemon',
         status: 'Status',
         pingDaemon: 'Ping daemon',

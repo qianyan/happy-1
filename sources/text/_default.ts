@@ -751,6 +751,12 @@ export const en = {
         launchNewSessionInDirectory: 'Launch New Session in Directory',
         offlineUnableToSpawn: 'Launcher disabled while machine is offline',
         offlineHelp: '• Make sure your computer is online\n• Run `happy daemon status` to diagnose\n• Are you running the latest CLI version? Upgrade with `npm install -g happy-coder@latest`',
+        // Machine selector search
+        searchMachines: 'Search Machines',
+        searchByNameOrHostname: 'Search by name or hostname',
+        searchResults: 'Search Results',
+        availableMachines: 'Available Machines',
+        noMachinesMatchingSearch: ({ searchQuery }: { searchQuery: string }) => `No machines found matching "${searchQuery}"`,
         daemon: 'Daemon',
         status: 'Status',
         pingDaemon: 'Ping Daemon',

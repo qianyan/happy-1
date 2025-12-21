@@ -751,6 +751,12 @@ export const es: TranslationStructure = {
         offlineUnableToSpawn: 'El lanzador está deshabilitado mientras la máquina está desconectada',
         offlineHelp: '• Asegúrate de que tu computadora esté en línea\n• Ejecuta `happy daemon status` para diagnosticar\n• ¿Estás usando la última versión del CLI? Actualiza con `npm install -g happy-coder@latest`',
         launchNewSessionInDirectory: 'Iniciar nueva sesión en directorio',
+        // Machine selector search
+        searchMachines: 'Buscar Máquinas',
+        searchByNameOrHostname: 'Buscar por nombre o hostname',
+        searchResults: 'Resultados de búsqueda',
+        availableMachines: 'Máquinas disponibles',
+        noMachinesMatchingSearch: ({ searchQuery }: { searchQuery: string }) => `No se encontraron máquinas que coincidan con "${searchQuery}"`,
         daemon: 'Daemon',
         status: 'Estado',
         pingDaemon: 'Ping daemon',

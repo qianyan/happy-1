@@ -751,6 +751,12 @@ export const ca: TranslationStructure = {
         offlineUnableToSpawn: 'El llançador està desactivat mentre la màquina està fora de línia',
         offlineHelp: '• Assegura\'t que l\'ordinador estigui en línia\n• Executa `happy daemon status` per diagnosticar\n• Fas servir l\'última versió del CLI? Actualitza amb `npm install -g happy-coder@latest`',
         launchNewSessionInDirectory: 'Inicia una nova sessió al directori',
+        // Machine selector search
+        searchMachines: 'Cerca màquines',
+        searchByNameOrHostname: 'Cerca per nom o hostname',
+        searchResults: 'Resultats de la cerca',
+        availableMachines: 'Màquines disponibles',
+        noMachinesMatchingSearch: ({ searchQuery }: { searchQuery: string }) => `No s'han trobat màquines que coincideixin amb "${searchQuery}"`,
         daemon: 'Dimoni',
         status: 'Estat',
         pingDaemon: 'Ping al dimoni',
