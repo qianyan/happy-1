@@ -32,9 +32,9 @@ export type LocalSettings = z.infer<typeof LocalSettingsSchema>;
 export const localSettingsDefaults: LocalSettings = {
     debugMode: false,
     devModeEnabled: false,
-    commandPaletteEnabled: false,
+    commandPaletteEnabled: true,
     themePreference: 'adaptive',
-    markdownCopyV2: false,
+    markdownCopyV2: true,
     shiftEnterToSend: false,
     acknowledgedCliVersions: {},
 };
