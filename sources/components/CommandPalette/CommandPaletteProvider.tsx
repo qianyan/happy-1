@@ -7,6 +7,7 @@ import { Command } from './types';
 import { useGlobalKeyboard } from '@/hooks/useGlobalKeyboard';
 import { useAuth } from '@/auth/AuthContext';
 import { storage, useSession } from '@/sync/storage';
+import type { Session } from '@/sync/storageTypes';
 import { useShallow } from 'zustand/react/shallow';
 import { useNavigateToSession } from '@/hooks/useNavigateToSession';
 import { sessionKill, sessionDelete } from '@/sync/ops';
@@ -19,6 +20,7 @@ import {
     onStatusChange,
     TranscriptionStatus
 } from '@/services/whisperTranscription';
+import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -42,6 +44,30 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         const unsubscribe = onStatusChange(setVoiceStatus);
         return unsubscribe;
     }, []);
+
+    // Get visible sessions list for prev/next navigation
+    const sessionListViewData = useVisibleSessionListViewData();
+
+    // Extract flat list of sessions for keyboard navigation
+    // Must match the visual order in the sidebar (ActiveSessionsGroup sorts by lastMessageAt)
+    const sessionsList = useMemo((): Session[] => {
+        if (!sessionListViewData) return [];
+        const result: Session[] = [];
+        for (const item of sessionListViewData) {
+            if (item.type === 'session') {
+                result.push(item.session);
+            } else if (item.type === 'active-sessions') {
+                // Sort active sessions by lastMessageAt to match ActiveSessionsGroup display order
+                const sortedActiveSessions = [...item.sessions].sort((a, b) => {
+                    const aTime = a.lastMessageAt ?? a.createdAt;
+                    const bTime = b.lastMessageAt ?? b.createdAt;
+                    return bTime - aTime;
+                });
+                result.push(...sortedActiveSessions);
+            }
+        }
+        return result;
+    }, [sessionListViewData]);
 
     // Define available commands
     const commands = useMemo((): Command[] => {
@@ -324,13 +350,61 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         }
     }, [currentSession, currentSessionId, commandPaletteEnabled, voiceStatus]);
 
+    // Handler for previous session shortcut (⌥↑)
+    const handlePrevSession = useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        if (sessionsList.length === 0) return;
+
+        // If not on a session page, navigate to the first session
+        if (!currentSessionId) {
+            navigateToSession(sessionsList[0].id);
+            return;
+        }
+
+        const currentIndex = sessionsList.findIndex(s => s.id === currentSessionId);
+        if (currentIndex === -1) {
+            // Current session not in list, navigate to first
+            navigateToSession(sessionsList[0].id);
+            return;
+        }
+
+        // Navigate to previous session (wrap to end if at beginning)
+        const prevIndex = currentIndex > 0 ? currentIndex - 1 : sessionsList.length - 1;
+        navigateToSession(sessionsList[prevIndex].id);
+    }, [commandPaletteEnabled, sessionsList, currentSessionId, navigateToSession]);
+
+    // Handler for next session shortcut (⌥↓)
+    const handleNextSession = useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        if (sessionsList.length === 0) return;
+
+        // If not on a session page, navigate to the first session
+        if (!currentSessionId) {
+            navigateToSession(sessionsList[0].id);
+            return;
+        }
+
+        const currentIndex = sessionsList.findIndex(s => s.id === currentSessionId);
+        if (currentIndex === -1) {
+            // Current session not in list, navigate to first
+            navigateToSession(sessionsList[0].id);
+            return;
+        }
+
+        // Navigate to next session (wrap to beginning if at end)
+        const nextIndex = currentIndex < sessionsList.length - 1 ? currentIndex + 1 : 0;
+        navigateToSession(sessionsList[nextIndex].id);
+    }, [commandPaletteEnabled, sessionsList, currentSessionId, navigateToSession]);
+
     // Keyboard shortcut handlers
     const keyboardHandlers = useMemo(() => ({
         onNewSession: handleNewSession,
         onArchiveSession: handleArchiveSession,
         onDeleteSession: handleDeleteSession,
         onToggleVoiceRecording: handleToggleVoiceRecording,
-    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording]);
+        onPrevSession: handlePrevSession,
+        onNextSession: handleNextSession,
+    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession]);
 
     // Set up global keyboard handler only if feature is enabled
     useGlobalKeyboard(

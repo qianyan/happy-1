@@ -10,11 +10,13 @@ export interface KeyboardHandlers {
     onArchiveSession?: () => void;
     onDeleteSession?: () => void;
     onToggleVoiceRecording?: () => void;
+    onPrevSession?: () => void;
+    onNextSession?: () => void;
 }
 
 /**
  * Hook for handling global keyboard shortcuts on web
- * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice)
+ * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌥↑/↓ (prev/next session)
  */
 export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<KeyboardHandlers, 'onCommandPalette'>) {
     useEffect(() => {
@@ -64,6 +66,22 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
                 e.preventDefault();
                 e.stopPropagation();
                 handlers?.onToggleVoiceRecording?.();
+                return;
+            }
+
+            // ⌥↑ - Previous session
+            if (e.altKey && e.key === 'ArrowUp') {
+                e.preventDefault();
+                e.stopPropagation();
+                handlers?.onPrevSession?.();
+                return;
+            }
+
+            // ⌥↓ - Next session
+            if (e.altKey && e.key === 'ArrowDown') {
+                e.preventDefault();
+                e.stopPropagation();
+                handlers?.onNextSession?.();
                 return;
             }
         };
