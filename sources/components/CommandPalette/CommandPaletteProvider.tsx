@@ -196,6 +196,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                                         const result = await sessionKill(currentSessionId);
                                         if (!result.success) {
                                             Modal.alert(t('common.error'), result.message || t('sessionInfo.failedToArchiveSession'));
+                                        } else {
+                                            router.back();
                                         }
                                     }
                                 }
@@ -302,12 +304,14 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                         const result = await sessionKill(currentSessionId);
                         if (!result.success) {
                             Modal.alert(t('common.error'), result.message || t('sessionInfo.failedToArchiveSession'));
+                        } else {
+                            router.back();
                         }
                     }
                 }
             ]
         );
-    }, [currentSession, currentSessionId, commandPaletteEnabled]);
+    }, [currentSession, currentSessionId, commandPaletteEnabled, router]);
 
     // Handler for delete session shortcut (⌘⌫)
     const handleDeleteSession = useCallback(() => {
