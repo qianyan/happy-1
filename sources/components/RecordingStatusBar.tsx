@@ -5,14 +5,15 @@ import { Typography } from '@/constants/Typography';
 import { Ionicons } from '@expo/vector-icons';
 import { useUnistyles } from 'react-native-unistyles';
 import { t } from '@/text';
-import { TranscriptionStatus, cancelRecording } from '@/services/whisperTranscription';
+import { TranscriptionStatus } from '@/hooks/useWhisperTranscription';
 
 interface RecordingStatusBarProps {
     status: TranscriptionStatus;
     style?: any;
+    onCancel?: () => void;
 }
 
-export const RecordingStatusBar = React.memo(({ status, style }: RecordingStatusBarProps) => {
+export const RecordingStatusBar = React.memo(({ status, style, onCancel }: RecordingStatusBarProps) => {
     const { theme } = useUnistyles();
 
     // Don't render if idle
@@ -21,7 +22,7 @@ export const RecordingStatusBar = React.memo(({ status, style }: RecordingStatus
     }
 
     const handleCancel = () => {
-        cancelRecording();
+        onCancel?.();
     };
 
     const getStatusInfo = () => {

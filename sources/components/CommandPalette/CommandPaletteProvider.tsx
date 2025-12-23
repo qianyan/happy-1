@@ -14,12 +14,12 @@ import { sessionKill, sessionDelete } from '@/sync/ops';
 import { t } from '@/text';
 import { getSessionName } from '@/utils/sessionUtils';
 import {
-    startRecording,
-    stopRecording,
-    isRecording,
+    startRecordingGlobal as startRecording,
+    stopRecordingGlobal as stopRecording,
+    isRecordingGlobal as isRecording,
     onStatusChange,
     TranscriptionStatus
-} from '@/services/whisperTranscription';
+} from '@/hooks/useWhisperTranscription';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
