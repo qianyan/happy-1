@@ -3,6 +3,66 @@ import type { MarkdownSpan } from "./parseMarkdown";
 // Updated pattern to handle nested markdown and asterisks
 const pattern = /(\*\*(.*?)(?:\*\*|$))|(\*(.*?)(?:\*|$))|(\[([^\]]+)\](?:\(([^)]+)\))?)|(`(.*?)(?:`|$))/g;
 
+// Pattern to detect bare URLs (not already part of markdown links)
+const urlPattern = /https?:\/\/[^\s<>\[\]()]+/g;
+
+/**
+ * Convert bare URLs in plain text spans into clickable link spans.
+ * Only processes spans that have no URL already set (plain text spans).
+ */
+function autoLinkUrls(spans: MarkdownSpan[]): MarkdownSpan[] {
+    const result: MarkdownSpan[] = [];
+
+    for (const span of spans) {
+        // Skip spans that already have a URL or are code spans
+        if (span.url !== null || span.styles.includes('code')) {
+            result.push(span);
+            continue;
+        }
+
+        // Find all URLs in the text
+        const text = span.text;
+        urlPattern.lastIndex = 0;
+        let lastIndex = 0;
+        let match: RegExpExecArray | null;
+
+        while ((match = urlPattern.exec(text)) !== null) {
+            // Add text before the URL as plain text
+            if (match.index > lastIndex) {
+                result.push({
+                    styles: span.styles,
+                    text: text.slice(lastIndex, match.index),
+                    url: null
+                });
+            }
+
+            // Add the URL as a link span
+            const url = match[0];
+            result.push({
+                styles: span.styles,
+                text: url,
+                url: url
+            });
+
+            lastIndex = urlPattern.lastIndex;
+        }
+
+        // Add remaining text after the last URL
+        if (lastIndex < text.length) {
+            result.push({
+                styles: span.styles,
+                text: text.slice(lastIndex),
+                url: null
+            });
+        } else if (lastIndex === 0) {
+            // No URLs found, keep original span
+            result.push(span);
+        }
+    }
+
+    return result;
+}
+
 export function parseMarkdownSpans(markdown: string, header: boolean) {
     const spans: MarkdownSpan[] = [];
     let lastIndex = 0;
@@ -50,5 +110,6 @@ export function parseMarkdownSpans(markdown: string, header: boolean) {
         spans.push({ styles: [], text: markdown.slice(lastIndex), url: null });
     }
 
-    return spans;
+    // Auto-link bare URLs in plain text spans
+    return autoLinkUrls(spans);
 }
