@@ -212,11 +212,15 @@ export const MultiTextInput = React.forwardRef<MultiTextInputHandle, MultiTextIn
                 autoCapitalize="sentences"
                 autoCorrect="off"
                 spellCheck="false"
-                autoComplete="off"
-                // Disable password manager autofill
+                // Use "one-time-code" to hint this is not a password/username field
+                // Safari respects this better than "off"
+                autoComplete="one-time-code"
+                // Disable password manager autofill (1Password, LastPass, iCloud Keychain)
                 data-1p-ignore="true"
                 data-lpignore="true"
                 data-form-type="other"
+                // Bitwarden ignore
+                data-bwignore="true"
             />
         </View>
     );
