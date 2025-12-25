@@ -13,6 +13,7 @@ import { useNavigateToSession } from '@/hooks/useNavigateToSession';
 import { sessionKill, sessionDelete } from '@/sync/ops';
 import { t } from '@/text';
 import { getSessionName } from '@/utils/sessionUtils';
+import { shortcut } from '@/utils/keyboard';
 import {
     startRecordingGlobal as startRecording,
     stopRecordingGlobal as stopRecording,
@@ -79,7 +80,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                 subtitle: 'Start a new chat session',
                 icon: 'add-circle-outline',
                 category: 'Sessions',
-                shortcut: '⌘⇧O',
+                shortcut: shortcut({ command: true, shift: true, key: 'O' }),
                 action: () => {
                     router.push('/new');
                 }
@@ -100,7 +101,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                 subtitle: 'Configure your preferences',
                 icon: 'settings-outline',
                 category: 'Navigation',
-                shortcut: '⌘,',
+                shortcut: shortcut({ command: true, key: ',' }),
                 action: () => {
                     router.push('/settings');
                 }
@@ -163,7 +164,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                         : t('commandPalette.startRecordingSubtitle'),
                     icon: isCurrentlyRecording ? 'stop-circle-outline' : 'mic-outline',
                     category: 'Current Session',
-                    shortcut: '⌘⇧V',
+                    shortcut: shortcut({ command: true, shift: true, key: 'V' }),
                     action: async () => {
                         if (isRecording()) {
                             stopRecording();
@@ -182,7 +183,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                     subtitle: `${sessionName} - ${t('sessionInfo.archiveSessionSubtitle')}`,
                     icon: 'archive-outline',
                     category: 'Current Session',
-                    shortcut: '⌘⇧A',
+                    shortcut: shortcut({ command: true, shift: true, key: 'A' }),
                     action: () => {
                         Modal.alert(
                             t('sessionInfo.archiveSession'),
@@ -215,7 +216,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                     subtitle: `${sessionName} - ${t('sessionInfo.deleteSessionSubtitle')}`,
                     icon: 'trash-outline',
                     category: 'Current Session',
-                    shortcut: '⌘⌫',
+                    shortcut: shortcut({ command: true, key: 'Backspace' }),
                     action: () => {
                         Modal.alert(
                             t('sessionInfo.deleteSession'),
