@@ -111,7 +111,7 @@ const ScrollToBottomButton = React.memo((props: { onPress: () => void }) => {
 const styles = StyleSheet.create((theme) => ({
     scrollButtonContainer: {
         position: 'absolute',
-        bottom: 80,
+        bottom: 10,
         alignSelf: 'center',
     },
     scrollButton: {
