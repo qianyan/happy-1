@@ -23,6 +23,8 @@ import { PermissionMode, ModelMode } from '@/components/PermissionModeSelector';
 import { useImageAttachments } from '@/hooks/useImageAttachments';
 import { hapticsHeavy } from '@/components/haptics';
 import { useWhisperTranscription, TranscriptionStatus } from '@/hooks/useWhisperTranscription';
+import { useGlobalKeyboard } from '@/hooks/useGlobalKeyboard';
+import { CommandPalette } from '@/components/CommandPalette';
 
 // Simple temporary state for passing selections back from picker screens
 let onMachineSelected: (machineId: string) => void = () => { };
@@ -475,7 +477,50 @@ function NewSessionScreen() {
         }, [])
     );
 
-    // Keyboard shortcuts for selecting path (Cmd+Shift+P) and machine (Cmd+Shift+M) - Web only
+    // Check if command palette is enabled
+    const commandPaletteEnabled = storage(state => state.localSettings.commandPaletteEnabled);
+
+    // Handler for showing command palette (⌘K)
+    const showCommandPalette = React.useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+
+        // Note: The actual commands are managed by CommandPaletteProvider
+        // We just trigger the modal here
+        Modal.show({
+            component: CommandPalette,
+            props: {
+                // Commands will be provided by the CommandPaletteProvider context
+                commands: [],
+            }
+        } as any);
+    }, [commandPaletteEnabled]);
+
+    // Handler for toggling voice recording via keyboard shortcut (⌘⇧V)
+    const handleToggleVoiceRecording = React.useCallback(async () => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        // Don't toggle if currently transcribing
+        if (transcriptionStatus === 'transcribing') return;
+
+        if (isRecording()) {
+            stopRecording();
+        } else {
+            await startRecording();
+        }
+    }, [commandPaletteEnabled, transcriptionStatus, isRecording, stopRecording, startRecording]);
+
+    // Setup global keyboard shortcuts with command palette support
+    const keyboardHandlers = React.useMemo(() => ({
+        onToggleVoiceRecording: handleToggleVoiceRecording,
+        // We can add more handlers here as needed (e.g., for new session, etc.)
+    }), [handleToggleVoiceRecording]);
+
+    // Use global keyboard handler for command palette support
+    useGlobalKeyboard(
+        commandPaletteEnabled ? showCommandPalette : () => {},
+        commandPaletteEnabled ? keyboardHandlers : undefined
+    );
+
+    // Additional keyboard shortcuts for selecting path (Cmd+Shift+P) and machine (Cmd+Shift+M) - Web only
     React.useEffect(() => {
         if (Platform.OS !== 'web') {
             return;

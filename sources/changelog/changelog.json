@@ -1,6 +1,19 @@
 {
   "entries": [
     {
+      "version": 5,
+      "date": "2025-12-25",
+      "summary": "This update brings powerful keyboard shortcuts to the new session screen, making voice dictation and command access faster than ever. Power users can now leverage the same efficient workflow across all session screens.",
+      "changes": [
+        "Added command palette keyboard shortcuts to new session screen for consistent keyboard navigation",
+        "Enabled Cmd+Shift+V voice dictation toggle in new session creation for hands-free input",
+        "Implemented Cmd+K command palette access from new session screen for quick action discovery",
+        "Fixed scroll-to-bottom button position to 10px from bottom for better visibility",
+        "Added cross-platform keyboard shortcuts (Cmd on Mac, Ctrl on Windows) for prev/next session navigation"
+      ],
+      "rawMarkdown": "## Version 5 - 2025-12-25\n\n\nThis update brings powerful keyboard shortcuts to the new session screen, making voice dictation and command access faster than ever. Power users can now leverage the same efficient workflow across all session screens.\n\n- Added command palette keyboard shortcuts to new session screen for consistent keyboard navigation\n- Enabled Cmd+Shift+V voice dictation toggle in new session creation for hands-free input\n- Implemented Cmd+K command palette access from new session screen for quick action discovery\n- Fixed scroll-to-bottom button position to 10px from bottom for better visibility\n- Added cross-platform keyboard shortcuts (Cmd on Mac, Ctrl on Windows) for prev/next session navigation"
+    },
+    {
       "version": 4,
       "date": "2025-09-12",
       "summary": "This release revolutionizes remote development with Codex integration and Daemon Mode, enabling instant AI assistance from anywhere. Start coding sessions with a single tap while maintaining complete control over your development environment.",
@@ -53,5 +66,5 @@
       "rawMarkdown": "## Version 1 - 2025-05-12\n\n\nWelcome to Happy - your secure, encrypted mobile companion for Claude Code. This inaugural release establishes the foundation for private, powerful AI interactions on the go.\n\n- Implemented end-to-end encrypted session management ensuring complete privacy\n- Integrated intelligent voice assistant with natural conversation capabilities\n- Added experimental file manager with syntax highlighting and tree navigation\n- Built seamless real-time synchronization across all your devices\n- Established native support for iOS, Android, and responsive web interfaces"
     }
   ],
-  "latestVersion": 4
+  "latestVersion": 5
 }

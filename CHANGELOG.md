@@ -1,5 +1,15 @@
 # Changelog
 
+## Version 5 - 2025-12-25
+
+This update brings powerful keyboard shortcuts to the new session screen, making voice dictation and command access faster than ever. Power users can now leverage the same efficient workflow across all session screens.
+
+- Added command palette keyboard shortcuts to new session screen for consistent keyboard navigation
+- Enabled Cmd+Shift+V voice dictation toggle in new session creation for hands-free input
+- Implemented Cmd+K command palette access from new session screen for quick action discovery
+- Fixed scroll-to-bottom button position to 10px from bottom for better visibility
+- Added cross-platform keyboard shortcuts (Cmd on Mac, Ctrl on Windows) for prev/next session navigation
+
 ## Version 4 - 2025-09-12
 
 This release revolutionizes remote development with Codex integration and Daemon Mode, enabling instant AI assistance from anywhere. Start coding sessions with a single tap while maintaining complete control over your development environment.
