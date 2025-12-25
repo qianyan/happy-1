@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
+import { isMacPlatform } from '@/utils/keyboard';
 
 /**
  * Keyboard shortcut handlers configuration
@@ -16,7 +17,8 @@ export interface KeyboardHandlers {
 
 /**
  * Hook for handling global keyboard shortcuts on web
- * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌥↑/↓ (prev/next session)
+ * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice)
+ * Prev/Next session: ⌥↑/↓ on Mac, Ctrl+Shift+↑/↓ on Windows/Linux
  */
 export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<KeyboardHandlers, 'onCommandPalette'>) {
     useEffect(() => {
@@ -69,16 +71,20 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
                 return;
             }
 
-            // ⌥↑ - Previous session
-            if (e.altKey && e.key === 'ArrowUp') {
+            // Previous session: ⌥↑ on Mac, Ctrl+Shift+↑ on Windows/Linux
+            const isMac = isMacPlatform();
+            const prevNextMac = isMac && e.altKey && !e.ctrlKey && !e.shiftKey;
+            const prevNextWin = !isMac && e.ctrlKey && e.shiftKey && !e.altKey;
+
+            if ((prevNextMac || prevNextWin) && e.key === 'ArrowUp') {
                 e.preventDefault();
                 e.stopPropagation();
                 handlers?.onPrevSession?.();
                 return;
             }
 
-            // ⌥↓ - Next session
-            if (e.altKey && e.key === 'ArrowDown') {
+            // Next session: ⌥↓ on Mac, Ctrl+Shift+↓ on Windows/Linux
+            if ((prevNextMac || prevNextWin) && e.key === 'ArrowDown') {
                 e.preventDefault();
                 e.stopPropagation();
                 handlers?.onNextSession?.();

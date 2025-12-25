@@ -355,7 +355,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         }
     }, [currentSession, currentSessionId, commandPaletteEnabled, voiceStatus]);
 
-    // Handler for previous session shortcut (⌥↑)
+    // Handler for previous session shortcut (⌥↑ on Mac, Ctrl+Shift+↑ on Windows)
     const handlePrevSession = useCallback(() => {
         if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
         if (sessionsList.length === 0) return;
@@ -378,7 +378,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         navigateToSession(sessionsList[prevIndex].id);
     }, [commandPaletteEnabled, sessionsList, currentSessionId, navigateToSession]);
 
-    // Handler for next session shortcut (⌥↓)
+    // Handler for next session shortcut (⌥↓ on Mac, Ctrl+Shift+↓ on Windows)
     const handleNextSession = useCallback(() => {
         if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
         if (sessionsList.length === 0) return;

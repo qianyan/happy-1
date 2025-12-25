@@ -8,7 +8,7 @@ import { Platform } from 'react-native';
  * On native iOS, always uses Mac style.
  * On native Android, always uses Windows/Linux style.
  */
-function isMacPlatform(): boolean {
+export function isMacPlatform(): boolean {
     if (Platform.OS === 'ios') {
         return true;
     }
@@ -89,6 +89,17 @@ export const SpecialKey = {
 } as const;
 
 /**
+ * Options for creating a keyboard shortcut display string.
+ */
+export interface ShortcutOptions {
+    command?: boolean;
+    alt?: boolean;
+    shift?: boolean;
+    control?: boolean;
+    key: string;
+}
+
+/**
  * Creates a keyboard shortcut display string.
  * Automatically uses the correct symbols for the current platform.
  *
@@ -102,13 +113,7 @@ export const SpecialKey = {
  * // On Mac: "⌥↑", on Windows: "Alt+↑"
  * shortcut({ alt: true, key: 'arrowUp' })
  */
-export function shortcut(options: {
-    command?: boolean;
-    alt?: boolean;
-    shift?: boolean;
-    control?: boolean;
-    key: string;
-}): string {
+export function shortcut(options: ShortcutOptions): string {
     const parts: string[] = [];
     const isMac = isMacPlatform();
 
@@ -171,4 +176,22 @@ export function shortcut(options: {
         // The modifiers already end with +, so we just concatenate
         return parts.join('');
     }
+}
+
+/**
+ * Creates a platform-specific keyboard shortcut display string.
+ * Use this when different platforms need completely different shortcuts.
+ *
+ * @example
+ * // Mac: "⌥↑", Windows: "Ctrl+Shift+↑"
+ * shortcutPlatformSpecific(
+ *     { alt: true, key: 'arrowUp' },           // Mac
+ *     { command: true, shift: true, key: 'arrowUp' }  // Windows/Linux
+ * )
+ */
+export function shortcutPlatformSpecific(
+    macOptions: ShortcutOptions,
+    windowsOptions: ShortcutOptions
+): string {
+    return isMacPlatform() ? shortcut(macOptions) : shortcut(windowsOptions);
 }
