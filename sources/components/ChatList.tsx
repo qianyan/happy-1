@@ -9,7 +9,7 @@ import { Metadata, Session } from '@/sync/storageTypes';
 import { ChatFooter } from './ChatFooter';
 import { Message } from '@/sync/typesMessage';
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 export const ChatList = React.memo((props: { session: Session }) => {
@@ -92,6 +92,7 @@ const ChatListInternal = React.memo((props: {
 });
 
 const ScrollToBottomButton = React.memo((props: { onPress: () => void }) => {
+    const { theme } = useUnistyles();
     return (
         <Animated.View
             entering={FadeIn.duration(150)}
@@ -102,7 +103,7 @@ const ScrollToBottomButton = React.memo((props: { onPress: () => void }) => {
                 onPress={props.onPress}
                 style={styles.scrollButton}
             >
-                <Ionicons name="arrow-down" size={20} style={styles.scrollButtonIcon} />
+                <Ionicons name="arrow-down" size={20} color={theme.colors.text} />
             </Pressable>
         </Animated.View>
     );
@@ -128,8 +129,5 @@ const styles = StyleSheet.create((theme) => ({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
-    },
-    scrollButtonIcon: {
-        color: theme.colors.text,
     },
 }));
