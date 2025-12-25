@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getSessionName, useSessionStatus, formatPathRelativeToHome, getSessionSubtitle, formatLastSeen } from '@/utils/sessionUtils';
 import { Typography } from '@/constants/Typography';
 import { StatusDot } from './StatusDot';
-import { useAllMachines, useSetting, useMachine } from '@/sync/storage';
+import { useAllMachines, useSetting, useMachine, useLocalSetting } from '@/sync/storage';
 import { StyleSheet } from 'react-native-unistyles';
 import { isMachineOnline } from '@/utils/machineUtils';
 import { machineSpawnNewSession } from '@/sync/ops';
@@ -195,6 +195,13 @@ const stylesheet = StyleSheet.create((theme, runtime) => ({
         color: theme.colors.textSecondary,
         ...Typography.default(),
     },
+    unreadDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: theme.colors.status.error,
+        marginLeft: 6,
+    },
 }));
 
 interface ActiveSessionsGroupProps {
@@ -236,6 +243,7 @@ export const FlatSessionRow = React.memo(({ session, selected }: { session: Sess
     const sessionName = getSessionName(session);
     const sessionSubtitle = getSessionSubtitle(session);
     const navigateToSession = useNavigateToSession();
+    const sessionLastReadAt = useLocalSetting('sessionLastReadAt');
 
     // Get machine for display name
     const machine = useMachine(session.metadata?.machineId || '');
@@ -248,6 +256,24 @@ export const FlatSessionRow = React.memo(({ session, selected }: { session: Sess
         const timestamp = session.lastMessageAt ?? session.createdAt;
         return formatLastSeen(timestamp, false);
     }, [session.lastMessageAt, session.createdAt]);
+
+    // Check if session has unread messages
+    // Only show unread indicator when:
+    // 1. Session has messages (lastMessageAt exists)
+    // 2. Last message is newer than last read time
+    // 3. Session is idle (online, not actively processing)
+    const hasUnreadMessages = React.useMemo(() => {
+        const lastMessageAt = session.lastMessageAt;
+        if (!lastMessageAt) return false;
+
+        const lastReadAt = sessionLastReadAt[session.id] ?? 0;
+        const hasNewMessages = lastMessageAt > lastReadAt;
+
+        // Only show unread when session is idle (online status, not thinking/processing)
+        const isIdle = sessionStatus.isConnected && !session.thinking;
+
+        return hasNewMessages && isIdle;
+    }, [session.lastMessageAt, session.id, session.thinking, sessionLastReadAt, sessionStatus.isConnected]);
 
     return (
         <Pressable
@@ -304,6 +330,8 @@ export const FlatSessionRow = React.memo(({ session, selected }: { session: Sess
                         <Text style={styles.statusTimestamp}>
                             {' · '}{lastUpdatedText}
                         </Text>
+                        {/* Unread indicator */}
+                        {hasUnreadMessages && <View style={styles.unreadDot} />}
                     </View>
 
                     {/* Task status indicator */}

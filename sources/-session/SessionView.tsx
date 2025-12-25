@@ -158,6 +158,17 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     const { messages, isLoaded } = useSessionMessages(sessionId);
     const acknowledgedCliVersions = useLocalSetting('acknowledgedCliVersions');
 
+    // Mark session as read when viewing it
+    React.useEffect(() => {
+        const currentLastRead = storage.getState().localSettings.sessionLastReadAt;
+        storage.getState().applyLocalSettings({
+            sessionLastReadAt: {
+                ...currentLastRead,
+                [sessionId]: Date.now()
+            }
+        });
+    }, [sessionId]);
+
     // Check if CLI version is outdated and not already acknowledged
     const cliVersion = session.metadata?.version;
     const machineId = session.metadata?.machineId;
