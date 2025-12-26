@@ -58,6 +58,8 @@ export const en = {
         fileViewer: 'File Viewer',
         loading: 'Loading...',
         retry: 'Retry',
+        showMore: 'Show more',
+        showLess: 'Show less',
     },
 
     profile: {
@@ -86,6 +88,7 @@ export const en = {
         justNow: 'just now',
         minutesAgo: ({ count }: { count: number }) => `${count} minute${count !== 1 ? 's' : ''} ago`,
         hoursAgo: ({ count }: { count: number }) => `${count} hour${count !== 1 ? 's' : ''} ago`,
+        daysAgo: ({ count }: { count: number }) => `${count} day${count !== 1 ? 's' : ''} ago`,
     },
 
     connect: {
@@ -303,6 +306,7 @@ export const en = {
     session: {
         inputPlaceholder: 'Type a message ...',
         searchPlaceholder: 'Search sessions...',
+        selectToolToViewDetails: 'Select a tool to view details',
     },
 
     commandPalette: {
@@ -455,6 +459,11 @@ export const en = {
         suggestion: {
             fileLabel: 'FILE',
             folderLabel: 'FOLDER',
+        },
+        userHistory: {
+            last: 'Last',
+            title: ({ count }: { count: number }) => `Your Messages (${count})`,
+            fullMessage: 'Full Message',
         },
         noMachinesAvailable: 'No machines',
     },
@@ -786,6 +795,11 @@ export const en = {
         unknownEvent: 'Unknown event',
         usageLimitUntil: ({ time }: { time: string }) => `Usage limit reached until ${time}`,
         unknownTime: 'unknown time',
+        thinking: 'Thinking',
+        subAgentInvocation: 'Sub-agent Invocation',
+        prompt: 'Prompt',
+        result: 'Result',
+        pending: 'Pending...',
     },
 
     codex: {
@@ -939,6 +953,16 @@ export const en = {
         tapToRecord: 'Tap microphone to record',
         releaseToTranscribe: 'Release to transcribe',
         apiKeyRequired: 'OpenAI API key required. Go to Settings > Voice to configure.',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: 'Transcript',
+        transcriptSubtitle: 'Complete session transcript with detailed information',
+        input: 'Input',
+        output: 'Output',
+        expandAll: 'Expand All',
+        collapseAll: 'Collapse All',
     }
 } as const;
 

@@ -11,6 +11,7 @@ export type ToolCall = {
     completedAt: number | null;
     description: string | null;
     result?: any;
+    resultApiMessage?: any; // API message from the tool result (user role message)
     permission?: {
         id: string;
         status: 'pending' | 'approved' | 'denied' | 'canceled';
@@ -32,6 +33,7 @@ export type UserTextMessage = {
     displayText?: string; // Optional text to display in UI instead of actual text
     meta?: MessageMeta;
     images?: MessageImageRef[]; // Optional attached images
+    apiMessage?: any; // Original Claude API message
 }
 
 export type ModeSwitchMessage = {
@@ -40,6 +42,7 @@ export type ModeSwitchMessage = {
     createdAt: number;
     event: AgentEvent;
     meta?: MessageMeta;
+    apiMessage?: any; // Original Claude API message
 }
 
 export type AgentTextMessage = {
@@ -49,6 +52,7 @@ export type AgentTextMessage = {
     createdAt: number;
     text: string;
     meta?: MessageMeta;
+    apiMessage?: any; // Original Claude API message
 }
 
 export type ToolCallMessage = {
@@ -59,6 +63,32 @@ export type ToolCallMessage = {
     tool: ToolCall;
     children: Message[];
     meta?: MessageMeta;
+    apiMessage?: any; // Original Claude API message
 }
 
-export type Message = UserTextMessage | AgentTextMessage | ToolCallMessage | ModeSwitchMessage;
+export type ThinkingMessage = {
+    kind: 'thinking';
+    id: string;
+    localId: string | null;
+    createdAt: number;
+    thinking: string;
+    signature?: string;
+    meta?: MessageMeta;
+    apiMessage?: any; // Original Claude API message
+}
+
+export type SubAgentInvocation = {
+    kind: 'sub-agent-invocation';
+    id: string;
+    localId: string | null;
+    createdAt: number;
+    subagentType: string;
+    description: string;
+    prompt: string;
+    result: string;
+    resultApiMessage?: any; // API message from the tool result (user role message)
+    meta?: MessageMeta;
+    apiMessage?: any; // Original Claude API message (assistant role with tool_use)
+}
+
+export type Message = UserTextMessage | AgentTextMessage | ToolCallMessage | ModeSwitchMessage | ThinkingMessage | SubAgentInvocation;

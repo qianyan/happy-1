@@ -172,6 +172,7 @@ export const lightTheme = {
         userMessageText: '#000000',
         agentMessageText: '#000000',
         agentEventText: '#666666',
+        thinkingBackground: '#F5F0FF',
 
         // Code/Syntax colors
         syntaxKeyword: '#1d4ed8',
@@ -201,6 +202,25 @@ export const lightTheme = {
             stderr: '#FFB86C',
             error: '#FF5555',
             emptyOutput: '#6272A4',
+        },
+
+        // Debug panel content renderer colors
+        debug: {
+            json: {
+                key: '#C41A16',          // Red - high contrast for keys
+                string: '#1A7F37',       // Green - standard for strings
+                number: '#0550AE',       // Blue - standard for numbers
+                boolean: '#0550AE',      // Blue - same as numbers
+                null: '#953800',         // Brown/Orange - distinctive
+                bracket: '#24292F',      // Dark gray - subtle
+                punctuation: '#57606A',  // Medium gray - colon, comma
+            },
+            error: {
+                type: '#C41A16',         // Red for error type
+                message: '#24292F',      // Dark text for message
+                stack: '#57606A',        // Gray for stack trace
+            },
+            plain: '#24292F',            // Default text color
         },
 
     },
@@ -379,6 +399,7 @@ export const darkTheme = {
         userMessageText: '#FFFFFF',
         agentMessageText: '#FFFFFF',
         agentEventText: '#8E8E93',
+        thinkingBackground: '#2A2440',
 
         // Code/Syntax colors (brighter for dark mode)
         syntaxKeyword: '#569CD6',
@@ -408,6 +429,25 @@ export const darkTheme = {
             stderr: '#FFB86C',
             error: '#FF6B6B',
             emptyOutput: '#7B7B93',
+        },
+
+        // Debug panel content renderer colors (dark mode)
+        debug: {
+            json: {
+                key: '#FFD700',          // Gold - easier on eyes than pink, highly visible
+                string: '#E6DB74',       // Yellow - Monokai standard
+                number: '#AE81FF',       // Purple - Monokai standard
+                boolean: '#AE81FF',      // Purple - same as numbers
+                null: '#66D9EF',         // Cyan - Monokai keyword color
+                bracket: '#F8F8F2',      // Light gray - subtle
+                punctuation: '#F8F8F2',  // Light gray - colon, comma
+            },
+            error: {
+                type: '#FF6B6B',         // Bright red for error type
+                message: '#F8F8F2',      // Light text for message
+                stack: '#ABB2BF',        // Gray for stack trace
+            },
+            plain: '#F8F8F2',            // Default text color
         },
 
     },

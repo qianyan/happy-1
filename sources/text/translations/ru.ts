@@ -69,6 +69,8 @@ export const ru: TranslationStructure = {
         fileViewer: 'Просмотр файла',
         loading: 'Загрузка...',
         retry: 'Повторить',
+        showMore: 'Показать больше',
+        showLess: 'Показать меньше',
     },
 
     connect: {
@@ -402,11 +404,13 @@ export const ru: TranslationStructure = {
         justNow: 'только что',
         minutesAgo: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'минуту', few: 'минуты', many: 'минут' })} назад`,
         hoursAgo: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'час', few: 'часа', many: 'часов' })} назад`,
+        daysAgo: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'день', few: 'дня', many: 'дней' })} назад`,
     },
 
     session: {
         inputPlaceholder: 'Введите сообщение...',
         searchPlaceholder: 'Поиск сессий...',
+        selectToolToViewDetails: 'Выберите инструмент для просмотра деталей',
     },
 
     commandPalette: {
@@ -465,6 +469,11 @@ export const ru: TranslationStructure = {
         suggestion: {
             fileLabel: 'ФАЙЛ',
             folderLabel: 'ПАПКА',
+        },
+        userHistory: {
+            last: 'Последнее',
+            title: ({ count }: { count: number }) => `Ваши сообщения (${count})`,
+            fullMessage: 'Полное сообщение',
         },
         noMachinesAvailable: 'Нет машин',
     },
@@ -784,6 +793,11 @@ export const ru: TranslationStructure = {
         unknownEvent: 'Неизвестное событие',
         usageLimitUntil: ({ time }: { time: string }) => `Лимит использования достигнут до ${time}`,
         unknownTime: 'неизвестное время',
+        thinking: 'Размышление',
+        subAgentInvocation: 'Вызов подагента',
+        prompt: 'Запрос',
+        result: 'Результат',
+        pending: 'Ожидание...',
     },
 
     codex: {
@@ -961,6 +975,16 @@ export const ru: TranslationStructure = {
         tapToRecord: 'Нажмите микрофон для записи',
         releaseToTranscribe: 'Отпустите для транскрипции',
         apiKeyRequired: 'Требуется API ключ OpenAI. Перейдите в Настройки > Голос для настройки.',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: 'Транскрипт',
+        transcriptSubtitle: 'Полная стенограмма сеанса с подробной информацией',
+        input: 'Входные данные',
+        output: 'Выходные данные',
+        expandAll: 'Развернуть все',
+        collapseAll: 'Свернуть все',
     }
 } as const;
 

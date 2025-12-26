@@ -59,10 +59,18 @@ const rawToolResultContentSchema = z.object({
 });
 export type RawToolResultContent = z.infer<typeof rawToolResultContentSchema>;
 
+const rawThinkingContentSchema = z.object({
+    type: z.literal('thinking'),
+    thinking: z.string(),
+    signature: z.string().optional(),
+});
+export type RawThinkingContent = z.infer<typeof rawThinkingContentSchema>;
+
 const rawAgentContentSchema = z.discriminatedUnion('type', [
     rawTextContentSchema,
     rawToolUseContentSchema,
-    rawToolResultContentSchema
+    rawToolResultContentSchema,
+    rawThinkingContentSchema
 ]);
 export type RawAgentContent = z.infer<typeof rawAgentContentSchema>;
 
@@ -189,6 +197,12 @@ type NormalizedAgentContent =
         type: 'sidechain'
         uuid: string;
         prompt: string
+    } | {
+        type: 'thinking',
+        thinking: string;
+        signature?: string;
+        uuid: string;
+        parentUUID: string | null;
     };
 
 // Normalized user content can be text-only or array with text and image refs
@@ -212,6 +226,7 @@ export type NormalizedMessage = ({
     isSidechain: boolean,
     meta?: MessageMeta,
     usage?: UsageData,
+    apiMessage?: any, // Original Claude API message (assistant or user) from raw.content.data.message
 };
 
 export function normalizeRawMessage(id: string, localId: string | null, createdAt: number, raw: RawRecord): NormalizedMessage | null {
@@ -243,6 +258,17 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
             normalizedContent = raw.content;
         }
 
+        // Extract text for apiMessage (handle both single text and array formats)
+        let apiMessageContent: string;
+        if (Array.isArray(raw.content)) {
+            // Array content - find the text item
+            const textItem = raw.content.find(item => item.type === 'text');
+            apiMessageContent = textItem?.text ?? '';
+        } else {
+            // Single text content
+            apiMessageContent = raw.content.text;
+        }
+
         return {
             id,
             localId,
@@ -251,6 +277,10 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
             content: normalizedContent,
             isSidechain: false,
             meta: raw.meta,
+            apiMessage: {
+                role: 'user',
+                content: apiMessageContent
+            }
         };
     }
     if (raw.role === 'agent') {
@@ -288,6 +318,14 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
                             description, uuid: raw.content.data.uuid,
                             parentUUID: raw.content.data.parentUuid ?? null
                         });
+                    } else if (c.type === 'thinking') {
+                        content.push({
+                            type: 'thinking',
+                            thinking: c.thinking,
+                            signature: c.signature,
+                            uuid: raw.content.data.uuid,
+                            parentUUID: raw.content.data.parentUuid ?? null
+                        });
                     }
                 }
                 return {
@@ -298,7 +336,8 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
                     isSidechain: raw.content.data.isSidechain ?? false,
                     content,
                     meta: raw.meta,
-                    usage: raw.content.data.message.usage
+                    usage: raw.content.data.message.usage,
+                    apiMessage: raw.content.data.message
                 };
             } else if (raw.content.data.type === 'user') {
                 if (!raw.content.data.uuid) {
@@ -318,7 +357,8 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
                             type: 'sidechain',
                             uuid: raw.content.data.uuid,
                             prompt: raw.content.data.message.content
-                        }]
+                        }],
+                        apiMessage: raw.content.data.message
                     };
                 }
 
@@ -333,7 +373,8 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
                         content: {
                             type: 'text',
                             text: raw.content.data.message.content
-                        }
+                        },
+                        apiMessage: raw.content.data.message
                     };
                 }
 
@@ -374,7 +415,8 @@ export function normalizeRawMessage(id: string, localId: string | null, createdA
                     role: 'agent',
                     isSidechain: raw.content.data.isSidechain ?? false,
                     content,
-                    meta: raw.meta
+                    meta: raw.meta,
+                    apiMessage: raw.content.data.message
                 };
             }
         }

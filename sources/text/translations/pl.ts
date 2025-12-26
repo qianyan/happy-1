@@ -69,6 +69,8 @@ export const pl: TranslationStructure = {
         fileViewer: 'Przeglądarka plików',
         loading: 'Ładowanie...',
         retry: 'Ponów',
+        showMore: 'Pokaż więcej',
+        showLess: 'Pokaż mniej',
     },
 
     profile: {
@@ -97,6 +99,7 @@ export const pl: TranslationStructure = {
         justNow: 'teraz',
         minutesAgo: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'minuta', few: 'minuty', many: 'minut' })} temu`,
         hoursAgo: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'godzina', few: 'godziny', many: 'godzin' })} temu`,
+        daysAgo: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'dzień', few: 'dni', many: 'dni' })} temu`,
     },
 
     connect: {
@@ -314,6 +317,7 @@ export const pl: TranslationStructure = {
     session: {
         inputPlaceholder: 'Wpisz wiadomość...',
         searchPlaceholder: 'Szukaj sesji...',
+        selectToolToViewDetails: 'Wybierz narzędzie, aby zobaczyć szczegóły',
     },
 
     commandPalette: {
@@ -465,6 +469,11 @@ export const pl: TranslationStructure = {
         suggestion: {
             fileLabel: 'PLIK',
             folderLabel: 'FOLDER',
+        },
+        userHistory: {
+            last: 'Ostatnia',
+            title: ({ count }: { count: number }) => `Twoje wiadomości (${count})`,
+            fullMessage: 'Pełna wiadomość',
         },
         noMachinesAvailable: 'Brak maszyn',
     },
@@ -796,6 +805,11 @@ export const pl: TranslationStructure = {
         unknownEvent: 'Nieznane zdarzenie',
         usageLimitUntil: ({ time }: { time: string }) => `Osiągnięto limit użycia do ${time}`,
         unknownTime: 'nieznany czas',
+        thinking: 'Myślenie',
+        subAgentInvocation: 'Wywołanie podagenta',
+        prompt: 'Prompt',
+        result: 'Wynik',
+        pending: 'Oczekiwanie...',
     },
 
     codex: {
@@ -962,6 +976,16 @@ export const pl: TranslationStructure = {
         tapToRecord: 'Dotknij mikrofonu, aby nagrać',
         releaseToTranscribe: 'Zwolnij, aby transkrybować',
         apiKeyRequired: 'Wymagany klucz API OpenAI. Przejdź do Ustawienia > Głos, aby skonfigurować.',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: 'Transkrypcja',
+        transcriptSubtitle: 'Pełna transkrypcja sesji ze szczegółowymi informacjami',
+        input: 'Dane wejściowe',
+        output: 'Dane wyjściowe',
+        expandAll: 'Rozwiń wszystkie',
+        collapseAll: 'Zwiń wszystkie',
     }
 } as const;
 

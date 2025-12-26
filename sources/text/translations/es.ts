@@ -58,6 +58,8 @@ export const es: TranslationStructure = {
         fileViewer: 'Visor de archivos',
         loading: 'Cargando...',
         retry: 'Reintentar',
+        showMore: 'Mostrar más',
+        showLess: 'Mostrar menos',
     },
 
     profile: {
@@ -86,6 +88,7 @@ export const es: TranslationStructure = {
         justNow: 'ahora mismo',
         minutesAgo: ({ count }: { count: number }) => `hace ${count} minuto${count !== 1 ? 's' : ''}`,
         hoursAgo: ({ count }: { count: number }) => `hace ${count} hora${count !== 1 ? 's' : ''}`,
+        daysAgo: ({ count }: { count: number }) => `hace ${count} día${count !== 1 ? 's' : ''}`,
     },
 
     connect: {
@@ -303,6 +306,7 @@ export const es: TranslationStructure = {
     session: {
         inputPlaceholder: 'Escriba un mensaje ...',
         searchPlaceholder: 'Buscar sesiones...',
+        selectToolToViewDetails: 'Selecciona una herramienta para ver los detalles',
     },
 
     commandPalette: {
@@ -455,6 +459,11 @@ export const es: TranslationStructure = {
         suggestion: {
             fileLabel: 'ARCHIVO',
             folderLabel: 'CARPETA',
+        },
+        userHistory: {
+            last: 'Última',
+            title: ({ count }: { count: number }) => `Tus mensajes (${count})`,
+            fullMessage: 'Mensaje completo',
         },
         noMachinesAvailable: 'Sin máquinas',
     },
@@ -786,6 +795,11 @@ export const es: TranslationStructure = {
         unknownEvent: 'Evento desconocido',
         usageLimitUntil: ({ time }: { time: string }) => `Límite de uso alcanzado hasta ${time}`,
         unknownTime: 'tiempo desconocido',
+        thinking: 'Pensamiento',
+        subAgentInvocation: 'Invocación de sub-agente',
+        prompt: 'Prompt',
+        result: 'Resultado',
+        pending: 'Pendiente...',
     },
 
     codex: {
@@ -939,6 +953,16 @@ export const es: TranslationStructure = {
         tapToRecord: 'Toca el micrófono para grabar',
         releaseToTranscribe: 'Suelta para transcribir',
         apiKeyRequired: 'Se requiere clave API de OpenAI. Ve a Ajustes > Voz para configurar.',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: 'Transcripción',
+        transcriptSubtitle: 'Transcripción completa de la sesión con información detallada',
+        input: 'Entrada',
+        output: 'Salida',
+        expandAll: 'Expandir todo',
+        collapseAll: 'Contraer todo',
     }
 } as const;
 

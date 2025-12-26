@@ -60,6 +60,8 @@ export const zhHans: TranslationStructure = {
         fileViewer: '文件查看器',
         loading: '加载中...',
         retry: '重试',
+        showMore: '显示更多',
+        showLess: '显示更少',
     },
 
     profile: {
@@ -88,6 +90,7 @@ export const zhHans: TranslationStructure = {
         justNow: '刚刚',
         minutesAgo: ({ count }: { count: number }) => `${count} 分钟前`,
         hoursAgo: ({ count }: { count: number }) => `${count} 小时前`,
+        daysAgo: ({ count }: { count: number }) => `${count} 天前`,
     },
 
     connect: {
@@ -305,6 +308,7 @@ export const zhHans: TranslationStructure = {
     session: {
         inputPlaceholder: '输入消息...',
         searchPlaceholder: '搜索会话...',
+        selectToolToViewDetails: '选择工具查看详情',
     },
 
     commandPalette: {
@@ -457,6 +461,11 @@ export const zhHans: TranslationStructure = {
         suggestion: {
             fileLabel: '文件',
             folderLabel: '文件夹',
+        },
+        userHistory: {
+            last: '最后',
+            title: ({ count }: { count: number }) => `您的消息 (${count})`,
+            fullMessage: '完整消息',
         },
         noMachinesAvailable: '无设备',
     },
@@ -788,6 +797,11 @@ export const zhHans: TranslationStructure = {
         unknownEvent: '未知事件',
         usageLimitUntil: ({ time }: { time: string }) => `使用限制到 ${time}`,
         unknownTime: '未知时间',
+        thinking: '思考中',
+        subAgentInvocation: '子代理调用',
+        prompt: '提示',
+        result: '结果',
+        pending: '待处理...',
     },
 
     codex: {
@@ -940,5 +954,15 @@ export const zhHans: TranslationStructure = {
         tapToRecord: '点击麦克风开始录音',
         releaseToTranscribe: '松开以转录',
         apiKeyRequired: '需要 OpenAI API 密钥。前往 设置 > 语音 进行配置。',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: '会话记录',
+        transcriptSubtitle: '包含详细信息的完整会话记录',
+        input: '输入',
+        output: '输出',
+        expandAll: '全部展开',
+        collapseAll: '全部收起',
     }
 } as const;
