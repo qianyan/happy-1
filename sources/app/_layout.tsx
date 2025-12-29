@@ -138,8 +138,9 @@ async function loadFonts() {
     });
 }
 
-// Inject Umami analytics script on web platform
-function useUmamiAnalytics() {
+
+export default function RootLayout() {
+    // Inject Umami analytics script on web platform
     React.useEffect(() => {
         if (Platform.OS !== 'web') return;
 
@@ -153,10 +154,6 @@ function useUmamiAnalytics() {
         script.setAttribute('data-website-id', '34926e31-29ae-4ecc-802c-c4d52894a063');
         document.head.appendChild(script);
     }, []);
-}
-
-export default function RootLayout() {
-    useUmamiAnalytics();
 
     const { theme } = useUnistyles();
     const navigationTheme = React.useMemo(() => {

@@ -22,8 +22,6 @@ export default function Root({ children }: { children: React.ReactNode }) {
         {/* Using raw CSS styles as an escape-hatch to ensure the background color never flickers in dark-mode. */}
         <style dangerouslySetInnerHTML={{ __html: responsiveBackground }} />
 
-        {/* Umami analytics */}
-        <script defer src="https://umami.reily.app/script.js" data-website-id="34926e31-29ae-4ecc-802c-c4d52894a063" />
       </head>
       <body>{children}</body>
     </html>
