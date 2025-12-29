@@ -138,7 +138,26 @@ async function loadFonts() {
     });
 }
 
+// Inject Umami analytics script on web platform
+function useUmamiAnalytics() {
+    React.useEffect(() => {
+        if (Platform.OS !== 'web') return;
+
+        // Check if script already exists
+        const existingScript = document.querySelector('script[data-website-id="34926e31-29ae-4ecc-802c-c4d52894a063"]');
+        if (existingScript) return;
+
+        const script = document.createElement('script');
+        script.defer = true;
+        script.src = 'https://umami.reily.app/script.js';
+        script.setAttribute('data-website-id', '34926e31-29ae-4ecc-802c-c4d52894a063');
+        document.head.appendChild(script);
+    }, []);
+}
+
 export default function RootLayout() {
+    useUmamiAnalytics();
+
     const { theme } = useUnistyles();
     const navigationTheme = React.useMemo(() => {
         if (theme.dark) {
