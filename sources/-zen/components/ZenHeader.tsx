@@ -12,17 +12,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 // Note: useRouter still needed for HeaderLeft back button
 
-type ZenHeaderProps = {
-    onAddPress?: () => void;
-    showInput?: boolean;
-};
-
-export const ZenHeader = React.memo<ZenHeaderProps>(({ onAddPress, showInput }) => {
+export const ZenHeader = React.memo(() => {
     const isTablet = useIsTablet();
     return (
         <Header
             title={isTablet ? <HeaderTitleTablet /> : <HeaderTitle />}
-            headerRight={() => <HeaderRight onAddPress={onAddPress} showInput={showInput} />}
             headerLeft={isTablet ? () => null : () => <HeaderLeft />}
             headerShadowVisible={false}
             headerTransparent={true}
@@ -143,33 +137,6 @@ function HeaderLeft() {
             }}
         >
             <Ionicons name="chevron-back" size={28} color={theme.colors.header.tint} />
-        </Pressable>
-    );
-}
-
-type HeaderRightProps = {
-    onAddPress?: () => void;
-    showInput?: boolean;
-};
-
-function HeaderRight({ onAddPress, showInput }: HeaderRightProps) {
-    const { theme } = useUnistyles();
-    return (
-        <Pressable
-            onPress={onAddPress}
-            hitSlop={15}
-            style={{
-                width: 32,
-                height: 32,
-                alignItems: 'center',
-                justifyContent: 'center',
-            }}
-        >
-            <Ionicons
-                name={showInput ? "close-outline" : "add-outline"}
-                size={28}
-                color={theme.colors.header.tint}
-            />
         </Pressable>
     );
 }   

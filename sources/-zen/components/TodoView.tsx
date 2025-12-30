@@ -5,37 +5,20 @@ import { useUnistyles } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 
-export const TODO_HEIGHT = 56;
+export const TODO_HEIGHT = 72;
 
 export type TodoViewProps = {
     id: string;
     done: boolean;
     value: string;
     onToggle?: () => void;
-    // hasDragged?: SharedValue<boolean>;
 }
 
 export const TodoView = React.memo<TodoViewProps>((props) => {
     const { theme } = useUnistyles();
     const router = useRouter();
-    // const [blockPress, setBlockPress] = React.useState(false);
-
-    // // Monitor hasDragged to block press events after drag
-    // useAnimatedReaction(
-    //     () => props.hasDragged?.value ?? false,
-    //     (hasDragged) => {
-    //         runOnJS(setBlockPress)(hasDragged);
-    //     },
-    //     [props.hasDragged]
-    // );
 
     const handlePress = () => {
-        // // Don't open modal if we just finished dragging
-        // if (blockPress) {
-        //     setBlockPress(false);
-        //     return;
-        // }
-
         router.push({
             pathname: '/zen/view',
             params: {
@@ -90,7 +73,7 @@ export const TodoView = React.memo<TodoViewProps>((props) => {
                         textDecorationLine: props.done ? 'line-through' : 'none',
                         opacity: props.done ? 0.6 : 1
                     }}
-                    numberOfLines={1}
+                    numberOfLines={2}
                 >
                     {props.value}
                 </Text>

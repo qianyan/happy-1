@@ -16,6 +16,8 @@ import { toCamelCase } from '@/utils/stringUtils';
 import { removeTaskLinks, getSessionsForTask } from '@/-zen/model/taskSessionLink';
 import { MarkdownView } from '@/components/markdown/MarkdownView';
 import { layout } from '@/components/layout';
+import { useWhisperTranscription } from '@/hooks/useWhisperTranscription';
+import { RecordingStatusBar } from '@/components/RecordingStatusBar';
 
 export const ZenView = React.memo(() => {
     const router = useRouter();
@@ -48,6 +50,28 @@ export const ZenView = React.memo(() => {
     const [editedText, setEditedText] = React.useState(todo?.text || '');
     const textInputRef = React.useRef<TextInput>(null);
 
+    // Voice dictation - appends transcribed text to the text field
+    const handleTranscription = React.useCallback((text: string) => {
+        setEditedText(prev => prev ? `${prev} ${text}` : text);
+        // Auto-start editing text if not already
+        if (!isEditingText) {
+            setIsEditingText(true);
+        }
+    }, [isEditingText]);
+
+    const { status: voiceStatus, startRecording, stopRecording, cancelRecording } = useWhisperTranscription({
+        onTranscription: handleTranscription,
+    });
+
+    // Toggle voice recording
+    const toggleVoice = React.useCallback(async () => {
+        if (voiceStatus === 'recording') {
+            await stopRecording();
+        } else if (voiceStatus === 'idle') {
+            await startRecording();
+        }
+    }, [voiceStatus, startRecording, stopRecording]);
+
     // Get linked sessions for this task
     const linkedSessions = React.useMemo(() => {
         return getSessionsForTask(todoId);
@@ -61,8 +85,32 @@ export const ZenView = React.memo(() => {
         }
     }, [todo]);
 
-    // Handle keyboard shortcut
+    // Keyboard shortcuts (Web only)
     React.useEffect(() => {
+        if (Platform.OS !== 'web') {
+            return;
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const isModifierPressed = isMac ? e.metaKey : e.ctrlKey;
+
+            // ⌘⇧V - Toggle voice dictation
+            if (isModifierPressed && e.shiftKey && e.key.toLowerCase() === 'v') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleVoice();
+                return;
+            }
+
+            // Escape - Cancel voice recording
+            if (e.key === 'Escape' && voiceStatus === 'recording') {
+                e.preventDefault();
+                cancelRecording();
+                return;
+            }
+        };
+
         const handleKeyPress = (event: KeyboardEvent) => {
             // Navigate to new todo when any key is pressed (except when editing)
             if (!isEditingTitle && !isEditingText && event.key && event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -71,11 +119,13 @@ export const ZenView = React.memo(() => {
             }
         };
 
-        if (Platform.OS === 'web') {
-            window.addEventListener('keypress', handleKeyPress);
-            return () => window.removeEventListener('keypress', handleKeyPress);
-        }
-    }, [isEditingTitle, isEditingText, router]);
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keypress', handleKeyPress);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keypress', handleKeyPress);
+        };
+    }, [isEditingTitle, isEditingText, router, toggleVoice, voiceStatus, cancelRecording]);
 
     if (!todo) {
         // Todo was deleted or doesn't exist
@@ -236,25 +286,45 @@ export const ZenView = React.memo(() => {
                         </View>
                     </View>
 
+                    {/* Recording Status Bar */}
+                    <RecordingStatusBar
+                        status={voiceStatus}
+                        onCancel={cancelRecording}
+                        style={{ marginBottom: 12, borderRadius: 8 }}
+                    />
+
                     {/* Task Details/Notes - Full height section */}
                     <View style={styles.textSection}>
                         {isEditingText ? (
                             <View style={{ flex: 1 }}>
-                                <TextInput
-                                    ref={textInputRef}
-                                    style={[
-                                        styles.textInput,
-                                        { color: theme.colors.text }
-                                    ]}
-                                    value={editedText}
-                                    onChangeText={setEditedText}
-                                    onBlur={handleSaveText}
-                                    placeholder="Add details..."
-                                    placeholderTextColor={theme.colors.textSecondary}
-                                    multiline
-                                    textAlignVertical="top"
-                                    autoFocus
-                                />
+                                <View style={styles.textInputRow}>
+                                    <TextInput
+                                        ref={textInputRef}
+                                        style={[
+                                            styles.textInput,
+                                            { color: theme.colors.text }
+                                        ]}
+                                        value={editedText}
+                                        onChangeText={setEditedText}
+                                        onBlur={handleSaveText}
+                                        placeholder="Add details..."
+                                        placeholderTextColor={theme.colors.textSecondary}
+                                        multiline
+                                        textAlignVertical="top"
+                                        autoFocus
+                                    />
+                                    <Pressable
+                                        onPress={toggleVoice}
+                                        hitSlop={8}
+                                        style={styles.micButton}
+                                    >
+                                        <Ionicons
+                                            name={voiceStatus === 'recording' ? 'stop-circle' : 'mic-outline'}
+                                            size={24}
+                                            color={voiceStatus === 'recording' ? theme.colors.status.error : theme.colors.textSecondary}
+                                        />
+                                    </Pressable>
+                                </View>
                                 {Platform.OS !== 'web' && (
                                     <Pressable
                                         onPress={() => {
@@ -268,15 +338,28 @@ export const ZenView = React.memo(() => {
                                 )}
                             </View>
                         ) : (
-                            <Pressable onPress={handleStartEditingText} style={styles.textDisplay}>
-                                {editedText.trim() ? (
-                                    <MarkdownView markdown={editedText} />
-                                ) : (
-                                    <Text style={[styles.textPlaceholder, { color: theme.colors.textSecondary }]}>
-                                        Tap here to add details...
-                                    </Text>
-                                )}
-                            </Pressable>
+                            <View style={styles.textDisplayRow}>
+                                <Pressable onPress={handleStartEditingText} style={styles.textDisplay}>
+                                    {editedText.trim() ? (
+                                        <MarkdownView markdown={editedText} />
+                                    ) : (
+                                        <Text style={[styles.textPlaceholder, { color: theme.colors.textSecondary }]}>
+                                            Tap here to add details...
+                                        </Text>
+                                    )}
+                                </Pressable>
+                                <Pressable
+                                    onPress={toggleVoice}
+                                    hitSlop={8}
+                                    style={styles.micButton}
+                                >
+                                    <Ionicons
+                                        name={voiceStatus === 'recording' ? 'stop-circle' : 'mic-outline'}
+                                        size={24}
+                                        color={voiceStatus === 'recording' ? theme.colors.status.error : theme.colors.textSecondary}
+                                    />
+                                </Pressable>
+                            </View>
                         )}
                     </View>
 
@@ -394,6 +477,14 @@ const styles = StyleSheet.create((theme) => ({
             outlineWidth: 0,
         } as any : {}),
     },
+    textInputRow: {
+        flexDirection: 'row',
+        flex: 1,
+    },
+    textDisplayRow: {
+        flexDirection: 'row',
+        flex: 1,
+    },
     textDisplay: {
         flex: 1,
         minHeight: 120,
@@ -402,6 +493,13 @@ const styles = StyleSheet.create((theme) => ({
         fontSize: 16,
         lineHeight: 24,
         ...Typography.default(),
+    },
+    micButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 8,
     },
     actions: {
         flexDirection: 'row',

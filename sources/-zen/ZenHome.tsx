@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, ScrollView, Text, TextInput, Platform, Keyboard } from 'react-native';
+import { View, ScrollView, Text, TextInput, Platform, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { layout } from '@/components/layout';
 import { ZenHeader } from './components/ZenHeader';
@@ -10,14 +10,34 @@ import { toggleTodo as toggleTodoSync, reorderTodos as reorderTodosSync, addTodo
 import { useAuth } from '@/auth/AuthContext';
 import { useShallow } from 'zustand/react/shallow';
 import { Typography } from '@/constants/Typography';
+import { useWhisperTranscription } from '@/hooks/useWhisperTranscription';
+import { RecordingStatusBar } from '@/components/RecordingStatusBar';
+import { Ionicons } from '@expo/vector-icons';
 
 export const ZenHome = () => {
     const insets = useSafeAreaInsets();
     const { theme } = useUnistyles();
     const auth = useAuth();
-    const [showInput, setShowInput] = React.useState(false);
     const [inputText, setInputText] = React.useState('');
     const inputRef = React.useRef<TextInput>(null);
+
+    // Voice dictation
+    const handleTranscription = React.useCallback((text: string) => {
+        setInputText(prev => prev ? `${prev} ${text}` : text);
+    }, []);
+
+    const { status: voiceStatus, startRecording, stopRecording, cancelRecording } = useWhisperTranscription({
+        onTranscription: handleTranscription,
+    });
+
+    // Toggle voice recording
+    const toggleVoice = React.useCallback(async () => {
+        if (voiceStatus === 'recording') {
+            await stopRecording();
+        } else if (voiceStatus === 'idle') {
+            await startRecording();
+        }
+    }, [voiceStatus, startRecording, stopRecording]);
 
     // Get todos from storage
     const todoState = storage(useShallow(state => state.todoState));
@@ -56,56 +76,56 @@ export const ZenHome = () => {
         }
     }, [auth?.credentials]);
 
-    // Handle add button press - toggle inline input
-    const handleAddPress = React.useCallback(() => {
-        setShowInput(prev => {
-            if (prev) {
-                // Cancel input
-                setInputText('');
-                Keyboard.dismiss();
-                return false;
-            } else {
-                // Show input and focus after it appears
-                setTimeout(() => inputRef.current?.focus(), 100);
-                return true;
-            }
-        });
-    }, []);
-
     // Handle input submission
     const handleSubmit = React.useCallback(async () => {
-        if (inputText.trim() && auth?.credentials) {
-            await addTodo(auth.credentials, inputText.trim());
+        const text = inputText.trim();
+        if (text && auth?.credentials) {
+            // Clear input immediately for better UX (don't wait for network)
             setInputText('');
-            // Keep input visible for adding more items
+            await addTodo(auth.credentials, text);
         }
     }, [inputText, auth?.credentials]);
 
-    // Handle input blur - hide if empty
-    const handleBlur = React.useCallback(() => {
-        if (!inputText.trim()) {
-            setShowInput(false);
-            setInputText('');
-        }
-    }, [inputText]);
+    // Focus input when pressing T key
+    const focusInput = React.useCallback(() => {
+        inputRef.current?.focus();
+    }, []);
 
-    // Add keyboard shortcut for "T" to open new task (Web only)
+    // Keyboard shortcuts (Web only)
     React.useEffect(() => {
         if (Platform.OS !== 'web') {
             return;
         }
 
         const handleKeyDown = (e: KeyboardEvent) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const isModifierPressed = isMac ? e.metaKey : e.ctrlKey;
+
             // Check if no input is focused (to avoid triggering when typing)
             const activeElement = document.activeElement as HTMLElement;
             const isInputFocused = activeElement?.tagName === 'INPUT' ||
                                    activeElement?.tagName === 'TEXTAREA' ||
                                    activeElement?.contentEditable === 'true';
 
-            // Trigger on simple "T" key press when no modifier keys are pressed and no input is focused
+            // ⌘⇧V - Toggle voice dictation
+            if (isModifierPressed && e.shiftKey && e.key.toLowerCase() === 'v') {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleVoice();
+                return;
+            }
+
+            // Escape - Cancel voice recording
+            if (e.key === 'Escape' && voiceStatus === 'recording') {
+                e.preventDefault();
+                cancelRecording();
+                return;
+            }
+
+            // "T" key - Focus input (when no modifier keys and no input focused)
             if (e.key === 't' && !e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey && !isInputFocused) {
                 e.preventDefault();
-                handleAddPress();
+                focusInput();
             }
         };
 
@@ -114,11 +134,11 @@ export const ZenHome = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [handleAddPress]);
+    }, [focusInput, toggleVoice, voiceStatus, cancelRecording]);
 
     return (
         <>
-            <ZenHeader onAddPress={handleAddPress} showInput={showInput} />
+            <ZenHeader />
             <ScrollView
                 style={{ flex: 1 }}
                 contentContainerStyle={{ flexGrow: 1 }}
@@ -132,7 +152,13 @@ export const ZenHome = () => {
                         alignSelf: 'stretch',
                         paddingTop: 20,
                     }}>
-                        {showInput && (
+                        {/* Always visible input */}
+                        <View>
+                            <RecordingStatusBar
+                                status={voiceStatus}
+                                onCancel={cancelRecording}
+                                style={{ marginHorizontal: 8, marginBottom: 8, borderRadius: 8 }}
+                            />
                             <View style={[
                                 styles.inputContainer,
                                 { backgroundColor: theme.colors.surfaceHighest }
@@ -148,16 +174,26 @@ export const ZenHome = () => {
                                     value={inputText}
                                     onChangeText={setInputText}
                                     onSubmitEditing={handleSubmit}
-                                    onBlur={handleBlur}
                                     returnKeyType="done"
                                     blurOnSubmit={false}
                                 />
+                                <Pressable
+                                    onPress={toggleVoice}
+                                    hitSlop={8}
+                                    style={styles.micButton}
+                                >
+                                    <Ionicons
+                                        name={voiceStatus === 'recording' ? 'stop-circle' : 'mic-outline'}
+                                        size={24}
+                                        color={voiceStatus === 'recording' ? theme.colors.status.error : theme.colors.textSecondary}
+                                    />
+                                </Pressable>
                             </View>
-                        )}
-                        {undoneTodos.length === 0 && !showInput ? (
+                        </View>
+                        {undoneTodos.length === 0 ? (
                             <View style={{ padding: 20, alignItems: 'center' }}>
                                 <Text style={{ color: theme.colors.textSecondary, fontSize: 16 }}>
-                                    No tasks yet. Tap + to add one.
+                                    No tasks yet. Add one above.
                                 </Text>
                             </View>
                         ) : (
@@ -190,5 +226,12 @@ const styles = StyleSheet.create({
             outlineStyle: 'none',
             outlineWidth: 0,
         } as any : {}),
+    },
+    micButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 4,
     },
 });

@@ -137,10 +137,6 @@ const AnimatedTodoItem = React.memo<AnimatedTodoItemProps>(({
             scale.value = withSpring(1);
             opacity.value = withSpring(1);
             zIndex.value = withSpring(0);
-            // Keep the hasDragged flag true for a moment to block the press
-            // if (hasDragged.value) {
-            //     scheduleOnRN(() => { setTimeout(() => { hasDragged.value = false; }, 200); });
-            // }
         });
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -172,7 +168,6 @@ const AnimatedTodoItem = React.memo<AnimatedTodoItemProps>(({
                     done={todo.done}
                     value={todo.title}
                     onToggle={onToggle}
-                    // hasDragged={hasDragged}
                 />
             </Animated.View>
         </GestureDetector>
