@@ -18,7 +18,7 @@ export interface KeyboardHandlers {
 
 /**
  * Hook for handling global keyboard shortcuts on web
- * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘/ (focus search)
+ * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘⇧F (focus search)
  * Prev/Next session: ⌥↑/↓ on Mac, Ctrl+Shift+↑/↓ on Windows/Linux
  */
 export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<KeyboardHandlers, 'onCommandPalette'>) {
@@ -92,8 +92,8 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
                 return;
             }
 
-            // ⌘/ - Focus search
-            if (isModifierPressed && e.key === '/') {
+            // ⌘⇧F - Focus search
+            if (isModifierPressed && isShiftPressed && e.key.toLowerCase() === 'f') {
                 e.preventDefault();
                 e.stopPropagation();
                 handlers?.onFocusSearch?.();

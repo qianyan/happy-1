@@ -245,7 +245,7 @@ export const SessionsListWrapper = React.memo(() => {
     const { searchQuery, setSearchQuery, registerFocusCallback, unregisterFocusCallback } = useSessionSearch();
     const searchInputRef = React.useRef<TextInputType>(null);
 
-    // Register focus callback for keyboard shortcut (⌘/)
+    // Register focus callback for keyboard shortcut (⌘⇧F)
     React.useEffect(() => {
         const focusCallback = () => {
             searchInputRef.current?.focus();

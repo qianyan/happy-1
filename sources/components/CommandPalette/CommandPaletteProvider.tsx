@@ -411,7 +411,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         navigateToSession(sessionsList[nextIndex].id);
     }, [commandPaletteEnabled, sessionsList, currentSessionId, navigateToSession]);
 
-    // Handler for focus search shortcut (⌘/)
+    // Handler for focus search shortcut (⌘⇧F)
     const handleFocusSearch = useCallback(() => {
         if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
         focusSearch();

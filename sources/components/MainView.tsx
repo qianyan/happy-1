@@ -85,7 +85,7 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     const { searchQuery, setSearchQuery, registerFocusCallback, unregisterFocusCallback } = useSessionSearch();
     const searchInputRef = React.useRef<TextInputType>(null);
 
-    // Register focus callback for keyboard shortcut (⌘/)
+    // Register focus callback for keyboard shortcut (⌘⇧F)
     React.useEffect(() => {
         if (variant !== 'sidebar') return;
         const focusCallback = () => {
