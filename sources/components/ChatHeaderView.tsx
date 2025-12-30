@@ -19,6 +19,8 @@ interface ChatHeaderViewProps {
     tintColor?: string;
     isConnected?: boolean;
     flavor?: string | null;
+    onDebugPress?: () => void;
+    isDebugActive?: boolean;
 }
 
 export const ChatHeaderView: React.FC<ChatHeaderViewProps> = ({
@@ -29,6 +31,8 @@ export const ChatHeaderView: React.FC<ChatHeaderViewProps> = ({
     avatarId,
     isConnected = true,
     flavor,
+    onDebugPress,
+    isDebugActive,
 }) => {
     const { theme } = useUnistyles();
     const navigation = useNavigation();
@@ -87,6 +91,19 @@ export const ChatHeaderView: React.FC<ChatHeaderViewProps> = ({
                     )}
                 </View>
                 
+                {onDebugPress && (
+                    <Pressable
+                        onPress={onDebugPress}
+                        hitSlop={15}
+                        style={styles.debugButton}
+                    >
+                        <Ionicons
+                            name={isDebugActive ? 'code-slash' : 'code-slash-outline'}
+                            size={22}
+                            color={isDebugActive ? theme.colors.radio.active : theme.colors.header.tint}
+                        />
+                    </Pressable>
+                )}
                 {avatarId && onAvatarPress && (
                     <Pressable
                         onPress={onAvatarPress}
@@ -152,5 +169,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: Platform.select({ ios: -8, default: -8 }),
+    },
+    debugButton: {
+        width: 44,
+        height: 44,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

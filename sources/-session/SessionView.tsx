@@ -39,11 +39,13 @@ export const SessionView = React.memo((props: { id: string }) => {
     const router = useRouter();
     const session = useSession(sessionId);
     const isDataReady = useIsDataReady();
-    const { theme } = useUnistyles();
+    const { theme, rt } = useUnistyles();
     const safeArea = useSafeAreaInsets();
     const isLandscape = useIsLandscape();
     const deviceType = useDeviceType();
     const headerHeight = useHeaderHeight();
+    const [showDebugPanel, setShowDebugPanel] = React.useState(false);
+    const isDesktop = rt.breakpoint === 'lg' || rt.breakpoint === 'xl';
 
     // Compute header props based on session state
     const headerProps = useMemo(() => {
@@ -84,6 +86,15 @@ export const SessionView = React.memo((props: { id: string }) => {
         };
     }, [session, isDataReady, sessionId, router]);
 
+    // Handle debug button press - toggle on desktop, navigate on mobile
+    const handleDebugPress = React.useCallback(() => {
+        if (isDesktop) {
+            setShowDebugPanel(prev => !prev);
+        } else {
+            router.push(`/session/${sessionId}/debug`);
+        }
+    }, [isDesktop, router, sessionId]);
+
     return (
         <>
             {/* Status bar shadow for landscape mode */}
@@ -119,6 +130,8 @@ export const SessionView = React.memo((props: { id: string }) => {
                     <ChatHeaderView
                         {...headerProps}
                         onBackPress={() => router.back()}
+                        onDebugPress={session ? handleDebugPress : undefined}
+                        isDebugActive={showDebugPanel}
                     />
                 </View>
             )}
@@ -139,7 +152,7 @@ export const SessionView = React.memo((props: { id: string }) => {
                     </View>
                 ) : (
                     // Normal session view
-                    <SessionViewLoaded key={sessionId} sessionId={sessionId} session={session} />
+                    <SessionViewLoaded key={sessionId} sessionId={sessionId} session={session} showDebugPanel={showDebugPanel} />
                 )}
             </View>
         </>
@@ -147,7 +160,7 @@ export const SessionView = React.memo((props: { id: string }) => {
 });
 
 
-function SessionViewLoaded({ sessionId, session }: { sessionId: string, session: Session }) {
+function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: string, session: Session, showDebugPanel: boolean }) {
     const { theme, rt } = useUnistyles();
     const router = useRouter();
     const safeArea = useSafeAreaInsets();
@@ -159,7 +172,9 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     const { messages, isLoaded } = useSessionMessages(sessionId);
     const acknowledgedCliVersions = useLocalSetting('acknowledgedCliVersions');
     const [selectedMessageId, setSelectedMessageId] = React.useState<string | null>(null);
-    const isDesktopSplitView = rt.breakpoint === 'lg' || rt.breakpoint === 'xl';
+    const isDesktop = rt.breakpoint === 'lg' || rt.breakpoint === 'xl';
+    // Show split view only when on desktop AND debug panel is toggled on
+    const isDesktopSplitView = isDesktop && showDebugPanel;
 
     // Mark session as read when viewing it
     React.useEffect(() => {
