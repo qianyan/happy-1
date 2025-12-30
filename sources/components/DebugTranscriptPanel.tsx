@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Platform } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Message } from '@/sync/typesMessage';
 import { Metadata } from '@/sync/storageTypes';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { t } from '@/text';
 import { DebugContentRenderer } from '@/components/debug';
 import { RawContentModal } from '@/components/debug/components/RawContentModal';
+import { ScrollView } from 'react-native'; // Keep for horizontal filter scroll
 
 interface DebugTranscriptPanelProps {
     messages: Message[];
@@ -17,24 +18,24 @@ interface DebugTranscriptPanelProps {
 
 export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props) => {
     const { theme } = useUnistyles();
-    const scrollViewRef = React.useRef<ScrollView>(null);
-    const messageRefs = React.useRef<{ [key: string]: View | null }>({});
-    const containerRef = React.useRef<View>(null);
+    const flatListRef = React.useRef<FlatList<Message>>(null);
     const [allExpanded, setAllExpanded] = React.useState(true);
     const [visibleTypes, setVisibleTypes] = React.useState<Set<string>>(new Set());
     const [isUserScrolling, setIsUserScrolling] = React.useState(false);
     const scrollTimeoutRef = React.useRef<number | null>(null);
+    const initialScrollDone = React.useRef(false);
 
     // Auto-scroll to bottom on initial load
     React.useEffect(() => {
-        if (props.messages.length > 0) {
-            // Wait for layout to complete, then scroll to bottom
+        if (props.messages.length > 0 && !initialScrollDone.current) {
+            // Wait for layout to complete, then scroll to end
             const timer = setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: false });
+                flatListRef.current?.scrollToEnd({ animated: false });
+                initialScrollDone.current = true;
             }, 100);
             return () => clearTimeout(timer);
         }
-    }, []);
+    }, [props.messages.length]);
 
     // Get message type for checking if message is filtered
     const getMessageType = (message: Message): string => {
@@ -56,58 +57,6 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
         const type = getMessageType(message);
         return !visibleTypes.has(type);
     }, [props.messages, visibleTypes]);
-
-    // Scroll to selected message when it changes
-    React.useEffect(() => {
-        if (!props.selectedMessageId || isUserScrolling) {
-            return;
-        }
-
-        // Check if the message is visible (not filtered out)
-        if (!isMessageVisible(props.selectedMessageId)) {
-            return;
-        }
-
-        // Use requestAnimationFrame for better timing with layout
-        let rafId: number;
-        let timeoutId: number;
-
-        const performScroll = () => {
-            const messageView = messageRefs.current[props.selectedMessageId!];
-            if (!messageView || !containerRef.current) {
-                return;
-            }
-
-            messageView.measureLayout(
-                containerRef.current as any,
-                (left: number, top: number, width: number, height: number) => {
-                    if (top === 0 && height === 0) {
-                        // Layout not ready, ignore
-                        console.log('[DebugPanel] Layout not ready for message:', props.selectedMessageId);
-                        return;
-                    }
-                    const scrollY = Math.max(0, top - 20);
-                    console.log('[DebugPanel] Scrolling to:', props.selectedMessageId, 'top:', top, 'height:', height, 'scrollY:', scrollY);
-                    scrollViewRef.current?.scrollTo({ y: scrollY, animated: false });
-                },
-                () => {
-                    // Measurement failed
-                    console.log('[DebugPanel] measureLayout failed for:', props.selectedMessageId);
-                }
-            );
-        };
-
-        // Wait for layout to settle, then scroll
-        // Longer delay to ensure all content (especially complex renderers) is laid out
-        timeoutId = setTimeout(() => {
-            rafId = requestAnimationFrame(performScroll);
-        }, 300) as unknown as number;
-
-        return () => {
-            if (rafId) cancelAnimationFrame(rafId);
-            if (timeoutId) clearTimeout(timeoutId);
-        };
-    }, [props.selectedMessageId, isUserScrolling, isMessageVisible, visibleTypes]);
 
     // Track user scrolling
     const handleScrollBegin = React.useCallback(() => {
@@ -135,12 +84,12 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
 
     // Scroll to top
     const scrollToTop = React.useCallback(() => {
-        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
     }, []);
 
     // Scroll to bottom
     const scrollToBottom = React.useCallback(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
+        flatListRef.current?.scrollToEnd({ animated: true });
     }, []);
 
     // Reverse messages to show in chronological order (oldest first)
@@ -197,6 +146,35 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
         });
     }, [orderedMessages, visibleTypes]);
 
+    // Scroll to selected message when it changes
+    React.useEffect(() => {
+        if (!props.selectedMessageId || isUserScrolling) {
+            return;
+        }
+
+        // Check if the message is visible (not filtered out)
+        if (!isMessageVisible(props.selectedMessageId)) {
+            return;
+        }
+
+        // Find the index of the selected message in the filtered list
+        const index = filteredMessages.findIndex(m => m.id === props.selectedMessageId);
+        if (index === -1) {
+            return;
+        }
+
+        // Wait for layout to settle, then scroll
+        const timeoutId = setTimeout(() => {
+            flatListRef.current?.scrollToIndex({
+                index,
+                animated: true,
+                viewPosition: 0.3, // Position the item 30% from the top
+            });
+        }, 100);
+
+        return () => clearTimeout(timeoutId);
+    }, [props.selectedMessageId, isUserScrolling, isMessageVisible, filteredMessages]);
+
     // Get background color for type button (using higher contrast solid colors)
     const getTypeButtonColor = (type: string): string => {
         // Shell/execution tools - Orange
@@ -232,8 +210,59 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
         return theme.dark ? '#424242' : '#616161';
     };
 
+    // Get background style based on message type
+    const getMessageBackground = React.useCallback((message: Message, isSelected: boolean) => {
+        if (isSelected) {
+            return styles.messageBlockSelected;
+        }
+        switch (message.kind) {
+            case 'user-text':
+                return styles.messageBlockUser;
+            case 'agent-text':
+                return styles.messageBlockAgent;
+            case 'tool-call':
+                return styles.messageBlockTool;
+            case 'agent-event':
+                return styles.messageBlockEvent;
+            default:
+                return null;
+        }
+    }, []);
+
+    // FlatList keyExtractor
+    const keyExtractor = React.useCallback((item: Message) => item.id, []);
+
+    // FlatList renderItem
+    const renderItem = React.useCallback(({ item, index }: { item: Message; index: number }) => {
+        const isSelected = props.selectedMessageId === item.id;
+        return (
+            <View
+                style={[
+                    styles.messageBlock,
+                    getMessageBackground(item, isSelected)
+                ]}
+            >
+                <DebugMessageView
+                    message={item}
+                    metadata={props.metadata}
+                    index={index}
+                    forceExpanded={allExpanded}
+                />
+            </View>
+        );
+    }, [props.selectedMessageId, props.metadata, allExpanded, getMessageBackground]);
+
+    // Handle scroll failure (when item hasn't been rendered yet)
+    const onScrollToIndexFailed = React.useCallback((info: { index: number; highestMeasuredFrameIndex: number; averageItemLength: number }) => {
+        // Scroll to the closest rendered item first, then try again
+        flatListRef.current?.scrollToOffset({
+            offset: info.averageItemLength * info.index,
+            animated: true,
+        });
+    }, []);
+
     return (
-        <View style={styles.container} ref={containerRef}>
+        <View style={styles.container}>
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
                     <View>
@@ -340,53 +369,23 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
                     </ScrollView>
                 </View>
             )}
-            <ScrollView
-                ref={scrollViewRef}
+            <FlatList
+                ref={flatListRef}
+                data={filteredMessages}
+                keyExtractor={keyExtractor}
+                renderItem={renderItem}
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 onScrollBeginDrag={handleScrollBegin}
                 onScrollEndDrag={handleScrollEnd}
                 onMomentumScrollEnd={handleScrollEnd}
-            >
-                {filteredMessages.map((message, index) => {
-                    // Get background color based on message type
-                    const getMessageBackground = () => {
-                        if (props.selectedMessageId === message.id) {
-                            return styles.messageBlockSelected;
-                        }
-                        switch (message.kind) {
-                            case 'user-text':
-                                return styles.messageBlockUser;
-                            case 'agent-text':
-                                return styles.messageBlockAgent;
-                            case 'tool-call':
-                                return styles.messageBlockTool;
-                            case 'agent-event':
-                                return styles.messageBlockEvent;
-                            default:
-                                return null;
-                        }
-                    };
-
-                    return (
-                        <View
-                            key={message.id}
-                            ref={(ref) => { messageRefs.current[message.id] = ref; }}
-                            style={[
-                                styles.messageBlock,
-                                getMessageBackground()
-                            ]}
-                        >
-                            <DebugMessageView
-                                message={message}
-                                metadata={props.metadata}
-                                index={index}
-                                forceExpanded={allExpanded}
-                            />
-                        </View>
-                    );
-                })}
-            </ScrollView>
+                onScrollToIndexFailed={onScrollToIndexFailed}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={Platform.OS !== 'web'}
+                maxToRenderPerBatch={10}
+                windowSize={5}
+                initialNumToRender={20}
+            />
         </View>
     );
 });
