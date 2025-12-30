@@ -4,7 +4,7 @@ import { Link } from 'expo-router';
 import * as React from 'react';
 import { Pressable, ScrollView, View, Platform } from 'react-native';
 import { LongPressGestureHandler, State } from 'react-native-gesture-handler';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Text } from '../StyledText';
 import { Typography } from '@/constants/Typography';
 import { SimpleSyntaxHighlighter } from '../SimpleSyntaxHighlighter';
@@ -219,7 +219,7 @@ function RenderSpans(props: { spans: MarkdownSpan[], baseStyle?: any }) {
             if (span.url) {
                 return (
                     <Link key={index} href={span.url as any} target="_blank">
-                        <Text style={[style.link, span.styles.map(s => style[s])]}>{span.text}</Text>
+                        <Text selectable style={[style.link, span.styles.map(s => style[s])]}>{span.text}</Text>
                     </Link>
                 );
             } else {
@@ -249,36 +249,75 @@ function RenderTableBlockWeb(props: {
     first: boolean,
     last: boolean
 }) {
+    const { theme } = useUnistyles();
+
     return (
         <View style={[style.tableContainer, props.first && style.first, props.last && style.last]}>
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={true}
-                contentContainerStyle={{ minWidth: '100%' }}
+            <div
+                style={{
+                    overflowX: 'auto',
+                    width: '100%',
+                }}
             >
-                <View style={{ flexDirection: 'column', minWidth: '100%' }}>
-                    <View style={style.tableRow}>
-                        {props.headers.map((header, index) => (
-                            <View key={`header-${index}`} style={[style.tableCell, style.tableCellFlex, style.tableHeaderCell]}>
-                                <Text style={style.tableHeaderText}>
-                                    <RenderSpans spans={parseMarkdownSpans(header, false)} baseStyle={style.tableHeaderText} />
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                    {props.rows.map((row, rowIndex) => (
-                        <View key={`row-${rowIndex}`} style={style.tableRow}>
-                            {row.map((cell, cellIndex) => (
-                                <View key={`cell-${rowIndex}-${cellIndex}`} style={[style.tableCell, style.tableCellFlex]}>
-                                    <Text style={style.tableCellText}>
-                                        <RenderSpans spans={parseMarkdownSpans(cell, false)} baseStyle={style.tableCellText} />
+                <table
+                    style={{
+                        width: '100%',
+                        minWidth: 'max-content',
+                        borderCollapse: 'collapse',
+                        borderSpacing: 0,
+                    }}
+                >
+                    <thead>
+                        <tr>
+                            {props.headers.map((header, index) => (
+                                <th
+                                    key={`header-${index}`}
+                                    style={{
+                                        padding: '8px 12px',
+                                        backgroundColor: theme.colors.surfaceHigh,
+                                        borderBottom: `1px solid ${theme.colors.divider}`,
+                                        borderRight: index < props.headers.length - 1 ? `1px solid ${theme.colors.divider}` : 'none',
+                                        fontWeight: 600,
+                                        textAlign: 'left',
+                                        verticalAlign: 'top',
+                                        maxWidth: 300,
+                                        wordWrap: 'break-word',
+                                        whiteSpace: 'normal',
+                                    }}
+                                >
+                                    <Text selectable style={style.tableHeaderText}>
+                                        <RenderSpans spans={parseMarkdownSpans(header, false)} baseStyle={style.tableHeaderText} />
                                     </Text>
-                                </View>
+                                </th>
                             ))}
-                        </View>
-                    ))}
-                </View>
-            </ScrollView>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {props.rows.map((row, rowIndex) => (
+                            <tr key={`row-${rowIndex}`}>
+                                {row.map((cell, cellIndex) => (
+                                    <td
+                                        key={`cell-${rowIndex}-${cellIndex}`}
+                                        style={{
+                                            padding: '8px 12px',
+                                            borderBottom: rowIndex < props.rows.length - 1 ? `1px solid ${theme.colors.divider}` : 'none',
+                                            borderRight: cellIndex < row.length - 1 ? `1px solid ${theme.colors.divider}` : 'none',
+                                            verticalAlign: 'top',
+                                            maxWidth: 300,
+                                            wordWrap: 'break-word',
+                                            whiteSpace: 'normal',
+                                        }}
+                                    >
+                                        <Text selectable style={style.tableCellText}>
+                                            <RenderSpans spans={parseMarkdownSpans(cell, false)} baseStyle={style.tableCellText} />
+                                        </Text>
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </View>
     );
 }
