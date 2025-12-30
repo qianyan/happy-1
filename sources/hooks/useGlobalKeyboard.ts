@@ -13,11 +13,12 @@ export interface KeyboardHandlers {
     onToggleVoiceRecording?: () => void;
     onPrevSession?: () => void;
     onNextSession?: () => void;
+    onFocusSearch?: () => void;
 }
 
 /**
  * Hook for handling global keyboard shortcuts on web
- * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice)
+ * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘/ (focus search)
  * Prev/Next session: ⌥↑/↓ on Mac, Ctrl+Shift+↑/↓ on Windows/Linux
  */
 export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<KeyboardHandlers, 'onCommandPalette'>) {
@@ -88,6 +89,14 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
                 e.preventDefault();
                 e.stopPropagation();
                 handlers?.onNextSession?.();
+                return;
+            }
+
+            // ⌘/ - Focus search
+            if (isModifierPressed && e.key === '/') {
+                e.preventDefault();
+                e.stopPropagation();
+                handlers?.onFocusSearch?.();
                 return;
             }
         };

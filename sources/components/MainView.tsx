@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, ActivityIndicator, TextInput } from 'react-native';
+import { View, ActivityIndicator, TextInput, type TextInput as TextInputType } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { useIsTablet } from '@/utils/responsive';
@@ -82,7 +82,20 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     const sessionListViewData = useVisibleSessionListViewData();
     const isTablet = useIsTablet();
     const router = useRouter();
-    const { searchQuery, setSearchQuery } = useSessionSearch();
+    const { searchQuery, setSearchQuery, registerFocusCallback, unregisterFocusCallback } = useSessionSearch();
+    const searchInputRef = React.useRef<TextInputType>(null);
+
+    // Register focus callback for keyboard shortcut (⌘/)
+    React.useEffect(() => {
+        if (variant !== 'sidebar') return;
+        const focusCallback = () => {
+            searchInputRef.current?.focus();
+        };
+        registerFocusCallback(focusCallback);
+        return () => {
+            unregisterFocusCallback();
+        };
+    }, [variant, registerFocusCallback, unregisterFocusCallback]);
 
     const handleNewSession = React.useCallback(() => {
         router.push('/new');
@@ -117,6 +130,7 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
             <View style={styles.sidebarContentContainer}>
                 <View style={styles.searchContainer}>
                     <TextInput
+                        ref={searchInputRef}
                         style={styles.searchInput}
                         placeholder={t('session.searchPlaceholder')}
                         placeholderTextColor={theme.colors.textSecondary}

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, ActivityIndicator, Pressable, Text, TextInput } from 'react-native';
+import { View, ActivityIndicator, Pressable, Text, TextInput, type TextInput as TextInputType } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { Header } from './navigation/Header';
 import { SessionsList } from './SessionsList';
@@ -242,7 +242,19 @@ export const SessionsListWrapper = React.memo(() => {
     const { theme } = useUnistyles();
     const sessionListViewData = useVisibleSessionListViewData();
     const styles = stylesheet;
-    const { searchQuery, setSearchQuery } = useSessionSearch();
+    const { searchQuery, setSearchQuery, registerFocusCallback, unregisterFocusCallback } = useSessionSearch();
+    const searchInputRef = React.useRef<TextInputType>(null);
+
+    // Register focus callback for keyboard shortcut (⌘/)
+    React.useEffect(() => {
+        const focusCallback = () => {
+            searchInputRef.current?.focus();
+        };
+        registerFocusCallback(focusCallback);
+        return () => {
+            unregisterFocusCallback();
+        };
+    }, [registerFocusCallback, unregisterFocusCallback]);
 
     return (
         <View style={styles.container}>
@@ -275,6 +287,7 @@ export const SessionsListWrapper = React.memo(() => {
                     <View style={styles.searchContainer}>
                         <View style={styles.searchInputWrapper}>
                             <TextInput
+                                ref={searchInputRef}
                                 style={styles.searchInput}
                                 placeholder={t('session.searchPlaceholder')}
                                 placeholderTextColor={theme.colors.textSecondary}

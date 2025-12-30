@@ -50,7 +50,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
     // Get visible sessions list for prev/next navigation
     const sessionListViewData = useVisibleSessionListViewData();
-    const { searchQuery } = useSessionSearch();
+    const { searchQuery, focusSearch } = useSessionSearch();
 
     // Extract flat list of sessions for keyboard navigation
     // Must match the visual order in the sidebar (ActiveSessionsGroup sorts by lastMessageAt)
@@ -411,6 +411,12 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         navigateToSession(sessionsList[nextIndex].id);
     }, [commandPaletteEnabled, sessionsList, currentSessionId, navigateToSession]);
 
+    // Handler for focus search shortcut (⌘/)
+    const handleFocusSearch = useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        focusSearch();
+    }, [commandPaletteEnabled, focusSearch]);
+
     // Keyboard shortcut handlers
     const keyboardHandlers = useMemo(() => ({
         onNewSession: handleNewSession,
@@ -419,7 +425,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         onToggleVoiceRecording: handleToggleVoiceRecording,
         onPrevSession: handlePrevSession,
         onNextSession: handleNextSession,
-    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession]);
+        onFocusSearch: handleFocusSearch,
+    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch]);
 
     // Set up global keyboard handler only if feature is enabled
     useGlobalKeyboard(
