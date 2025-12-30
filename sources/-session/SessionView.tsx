@@ -7,7 +7,6 @@ import { ChatHeaderView } from '@/components/ChatHeaderView';
 import { ChatList } from '@/components/ChatList';
 import { Deferred } from '@/components/Deferred';
 import { EmptyMessages } from '@/components/EmptyMessages';
-import { RecordingStatusBar } from '@/components/RecordingStatusBar';
 import { DebugTranscriptPanel } from '@/components/DebugTranscriptPanel';
 import { hapticsHeavy } from '@/components/haptics';
 import { useDraft } from '@/hooks/useDraft';
@@ -507,6 +506,7 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
             onMicPress={micButtonState.onMicPress}
             onMicLongPressStart={micButtonState.onMicLongPressStart}
             onMicPressOut={micButtonState.onMicPressOut}
+            onCancelRecording={cancelRecording}
             micStatus={micButtonState.micStatus}
             onAbort={() => sessionAbort(sessionId)}
             showAbortButton={sessionStatus.state === 'thinking' || sessionStatus.state === 'waiting'}
@@ -543,26 +543,13 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
 
     return (
         <>
-            {/* Recording Status Bar - positioned as overlay at top */}
-            {!isTablet && !(isLandscape && deviceType === 'phone') && transcriptionStatus !== 'idle' && (
-                <View style={{
-                    position: 'absolute',
-                    top: 0, // Position at top since header is handled by parent
-                    left: 0,
-                    right: 0,
-                    zIndex: 999 // Below header but above content
-                }}>
-                    <RecordingStatusBar status={transcriptionStatus} onCancel={cancelRecording} />
-                </View>
-            )}
-
             {/* CLI Version Warning Overlay - Subtle centered pill */}
             {shouldShowCliWarning && !(isLandscape && deviceType === 'phone') && (
                 <Pressable
                     onPress={handleDismissCliWarning}
                     style={{
                         position: 'absolute',
-                        top: safeArea.top + headerHeight + ((!isTablet && transcriptionStatus !== 'idle') ? 48 : 0) + 8, // Position below header and recording bar if present
+                        top: safeArea.top + headerHeight + 8, // Position below header
                         alignSelf: 'center',
                         backgroundColor: '#FFF3CD',
                         borderRadius: 100, // Fully rounded pill

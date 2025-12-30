@@ -198,6 +198,7 @@ function NewSessionScreen() {
         status: transcriptionStatus,
         startRecording,
         stopRecording,
+        cancelRecording,
         isRecording,
     } = useWhisperTranscription({
         onTranscription: handleTranscription,
@@ -757,6 +758,7 @@ function NewSessionScreen() {
                     onMicPress={micButtonState.onMicPress}
                     onMicLongPressStart={micButtonState.onMicLongPressStart}
                     onMicPressOut={micButtonState.onMicPressOut}
+                    onCancelRecording={cancelRecording}
                     micStatus={micButtonState.micStatus}
                 />
 

@@ -23,6 +23,8 @@ import { t } from '@/text';
 import { Metadata } from '@/sync/storageTypes';
 import { ImageAttachmentBar } from './ImageAttachmentBar';
 import { ImageAttachment } from '@/hooks/useImageAttachments';
+import { RecordingStatusBar } from './RecordingStatusBar';
+import { TranscriptionStatus } from '@/hooks/useWhisperTranscription';
 
 interface AgentInputProps {
     value: string;
@@ -34,7 +36,8 @@ interface AgentInputProps {
     onMicPress?: () => void;
     onMicLongPressStart?: () => void;  // Called when long press is detected (starts auto-send mode)
     onMicPressOut?: () => void;         // Called when finger is released (stops recording in auto-send mode)
-    micStatus?: 'idle' | 'recording' | 'transcribing';
+    onCancelRecording?: () => void;     // Called when user cancels recording via status bar
+    micStatus?: TranscriptionStatus;
     permissionMode?: PermissionMode;
     onPermissionModeChange?: (mode: PermissionMode) => void;
     modelMode?: ModelMode;
@@ -811,6 +814,15 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                 )}
                 {/* Unified panel containing input and action buttons */}
                 <View style={styles.unifiedPanel}>
+                    {/* Recording status bar - shows when recording/transcribing */}
+                    {props.micStatus && props.micStatus !== 'idle' && (
+                        <RecordingStatusBar
+                            status={props.micStatus}
+                            onCancel={props.onCancelRecording}
+                            style={{ marginBottom: 4, borderRadius: 8 }}
+                        />
+                    )}
+
                     {/* Image attachment bar - shows thumbnails of attached images */}
                     {props.imageAttachments && props.imageAttachments.length > 0 && props.onRemoveImageAttachment && (
                         <ImageAttachmentBar
