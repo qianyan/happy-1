@@ -13,6 +13,7 @@ import { Typography } from '@/constants/Typography';
 import { t } from '@/text';
 import { layout } from './layout';
 import { UpdateBanner } from './UpdateBanner';
+import { useSessionSearch } from '@/hooks/useSessionSearch';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -241,7 +242,7 @@ export const SessionsListWrapper = React.memo(() => {
     const { theme } = useUnistyles();
     const sessionListViewData = useVisibleSessionListViewData();
     const styles = stylesheet;
-    const [searchQuery, setSearchQuery] = React.useState('');
+    const { searchQuery, setSearchQuery } = useSessionSearch();
 
     return (
         <View style={styles.container}>

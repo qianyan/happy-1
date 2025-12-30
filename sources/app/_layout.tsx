@@ -21,6 +21,7 @@ import { syncRestore } from '@/sync/sync';
 import { useTrackScreens } from '@/track/useTrackScreens';
 import { FaviconPermissionIndicator } from '@/components/web/FaviconPermissionIndicator';
 import { CommandPaletteProvider } from '@/components/CommandPalette/CommandPaletteProvider';
+import { SessionSearchProvider } from '@/hooks/useSessionSearch';
 import { StatusBarProvider } from '@/components/StatusBarProvider';
 // import * as SystemUI from 'expo-system-ui';
 import { monkeyPatchConsoleForRemoteLoggingForFasterAiAutoDebuggingOnlyInLocalBuilds } from '@/utils/remoteLogger';
@@ -230,11 +231,13 @@ export default function RootLayout() {
                             <StatusBarProvider />
                             <ModalProvider>
                                 <ToastProvider>
-                                    <CommandPaletteProvider>
-                                        <HorizontalSafeAreaWrapper>
-                                            <SidebarNavigator />
-                                        </HorizontalSafeAreaWrapper>
-                                    </CommandPaletteProvider>
+                                    <SessionSearchProvider>
+                                        <CommandPaletteProvider>
+                                            <HorizontalSafeAreaWrapper>
+                                                <SidebarNavigator />
+                                            </HorizontalSafeAreaWrapper>
+                                        </CommandPaletteProvider>
+                                    </SessionSearchProvider>
                                 </ToastProvider>
                             </ModalProvider>
                         </ThemeProvider>

@@ -3,7 +3,7 @@ import { View, FlatList } from 'react-native';
 import { Text } from '@/components/StyledText';
 import { usePathname } from 'expo-router';
 import { SessionListViewItem, useSetting } from '@/sync/storage';
-import { getSessionName, getSessionSubtitle } from '@/utils/sessionUtils';
+import { sessionMatchesSearch } from '@/utils/sessionSearch';
 import { ActiveSessionsGroup, FlatSessionRow } from './ActiveSessionsGroup';
 import { ActiveSessionsGroupCompact } from './ActiveSessionsGroupCompact';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -74,44 +74,25 @@ export function SessionsList({ searchQuery = '' }: SessionsListProps) {
     const selectable = isTablet;
 
     // Filter data based on search query (local filtering)
+    // Supports OR syntax with '|' separator (e.g., "foo|bar")
     const data = React.useMemo(() => {
         if (!rawData || !searchQuery.trim()) {
             return rawData;
         }
-
-        const normalizedQuery = searchQuery.toLowerCase().trim();
 
         // Filter sessions (flat list, no headers)
         const filteredItems: SessionListViewItem[] = [];
 
         for (const item of rawData) {
             if (item.type === 'session') {
-                const session = item.session;
-                const sessionName = getSessionName(session).toLowerCase();
-                const sessionSubtitle = getSessionSubtitle(session).toLowerCase();
-                const machineHost = session.metadata?.host?.toLowerCase() || '';
-
-                // Check if session matches search query
-                if (
-                    sessionName.includes(normalizedQuery) ||
-                    sessionSubtitle.includes(normalizedQuery) ||
-                    machineHost.includes(normalizedQuery)
-                ) {
+                if (sessionMatchesSearch(item.session, searchQuery)) {
                     filteredItems.push(item);
                 }
             } else if (item.type === 'active-sessions') {
                 // Filter active sessions array
-                const filteredSessions = item.sessions.filter(session => {
-                    const sessionName = getSessionName(session).toLowerCase();
-                    const sessionSubtitle = getSessionSubtitle(session).toLowerCase();
-                    const machineHost = session.metadata?.host?.toLowerCase() || '';
-
-                    return (
-                        sessionName.includes(normalizedQuery) ||
-                        sessionSubtitle.includes(normalizedQuery) ||
-                        machineHost.includes(normalizedQuery)
-                    );
-                });
+                const filteredSessions = item.sessions.filter(session =>
+                    sessionMatchesSearch(session, searchQuery)
+                );
 
                 if (filteredSessions.length > 0) {
                     filteredItems.push({

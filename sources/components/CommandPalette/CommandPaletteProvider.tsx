@@ -22,6 +22,8 @@ import {
     TranscriptionStatus
 } from '@/hooks/useWhisperTranscription';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
+import { useSessionSearch } from '@/hooks/useSessionSearch';
+import { sessionMatchesSearch } from '@/utils/sessionSearch';
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -48,27 +50,35 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
 
     // Get visible sessions list for prev/next navigation
     const sessionListViewData = useVisibleSessionListViewData();
+    const { searchQuery } = useSessionSearch();
 
     // Extract flat list of sessions for keyboard navigation
     // Must match the visual order in the sidebar (ActiveSessionsGroup sorts by lastMessageAt)
+    // Also applies search filter when active to match what's visible in the UI
+    // Supports OR syntax with '|' separator (e.g., "foo|bar")
     const sessionsList = useMemo((): Session[] => {
         if (!sessionListViewData) return [];
         const result: Session[] = [];
+
         for (const item of sessionListViewData) {
             if (item.type === 'session') {
-                result.push(item.session);
+                if (sessionMatchesSearch(item.session, searchQuery)) {
+                    result.push(item.session);
+                }
             } else if (item.type === 'active-sessions') {
                 // Sort active sessions by lastMessageAt to match ActiveSessionsGroup display order
-                const sortedActiveSessions = [...item.sessions].sort((a, b) => {
-                    const aTime = a.lastMessageAt ?? a.createdAt;
-                    const bTime = b.lastMessageAt ?? b.createdAt;
-                    return bTime - aTime;
-                });
+                const sortedActiveSessions = [...item.sessions]
+                    .filter(session => sessionMatchesSearch(session, searchQuery))
+                    .sort((a, b) => {
+                        const aTime = a.lastMessageAt ?? a.createdAt;
+                        const bTime = b.lastMessageAt ?? b.createdAt;
+                        return bTime - aTime;
+                    });
                 result.push(...sortedActiveSessions);
             }
         }
         return result;
-    }, [sessionListViewData]);
+    }, [sessionListViewData, searchQuery]);
 
     // Define available commands
     const commands = useMemo((): Command[] => {

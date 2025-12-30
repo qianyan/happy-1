@@ -10,6 +10,7 @@ import { FABWide } from './FABWide';
 import { Typography } from '@/constants/Typography';
 import { t } from '@/text';
 import { useRouter } from 'expo-router';
+import { useSessionSearch } from '@/hooks/useSessionSearch';
 
 interface MainViewProps {
     variant: 'phone' | 'sidebar';
@@ -81,7 +82,7 @@ export const MainView = React.memo(({ variant }: MainViewProps) => {
     const sessionListViewData = useVisibleSessionListViewData();
     const isTablet = useIsTablet();
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = React.useState('');
+    const { searchQuery, setSearchQuery } = useSessionSearch();
 
     const handleNewSession = React.useCallback(() => {
         router.push('/new');
