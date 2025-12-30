@@ -819,7 +819,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                         <RecordingStatusBar
                             status={props.micStatus}
                             onCancel={props.onCancelRecording}
-                            style={{ marginBottom: 4, borderRadius: 8 }}
+                            style={{ marginTop: 6, marginBottom: 4, borderRadius: 8 }}
                         />
                     )}
 
