@@ -72,73 +72,55 @@ export const RecordingStatusBar = React.memo(({ status, style, onCancel }: Recor
         <View style={[{
             backgroundColor: statusInfo.backgroundColor,
             height: 32,
-            width: '100%',
-            justifyContent: 'center',
+            flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 16,
+            justifyContent: 'space-between',
+            paddingHorizontal: 12,
         }, style]}>
-            <View style={styles.content}>
-                {/* Left section - status info */}
-                <View style={styles.leftSection}>
-                    <StatusDot
-                        color={statusInfo.color}
-                        isPulsing={statusInfo.isPulsing}
-                        size={8}
-                        style={styles.statusDot}
-                    />
-                    <Ionicons
-                        name={statusInfo.icon}
-                        size={16}
-                        color={statusInfo.textColor}
-                        style={styles.micIcon}
-                    />
-                    <Text style={[
-                        styles.statusText,
-                        { color: statusInfo.textColor }
-                    ]}>
-                        {statusInfo.text}
-                    </Text>
-                </View>
-
-                {/* Right section - cancel button */}
-                <View style={styles.rightSection}>
-                    {status === 'recording' && (
-                        <Pressable
-                            onPress={handleCancel}
-                            style={({ pressed }) => [
-                                styles.cancelButton,
-                                pressed && styles.buttonPressed
-                            ]}
-                            hitSlop={10}
-                        >
-                            <Text style={[styles.buttonText, { color: statusInfo.textColor }]}>
-                                {t('voiceAssistant.cancel')}
-                            </Text>
-                        </Pressable>
-                    )}
-                </View>
+            <View style={styles.leftSection}>
+                <StatusDot
+                    color={statusInfo.color}
+                    isPulsing={statusInfo.isPulsing}
+                    size={8}
+                    style={styles.statusDot}
+                />
+                <Ionicons
+                    name={statusInfo.icon}
+                    size={16}
+                    color={statusInfo.textColor}
+                    style={styles.micIcon}
+                />
+                <Text style={[
+                    styles.statusText,
+                    { color: statusInfo.textColor }
+                ]}>
+                    {statusInfo.text}
+                </Text>
             </View>
+
+            {/* Cancel button - on the right */}
+            {status === 'recording' && (
+                <Pressable
+                    onPress={handleCancel}
+                    style={({ pressed }) => [
+                        styles.cancelButton,
+                        pressed && styles.buttonPressed
+                    ]}
+                    hitSlop={10}
+                >
+                    <Text style={[styles.buttonText, { color: statusInfo.textColor }]}>
+                        {t('voiceAssistant.cancel')}
+                    </Text>
+                </Pressable>
+            )}
         </View>
     );
 });
 
 const styles = StyleSheet.create({
-    content: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '100%',
-        paddingHorizontal: 12,
-    },
     leftSection: {
         flexDirection: 'row',
         alignItems: 'center',
-        flex: 1,
-    },
-    rightSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 12,
     },
     cancelButton: {
         paddingHorizontal: 8,

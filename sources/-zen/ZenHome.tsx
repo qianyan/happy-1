@@ -177,6 +177,19 @@ export const ZenHome = () => {
                                     returnKeyType="done"
                                     blurOnSubmit={false}
                                 />
+                                {inputText.trim() && (
+                                    <Pressable
+                                        onPress={handleSubmit}
+                                        hitSlop={8}
+                                        style={styles.addButton}
+                                    >
+                                        <Ionicons
+                                            name="add-circle"
+                                            size={28}
+                                            color={theme.colors.textLink}
+                                        />
+                                    </Pressable>
+                                )}
                                 <Pressable
                                     onPress={toggleVoice}
                                     hitSlop={8}
@@ -228,6 +241,13 @@ const styles = StyleSheet.create({
         } as any : {}),
     },
     micButton: {
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 4,
+    },
+    addButton: {
         width: 40,
         height: 40,
         alignItems: 'center',
