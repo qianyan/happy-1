@@ -1,6 +1,23 @@
 {
   "entries": [
     {
+      "version": 6,
+      "date": "2025-12-30",
+      "summary": "This update focuses on enhanced debugging capabilities, improved keyboard navigation, and better web experience with analytics and visual polish.",
+      "changes": [
+        "Added keyboard shortcuts panel (⌘⇧?) showing all available shortcuts, accessible from Settings or keyboard",
+        "Introduced debug transcript panel for developers to inspect session messages and thinking blocks",
+        "Added unread message indicator (red dot) to session list for sessions with new messages",
+        "Improved keyboard navigation: Alt+Up/Down now respects search filter, ⌘⇧F focuses search field",
+        "Added OR search syntax support (e.g., \"foo|bar\") for filtering sessions",
+        "Fixed markdown tables and link selectability on web for better content interaction",
+        "Fixed scroll-to-bottom button icon color in dark mode",
+        "Updated What's New and OTA Update banners to match grouped table view styling",
+        "Added Umami analytics for web platform"
+      ],
+      "rawMarkdown": "## Version 6 - 2025-12-30\n\n\nThis update focuses on enhanced debugging capabilities, improved keyboard navigation, and better web experience with analytics and visual polish.\n\n- Added keyboard shortcuts panel (⌘⇧?) showing all available shortcuts, accessible from Settings or keyboard\n- Introduced debug transcript panel for developers to inspect session messages and thinking blocks\n- Added unread message indicator (red dot) to session list for sessions with new messages\n- Improved keyboard navigation: Alt+Up/Down now respects search filter, ⌘⇧F focuses search field\n- Added OR search syntax support (e.g., \"foo|bar\") for filtering sessions\n- Fixed markdown tables and link selectability on web for better content interaction\n- Fixed scroll-to-bottom button icon color in dark mode\n- Updated What's New and OTA Update banners to match grouped table view styling\n- Added Umami analytics for web platform"
+    },
+    {
       "version": 5,
       "date": "2025-12-25",
       "summary": "This update brings powerful keyboard shortcuts to the new session screen, making voice dictation and command access faster than ever. Power users can now leverage the same efficient workflow across all session screens.",
@@ -66,5 +83,5 @@
       "rawMarkdown": "## Version 1 - 2025-05-12\n\n\nWelcome to Happy - your secure, encrypted mobile companion for Claude Code. This inaugural release establishes the foundation for private, powerful AI interactions on the go.\n\n- Implemented end-to-end encrypted session management ensuring complete privacy\n- Integrated intelligent voice assistant with natural conversation capabilities\n- Added experimental file manager with syntax highlighting and tree navigation\n- Built seamless real-time synchronization across all your devices\n- Established native support for iOS, Android, and responsive web interfaces"
     }
   ],
-  "latestVersion": 5
+  "latestVersion": 6
 }

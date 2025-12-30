@@ -1,5 +1,19 @@
 # Changelog
 
+## Version 6 - 2025-12-30
+
+This update focuses on enhanced debugging capabilities, improved keyboard navigation, and better web experience with analytics and visual polish.
+
+- Added keyboard shortcuts panel (⌘⇧?) showing all available shortcuts, accessible from Settings or keyboard
+- Introduced debug transcript panel for developers to inspect session messages and thinking blocks
+- Added unread message indicator (red dot) to session list for sessions with new messages
+- Improved keyboard navigation: Alt+Up/Down now respects search filter, ⌘⇧F focuses search field
+- Added OR search syntax support (e.g., "foo|bar") for filtering sessions
+- Fixed markdown tables and link selectability on web for better content interaction
+- Fixed scroll-to-bottom button icon color in dark mode
+- Updated What's New and OTA Update banners to match grouped table view styling
+- Added Umami analytics for web platform
+
 ## Version 5 - 2025-12-25
 
 This update brings powerful keyboard shortcuts to the new session screen, making voice dictation and command access faster than ever. Power users can now leverage the same efficient workflow across all session screens.
