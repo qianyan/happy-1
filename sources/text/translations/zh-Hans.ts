@@ -940,5 +940,23 @@ export const zhHans: TranslationStructure = {
         tapToRecord: '点击麦克风开始录音',
         releaseToTranscribe: '松开以转录',
         apiKeyRequired: '需要 OpenAI API 密钥。前往 设置 > 语音 进行配置。',
+    },
+
+    keyboardShortcuts: {
+        // Keyboard shortcuts panel
+        title: '键盘快捷键',
+        general: '通用',
+        sessions: '会话',
+        currentSession: '当前会话',
+        openCommandPalette: '打开命令面板',
+        showKeyboardShortcuts: '显示键盘快捷键',
+        openSettings: '打开设置',
+        newSession: '新建会话',
+        focusSearch: '聚焦搜索',
+        previousSession: '上一个会话',
+        nextSession: '下一个会话',
+        toggleVoiceRecording: '切换语音录制',
+        archiveSession: '归档会话',
+        deleteSession: '删除会话',
     }
 } as const;

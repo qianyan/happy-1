@@ -24,6 +24,7 @@ import {
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { useSessionSearch } from '@/hooks/useSessionSearch';
 import { sessionMatchesSearch } from '@/utils/sessionSearch';
+import { KeyboardShortcutsPanel } from '@/components/KeyboardShortcutsPanel';
 
 export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -417,6 +418,15 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         focusSearch();
     }, [commandPaletteEnabled, focusSearch]);
 
+    // Handler for show keyboard shortcuts shortcut (⌘⇧?)
+    const handleShowKeyboardShortcuts = useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        Modal.show({
+            component: KeyboardShortcutsPanel,
+            props: {}
+        } as any);
+    }, [commandPaletteEnabled]);
+
     // Keyboard shortcut handlers
     const keyboardHandlers = useMemo(() => ({
         onNewSession: handleNewSession,
@@ -426,7 +436,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         onPrevSession: handlePrevSession,
         onNextSession: handleNextSession,
         onFocusSearch: handleFocusSearch,
-    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch]);
+        onShowKeyboardShortcuts: handleShowKeyboardShortcuts,
+    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch, handleShowKeyboardShortcuts]);
 
     // Set up global keyboard handler only if feature is enabled
     useGlobalKeyboard(

@@ -938,6 +938,24 @@ export const ca: TranslationStructure = {
         tapToRecord: 'Toca el micròfon per gravar',
         releaseToTranscribe: 'Deixa anar per transcriure',
         apiKeyRequired: 'Es requereix clau API d\'OpenAI. Ves a Configuració > Veu per configurar.',
+    },
+
+    keyboardShortcuts: {
+        // Keyboard shortcuts panel
+        title: 'Dreceres de teclat',
+        general: 'General',
+        sessions: 'Sessions',
+        currentSession: 'Sessió actual',
+        openCommandPalette: 'Obrir paleta de comandes',
+        showKeyboardShortcuts: 'Mostrar dreceres de teclat',
+        openSettings: 'Obrir configuració',
+        newSession: 'Nova sessió',
+        focusSearch: 'Enfocar cerca',
+        previousSession: 'Sessió anterior',
+        nextSession: 'Següent sessió',
+        toggleVoiceRecording: 'Alternar gravació de veu',
+        archiveSession: 'Arxivar sessió',
+        deleteSession: 'Eliminar sessió',
     }
 } as const;
 

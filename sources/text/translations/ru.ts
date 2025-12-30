@@ -961,6 +961,24 @@ export const ru: TranslationStructure = {
         tapToRecord: 'Нажмите микрофон для записи',
         releaseToTranscribe: 'Отпустите для транскрипции',
         apiKeyRequired: 'Требуется API ключ OpenAI. Перейдите в Настройки > Голос для настройки.',
+    },
+
+    keyboardShortcuts: {
+        // Keyboard shortcuts panel
+        title: 'Горячие клавиши',
+        general: 'Общие',
+        sessions: 'Сессии',
+        currentSession: 'Текущая сессия',
+        openCommandPalette: 'Открыть палитру команд',
+        showKeyboardShortcuts: 'Показать горячие клавиши',
+        openSettings: 'Открыть настройки',
+        newSession: 'Новая сессия',
+        focusSearch: 'Фокус на поиске',
+        previousSession: 'Предыдущая сессия',
+        nextSession: 'Следующая сессия',
+        toggleVoiceRecording: 'Переключить запись голоса',
+        archiveSession: 'Архивировать сессию',
+        deleteSession: 'Удалить сессию',
     }
 } as const;
 

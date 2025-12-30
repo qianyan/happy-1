@@ -939,6 +939,24 @@ export const en = {
         tapToRecord: 'Tap microphone to record',
         releaseToTranscribe: 'Release to transcribe',
         apiKeyRequired: 'OpenAI API key required. Go to Settings > Voice to configure.',
+    },
+
+    keyboardShortcuts: {
+        // Keyboard shortcuts panel
+        title: 'Keyboard Shortcuts',
+        general: 'General',
+        sessions: 'Sessions',
+        currentSession: 'Current Session',
+        openCommandPalette: 'Open command palette',
+        showKeyboardShortcuts: 'Show keyboard shortcuts',
+        openSettings: 'Open settings',
+        newSession: 'New session',
+        focusSearch: 'Focus search',
+        previousSession: 'Previous session',
+        nextSession: 'Next session',
+        toggleVoiceRecording: 'Toggle voice recording',
+        archiveSession: 'Archive session',
+        deleteSession: 'Delete session',
     }
 } as const;
 

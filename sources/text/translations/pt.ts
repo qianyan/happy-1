@@ -938,6 +938,24 @@ export const pt: TranslationStructure = {
         tapToRecord: 'Toque no microfone para gravar',
         releaseToTranscribe: 'Solte para transcrever',
         apiKeyRequired: 'Chave API do OpenAI necessária. Vá para Configurações > Voz para configurar.',
+    },
+
+    keyboardShortcuts: {
+        // Keyboard shortcuts panel
+        title: 'Atalhos de teclado',
+        general: 'Geral',
+        sessions: 'Sessões',
+        currentSession: 'Sessão atual',
+        openCommandPalette: 'Abrir paleta de comandos',
+        showKeyboardShortcuts: 'Mostrar atalhos de teclado',
+        openSettings: 'Abrir configurações',
+        newSession: 'Nova sessão',
+        focusSearch: 'Focar na busca',
+        previousSession: 'Sessão anterior',
+        nextSession: 'Próxima sessão',
+        toggleVoiceRecording: 'Alternar gravação de voz',
+        archiveSession: 'Arquivar sessão',
+        deleteSession: 'Excluir sessão',
     }
 } as const;
 

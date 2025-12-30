@@ -29,6 +29,7 @@ import { useProfile } from '@/sync/storage';
 import { getDisplayName, getAvatarUrl, getBio } from '@/sync/profile';
 import { Avatar } from '@/components/Avatar';
 import { t } from '@/text';
+import { KeyboardShortcutsPanel } from '@/components/KeyboardShortcutsPanel';
 
 // Manual Auth Modal Component for Android
 function ManualAuthModal({ onClose, onSubmit }: { onClose: () => void; onSubmit: (url: string) => void }) {
@@ -405,6 +406,19 @@ export const SettingsView = React.memo(function SettingsView() {
                     icon={<Ionicons name="analytics-outline" size={29} color="#007AFF" />}
                     onPress={() => router.push('/settings/usage')}
                 />
+                {Platform.OS === 'web' && (
+                    <Item
+                        title={t('keyboardShortcuts.title')}
+                        subtitle="⌘⇧?"
+                        icon={<Ionicons name="keypad-outline" size={29} color="#8E8E93" />}
+                        onPress={() => {
+                            Modal.show({
+                                component: KeyboardShortcutsPanel,
+                                props: {}
+                            } as any);
+                        }}
+                    />
+                )}
             </ItemGroup>
 
             {/* Developer */}
