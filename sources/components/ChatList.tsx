@@ -12,13 +12,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
-export const ChatList = React.memo((props: { session: Session }) => {
+export const ChatList = React.memo((props: {
+    session: Session;
+    onMessageSelect?: (messageId: string) => void;
+    selectedMessageId?: string | null;
+}) => {
     const { messages } = useSessionMessages(props.session.id);
     return (
         <ChatListInternal
             metadata={props.session.metadata}
             sessionId={props.session.id}
             messages={messages}
+            onMessageSelect={props.onMessageSelect}
+            selectedMessageId={props.selectedMessageId}
         />
     )
 });
@@ -46,14 +52,22 @@ const ChatListInternal = React.memo((props: {
     metadata: Metadata | null,
     sessionId: string,
     messages: Message[],
+    onMessageSelect?: (messageId: string) => void;
+    selectedMessageId?: string | null;
 }) => {
     const flatListRef = useRef<FlatList<Message>>(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
 
     const keyExtractor = useCallback((item: any) => item.id, []);
     const renderItem = useCallback(({ item }: { item: any }) => (
-        <MessageView message={item} metadata={props.metadata} sessionId={props.sessionId} />
-    ), [props.metadata, props.sessionId]);
+        <MessageView
+            message={item}
+            metadata={props.metadata}
+            sessionId={props.sessionId}
+            onMessageSelect={props.onMessageSelect}
+            isSelected={props.selectedMessageId === item.id}
+        />
+    ), [props.metadata, props.sessionId, props.onMessageSelect, props.selectedMessageId]);
 
     const handleScroll = useCallback((event: any) => {
         // Since list is inverted, contentOffset.y represents distance from newest messages

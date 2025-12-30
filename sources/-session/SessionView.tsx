@@ -8,6 +8,7 @@ import { ChatList } from '@/components/ChatList';
 import { Deferred } from '@/components/Deferred';
 import { EmptyMessages } from '@/components/EmptyMessages';
 import { RecordingStatusBar } from '@/components/RecordingStatusBar';
+import { DebugTranscriptPanel } from '@/components/DebugTranscriptPanel';
 import { hapticsHeavy } from '@/components/haptics';
 import { useDraft } from '@/hooks/useDraft';
 import { useImageAttachments } from '@/hooks/useImageAttachments';
@@ -147,7 +148,7 @@ export const SessionView = React.memo((props: { id: string }) => {
 
 
 function SessionViewLoaded({ sessionId, session }: { sessionId: string, session: Session }) {
-    const { theme } = useUnistyles();
+    const { theme, rt } = useUnistyles();
     const router = useRouter();
     const safeArea = useSafeAreaInsets();
     const isLandscape = useIsLandscape();
@@ -157,6 +158,8 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
     const [message, setMessage] = React.useState('');
     const { messages, isLoaded } = useSessionMessages(sessionId);
     const acknowledgedCliVersions = useLocalSetting('acknowledgedCliVersions');
+    const [selectedMessageId, setSelectedMessageId] = React.useState<string | null>(null);
+    const isDesktopSplitView = rt.breakpoint === 'lg' || rt.breakpoint === 'xl';
 
     // Mark session as read when viewing it
     React.useEffect(() => {
@@ -384,11 +387,24 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
         gitStatusSync.getSync(sessionId);
     }, [sessionId]);
 
+    // Handle message selection - on desktop, show in debug panel; on mobile, navigate to detail
+    const handleMessageSelect = React.useCallback((messageId: string) => {
+        if (isDesktopSplitView) {
+            setSelectedMessageId(messageId);
+        } else {
+            router.push(`/session/${sessionId}/message/${messageId}`);
+        }
+    }, [isDesktopSplitView, sessionId, router]);
+
     let content = (
         <>
             <Deferred>
                 {messages.length > 0 && (
-                    <ChatList session={session} />
+                    <ChatList
+                        session={session}
+                        onMessageSelect={isDesktopSplitView ? handleMessageSelect : undefined}
+                        selectedMessageId={isDesktopSplitView ? selectedMessageId : undefined}
+                    />
                 )}
             </Deferred>
         </>
@@ -561,11 +577,38 @@ function SessionViewLoaded({ sessionId, session }: { sessionId: string, session:
 
             {/* Main content area - no padding since header is overlay */}
             <View style={{ flexBasis: 0, flexGrow: 1, paddingBottom: safeArea.bottom + ((isRunningOnMac() || Platform.OS === 'web') ? 32 : 0) }}>
-                <AgentContentView
-                    content={content}
-                    input={input}
-                    placeholder={placeholder}
-                />
+                {isDesktopSplitView ? (
+                    <View style={{ flexDirection: 'row', flex: 1 }}>
+                        {/* Left: Chat List */}
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                            <AgentContentView
+                                content={content}
+                                input={input}
+                                placeholder={placeholder}
+                            />
+                        </View>
+                        {/* Right: Debug Transcript Panel */}
+                        <View style={{
+                            flex: 1,
+                            minWidth: 0,
+                            borderLeftWidth: 1,
+                            borderLeftColor: theme.colors.divider,
+                            backgroundColor: theme.colors.surface
+                        }}>
+                            <DebugTranscriptPanel
+                                messages={messages}
+                                metadata={session.metadata}
+                                selectedMessageId={selectedMessageId}
+                            />
+                        </View>
+                    </View>
+                ) : (
+                    <AgentContentView
+                        content={content}
+                        input={input}
+                        placeholder={placeholder}
+                    />
+                )}
             </View >
 
             {/* Back button for landscape phone mode when header is hidden */}
