@@ -92,6 +92,14 @@ export default function RootLayout() {
                 }}
             />
             <Stack.Screen
+                name="session/[id]/debug"
+                options={{
+                    headerShown: true,
+                    headerTitle: t('debug.transcript'),
+                    headerBackTitle: t('common.back'),
+                }}
+            />
+            <Stack.Screen
                 name="session/[id]/file"
                 options={{
                     headerShown: true,

@@ -58,6 +58,8 @@ export const ca: TranslationStructure = {
         fileViewer: 'Visualitzador de fitxers',
         loading: 'Carregant...',
         retry: 'Torna-ho a provar',
+        showMore: 'Mostra més',
+        showLess: 'Mostra menys',
     },
 
     profile: {
@@ -86,6 +88,7 @@ export const ca: TranslationStructure = {
         justNow: 'ara mateix',
         minutesAgo: ({ count }: { count: number }) => `fa ${count} minut${count !== 1 ? 's' : ''}`,
         hoursAgo: ({ count }: { count: number }) => `fa ${count} hora${count !== 1 ? 'es' : ''}`,
+        daysAgo: ({ count }: { count: number }) => `fa ${count} dia${count !== 1 ? 'es' : ''}`,
     },
 
     connect: {
@@ -303,6 +306,7 @@ export const ca: TranslationStructure = {
     session: {
         inputPlaceholder: 'Escriu un missatge...',
         searchPlaceholder: 'Cercar sessions...',
+        selectToolToViewDetails: 'Selecciona una eina per veure els detalls',
     },
 
     commandPalette: {
@@ -455,6 +459,11 @@ export const ca: TranslationStructure = {
         suggestion: {
             fileLabel: 'FITXER',
             folderLabel: 'CARPETA',
+        },
+        userHistory: {
+            last: 'Últim',
+            title: ({ count }: { count: number }) => `Els teus missatges (${count})`,
+            fullMessage: 'Missatge complet',
         },
         noMachinesAvailable: 'Sense màquines',
     },
@@ -786,6 +795,11 @@ export const ca: TranslationStructure = {
         unknownEvent: 'Esdeveniment desconegut',
         usageLimitUntil: ({ time }: { time: string }) => `Límit d'ús assolit fins a ${time}`,
         unknownTime: 'temps desconegut',
+        thinking: 'Pensant',
+        subAgentInvocation: 'Invocació de sub-agent',
+        prompt: 'Prompt',
+        result: 'Resultat',
+        pending: 'Pendent...',
     },
 
     codex: {
@@ -956,6 +970,16 @@ export const ca: TranslationStructure = {
         toggleVoiceRecording: 'Alternar gravació de veu',
         archiveSession: 'Arxivar sessió',
         deleteSession: 'Eliminar sessió',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: 'Transcripció',
+        transcriptSubtitle: 'Transcripció completa de la sessió amb informació detallada',
+        input: 'Entrada',
+        output: 'Sortida',
+        expandAll: 'Expandir tot',
+        collapseAll: 'Contraure tot',
     }
 } as const;
 

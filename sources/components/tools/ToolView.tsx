@@ -23,6 +23,7 @@ interface ToolViewProps {
     onPress?: () => void;
     sessionId?: string;
     messageId?: string;
+    isSelected?: boolean;
 }
 
 export const ToolView = React.memo<ToolViewProps>((props) => {
@@ -144,7 +145,7 @@ export const ToolView = React.memo<ToolViewProps>((props) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, props.isSelected && styles.containerSelected]}>
             {isPressable ? (
                 <TouchableOpacity style={styles.header} onPress={handlePress} activeOpacity={0.8}>
                     <View style={styles.headerLeft}>
@@ -265,6 +266,10 @@ const styles = StyleSheet.create((theme) => ({
         borderRadius: 8,
         marginVertical: 4,
         overflow: 'hidden'
+    },
+    containerSelected: {
+        borderWidth: 2,
+        borderColor: theme.colors.radio.active,
     },
     header: {
         flexDirection: 'row',

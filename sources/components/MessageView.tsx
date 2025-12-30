@@ -3,7 +3,7 @@ import { View, Text } from "react-native";
 import { StyleSheet } from 'react-native-unistyles';
 import { MarkdownView } from "./markdown/MarkdownView";
 import { t } from '@/text';
-import { Message, UserTextMessage, AgentTextMessage, ToolCallMessage } from "@/sync/typesMessage";
+import { Message, UserTextMessage, AgentTextMessage, ToolCallMessage, ThinkingMessage, SubAgentInvocation } from "@/sync/typesMessage";
 import { Metadata } from "@/sync/storageTypes";
 import { layout } from "./layout";
 import { ToolView } from "./tools/ToolView";
@@ -17,6 +17,8 @@ export const MessageView = (props: {
   metadata: Metadata | null;
   sessionId: string;
   getMessageById?: (id: string) => Message | null;
+  onMessageSelect?: (messageId: string) => void;
+  isSelected?: boolean;
 }) => {
   return (
     <View style={styles.messageContainer} renderToHardwareTextureAndroid={true}>
@@ -26,6 +28,8 @@ export const MessageView = (props: {
           metadata={props.metadata}
           sessionId={props.sessionId}
           getMessageById={props.getMessageById}
+          onMessageSelect={props.onMessageSelect}
+          isSelected={props.isSelected}
         />
       </View>
     </View>
@@ -38,6 +42,8 @@ function RenderBlock(props: {
   metadata: Metadata | null;
   sessionId: string;
   getMessageById?: (id: string) => Message | null;
+  onMessageSelect?: (messageId: string) => void;
+  isSelected?: boolean;
 }): React.ReactElement {
   switch (props.message.kind) {
     case 'user-text':
@@ -52,11 +58,18 @@ function RenderBlock(props: {
         metadata={props.metadata}
         sessionId={props.sessionId}
         getMessageById={props.getMessageById}
+        onMessageSelect={props.onMessageSelect}
+        isSelected={props.isSelected}
       />;
 
     case 'agent-event':
       return <AgentEventBlock event={props.message.event} metadata={props.metadata} />;
 
+    case 'thinking':
+      return <ThinkingBlock message={props.message} />;
+
+    case 'sub-agent-invocation':
+      return <SubAgentInvocationBlock message={props.message} />;
 
     default:
       // Exhaustive check - TypeScript will error if we miss a case
@@ -161,10 +174,18 @@ function ToolCallBlock(props: {
   metadata: Metadata | null;
   sessionId: string;
   getMessageById?: (id: string) => Message | null;
+  onMessageSelect?: (messageId: string) => void;
+  isSelected?: boolean;
 }) {
   if (!props.message.tool) {
     return null;
   }
+
+  // Create press handler if we have onMessageSelect
+  const handlePress = props.onMessageSelect
+    ? () => props.onMessageSelect!(props.message.id)
+    : undefined;
+
   return (
     <View style={styles.toolContainer}>
       <ToolView
@@ -173,7 +194,63 @@ function ToolCallBlock(props: {
         messages={props.message.children}
         sessionId={props.sessionId}
         messageId={props.message.id}
+        onPress={handlePress}
+        isSelected={props.isSelected}
       />
+    </View>
+  );
+}
+
+function ThinkingBlock(props: {
+  message: ThinkingMessage;
+}) {
+  return (
+    <View style={styles.thinkingContainer}>
+      <Text style={styles.thinkingLabel}>💭 {t('message.thinking')}</Text>
+      <Text style={styles.thinkingText}>{props.message.thinking}</Text>
+    </View>
+  );
+}
+
+function SubAgentInvocationBlock(props: {
+  message: SubAgentInvocation;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+
+  return (
+    <View style={styles.subAgentContainer}>
+      <View style={styles.subAgentHeader}>
+        <Text style={styles.subAgentHeaderText}>
+          🤖 {t('message.subAgentInvocation')}: {props.message.subagentType}
+        </Text>
+        <Text style={styles.subAgentDescription}>{props.message.description}</Text>
+      </View>
+
+      {expanded && (
+        <View style={styles.subAgentDetails}>
+          <Text style={styles.subAgentLabel}>{t('message.prompt')}:</Text>
+          <Text style={styles.subAgentText}>{props.message.prompt}</Text>
+
+          <Text style={styles.subAgentLabel}>{t('message.result')}:</Text>
+          <Text style={styles.subAgentText}>{props.message.result || t('message.pending')}</Text>
+
+          {__DEV__ && props.message.apiMessage && (
+            <>
+              <Text style={styles.subAgentLabel}>Debug - API Message:</Text>
+              <Text style={styles.subAgentDebugText}>
+                {JSON.stringify(props.message.apiMessage, null, 2)}
+              </Text>
+            </>
+          )}
+        </View>
+      )}
+
+      <Text
+        style={styles.subAgentToggle}
+        onPress={() => setExpanded(!expanded)}
+      >
+        {expanded ? t('common.showLess') : t('common.showMore')}
+      </Text>
     </View>
   );
 }
@@ -230,5 +307,85 @@ const styles = StyleSheet.create((theme) => ({
   debugText: {
     color: theme.colors.agentEventText,
     fontSize: 12,
+  },
+  thinkingContainer: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: theme.colors.thinkingBackground,
+    borderLeftWidth: 3,
+    borderLeftColor: theme.colors.textLink,
+  },
+  thinkingLabel: {
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  thinkingText: {
+    color: theme.colors.text,
+    fontSize: 14,
+    opacity: 0.8,
+  },
+  thinkingSignature: {
+    color: theme.colors.agentEventText,
+    fontSize: 10,
+    marginTop: 4,
+    fontFamily: 'monospace',
+  },
+  subAgentContainer: {
+    marginHorizontal: 16,
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: theme.colors.surfaceHigh,
+    borderLeftWidth: 4,
+    borderLeftColor: theme.colors.textLink,
+  },
+  subAgentHeader: {
+    marginBottom: 8,
+  },
+  subAgentHeaderText: {
+    color: theme.colors.text,
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  subAgentDescription: {
+    color: theme.colors.textSecondary,
+    fontSize: 13,
+  },
+  subAgentDetails: {
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  subAgentLabel: {
+    color: theme.colors.text,
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  subAgentText: {
+    color: theme.colors.text,
+    fontSize: 13,
+    opacity: 0.9,
+  },
+  subAgentDebugText: {
+    color: theme.colors.agentEventText,
+    fontSize: 10,
+    fontFamily: 'monospace',
+    backgroundColor: theme.colors.surface,
+    padding: 8,
+    borderRadius: 4,
+  },
+  subAgentToggle: {
+    color: theme.colors.textLink,
+    fontSize: 13,
+    fontWeight: '500',
+    marginTop: 4,
   },
 }));

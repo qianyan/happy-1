@@ -58,6 +58,8 @@ export const pt: TranslationStructure = {
         fileViewer: 'Visualizador de arquivos',
         loading: 'Carregando...',
         retry: 'Tentar novamente',
+        showMore: 'Mostrar mais',
+        showLess: 'Mostrar menos',
     },
 
     profile: {
@@ -86,6 +88,7 @@ export const pt: TranslationStructure = {
         justNow: 'agora mesmo',
         minutesAgo: ({ count }: { count: number }) => `há ${count} minuto${count !== 1 ? 's' : ''}`,
         hoursAgo: ({ count }: { count: number }) => `há ${count} hora${count !== 1 ? 's' : ''}`,
+        daysAgo: ({ count }: { count: number }) => `há ${count} dia${count !== 1 ? 's' : ''}`,
     },
 
     connect: {
@@ -303,6 +306,7 @@ export const pt: TranslationStructure = {
     session: {
         inputPlaceholder: 'Digite uma mensagem ...',
         searchPlaceholder: 'Pesquisar sessões...',
+        selectToolToViewDetails: 'Selecione uma ferramenta para ver os detalhes',
     },
 
     commandPalette: {
@@ -455,6 +459,11 @@ export const pt: TranslationStructure = {
         suggestion: {
             fileLabel: 'ARQUIVO',
             folderLabel: 'PASTA',
+        },
+        userHistory: {
+            last: 'Última',
+            title: ({ count }: { count: number }) => `Suas mensagens (${count})`,
+            fullMessage: 'Mensagem completa',
         },
         noMachinesAvailable: 'Sem máquinas',
     },
@@ -786,6 +795,11 @@ export const pt: TranslationStructure = {
         unknownEvent: 'Evento desconhecido',
         usageLimitUntil: ({ time }: { time: string }) => `Limite de uso atingido até ${time}`,
         unknownTime: 'horário desconhecido',
+        thinking: 'Pensando',
+        subAgentInvocation: 'Invocação de sub-agente',
+        prompt: 'Prompt',
+        result: 'Resultado',
+        pending: 'Pendente...',
     },
 
     codex: {
@@ -956,6 +970,16 @@ export const pt: TranslationStructure = {
         toggleVoiceRecording: 'Alternar gravação de voz',
         archiveSession: 'Arquivar sessão',
         deleteSession: 'Excluir sessão',
+    },
+
+    debug: {
+        // Debug panel for developers and advanced users
+        transcript: 'Transcrição',
+        transcriptSubtitle: 'Transcrição completa da sessão com informações detalhadas',
+        input: 'Entrada',
+        output: 'Saída',
+        expandAll: 'Expandir tudo',
+        collapseAll: 'Recolher tudo',
     }
 } as const;
 
