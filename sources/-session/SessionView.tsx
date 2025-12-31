@@ -175,16 +175,23 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
     // Show split view only when on desktop AND debug panel is toggled on
     const isDesktopSplitView = isDesktop && showDebugPanel;
 
-    // Mark session as read when viewing it
+    // Mark session as read when viewing it (synced across devices)
+    // Only sync if there's actually a new message to mark as read (saves bandwidth)
     React.useEffect(() => {
-        const currentLastRead = storage.getState().localSettings.sessionLastReadAt;
-        storage.getState().applyLocalSettings({
-            sessionLastReadAt: {
-                ...currentLastRead,
-                [sessionId]: Date.now()
-            }
-        });
-    }, [sessionId]);
+        const currentSettings = storage.getState().settings;
+        const lastReadAt = currentSettings.sessionLastReadAt[sessionId] ?? 0;
+        const lastMessageAt = session.lastMessageAt ?? 0;
+
+        // Only update if there's a new message we haven't read yet
+        if (lastMessageAt > lastReadAt) {
+            sync.applySettings({
+                sessionLastReadAt: {
+                    ...currentSettings.sessionLastReadAt,
+                    [sessionId]: Date.now()
+                }
+            });
+        }
+    }, [sessionId, session.lastMessageAt]);
 
     // Check if CLI version is outdated and not already acknowledged
     const cliVersion = session.metadata?.version;

@@ -31,6 +31,9 @@ export const SettingsSchema = z.object({
     lastUsedModelMode: z.string().nullable().describe('Last selected model mode for new sessions'),
     // OpenAI voice transcription configuration
     openaiApiKey: z.string().nullable().describe('OpenAI API key for Whisper voice transcription'),
+    // Session read tracking - keyed by sessionId, value is timestamp when last viewed
+    // Used for unread indicators, synced across devices
+    sessionLastReadAt: z.record(z.string(), z.number()).describe('Last read timestamp per session for unread indicators'),
 });
 
 //
@@ -75,6 +78,7 @@ export const settingsDefaults: Settings = {
     lastUsedPermissionMode: null,
     lastUsedModelMode: null,
     openaiApiKey: null,
+    sessionLastReadAt: {},
 };
 Object.freeze(settingsDefaults);
 

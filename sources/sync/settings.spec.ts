@@ -115,6 +115,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                sessionLastReadAt: {},
             };
             const delta: Partial<Settings> = {
                 viewInline: true
@@ -149,6 +150,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                sessionLastReadAt: {},
             };
             const delta: Partial<Settings> = {};
             expect(applySettings(currentSettings, delta)).toEqual({
@@ -181,6 +183,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                sessionLastReadAt: {},
             };
             const delta: Partial<Settings> = {
                 viewInline: false
@@ -215,6 +218,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                sessionLastReadAt: {},
             };
             expect(applySettings(currentSettings, {})).toEqual({
                 ...settingsDefaults,
@@ -261,6 +265,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                sessionLastReadAt: {},
             };
             const delta: any = {
                 viewInline: false,
