@@ -3,6 +3,7 @@ import '../theme.css';
 import * as React from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import * as Fonts from 'expo-font';
+import * as Notifications from 'expo-notifications';
 import { FontAwesome } from '@expo/vector-icons';
 import { AuthCredentials, TokenStorage } from '@/auth/tokenStorage';
 import { AuthProvider } from '@/auth/AuthContext';
@@ -27,6 +28,18 @@ import { StatusBarProvider } from '@/components/StatusBarProvider';
 import { monkeyPatchConsoleForRemoteLoggingForFasterAiAutoDebuggingOnlyInLocalBuilds } from '@/utils/remoteLogger';
 import { useUnistyles } from 'react-native-unistyles';
 import { AsyncLock } from '@/utils/lock';
+
+// Configure how notifications are handled when app is in foreground
+// This must be called outside of any component to ensure it's set before any notification arrives
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+    }),
+});
 
 export {
     // Catch any errors thrown by the Layout component.
