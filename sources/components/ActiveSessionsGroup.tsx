@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getSessionName, useSessionStatus, formatPathRelativeToHome, getSessionSubtitle, formatLastSeen } from '@/utils/sessionUtils';
 import { Typography } from '@/constants/Typography';
 import { StatusDot } from './StatusDot';
-import { useAllMachines, useSetting, useMachine, useLocalSetting } from '@/sync/storage';
+import { useAllMachines, useSetting, useMachine } from '@/sync/storage';
 import { StyleSheet } from 'react-native-unistyles';
 import { isMachineOnline } from '@/utils/machineUtils';
 import { machineSpawnNewSession } from '@/sync/ops';
@@ -196,11 +196,16 @@ const stylesheet = StyleSheet.create((theme, runtime) => ({
         ...Typography.default(),
     },
     unreadDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
+        width: 10,
+        height: 10,
+        borderRadius: 5,
         backgroundColor: theme.colors.status.error,
-        marginLeft: 6,
+        marginLeft: 8,
+        shadowColor: theme.colors.status.error,
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.6,
+        shadowRadius: 3,
+        elevation: 2,
     },
 }));
 
@@ -243,7 +248,7 @@ export const FlatSessionRow = React.memo(({ session, selected }: { session: Sess
     const sessionName = getSessionName(session);
     const sessionSubtitle = getSessionSubtitle(session);
     const navigateToSession = useNavigateToSession();
-    const sessionLastReadAt = useLocalSetting('sessionLastReadAt');
+    const sessionLastReadAt = useSetting('sessionLastReadAt');
 
     // Get machine for display name
     const machine = useMachine(session.metadata?.machineId || '');

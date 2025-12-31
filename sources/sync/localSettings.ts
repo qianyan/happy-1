@@ -14,8 +14,6 @@ export const LocalSettingsSchema = z.object({
     shiftEnterToSend: z.boolean().describe('Use Shift+Enter to send messages (Enter creates new line). Default is Enter to send.'),
     // CLI version acknowledgments - keyed by machineId
     acknowledgedCliVersions: z.record(z.string(), z.string()).describe('Acknowledged CLI versions per machine'),
-    // Session read tracking - keyed by sessionId, value is timestamp when last viewed
-    sessionLastReadAt: z.record(z.string(), z.number()).describe('Last read timestamp per session for unread indicators'),
 });
 
 //
@@ -39,7 +37,6 @@ export const localSettingsDefaults: LocalSettings = {
     markdownCopyV2: true,
     shiftEnterToSend: false,
     acknowledgedCliVersions: {},
-    sessionLastReadAt: {},
 };
 Object.freeze(localSettingsDefaults);
 
