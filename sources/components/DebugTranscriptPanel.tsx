@@ -82,16 +82,6 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
         };
     }, []);
 
-    // Scroll to top
-    const scrollToTop = React.useCallback(() => {
-        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
-    }, []);
-
-    // Scroll to bottom
-    const scrollToBottom = React.useCallback(() => {
-        flatListRef.current?.scrollToEnd({ animated: true });
-    }, []);
-
     // Reverse messages to show in chronological order (oldest first)
     const orderedMessages = React.useMemo(() => {
         return [...props.messages].reverse();
@@ -145,6 +135,22 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
             return !visibleTypes.has(type); // Hide if type is in visibleTypes (toggled off)
         });
     }, [orderedMessages, visibleTypes]);
+
+    // Scroll to top
+    const scrollToTop = React.useCallback(() => {
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }, []);
+
+    // Scroll to bottom - use scrollToIndex for more reliable scrolling with variable height items
+    const scrollToBottom = React.useCallback(() => {
+        if (filteredMessages.length > 0) {
+            flatListRef.current?.scrollToIndex({
+                index: filteredMessages.length - 1,
+                animated: true,
+                viewPosition: 1, // Position at bottom of viewport
+            });
+        }
+    }, [filteredMessages.length]);
 
     // Scroll to selected message when it changes
     React.useEffect(() => {
@@ -382,9 +388,9 @@ export const DebugTranscriptPanel = React.memo<DebugTranscriptPanelProps>((props
                 onScrollToIndexFailed={onScrollToIndexFailed}
                 keyboardShouldPersistTaps="handled"
                 removeClippedSubviews={Platform.OS !== 'web'}
-                maxToRenderPerBatch={10}
-                windowSize={5}
-                initialNumToRender={20}
+                initialNumToRender={30}
+                maxToRenderPerBatch={20}
+                windowSize={11}
             />
         </View>
     );
