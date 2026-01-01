@@ -391,6 +391,18 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
         }
     }, [isRecording, stopRecording]);
 
+    const handleSendWhileRecording = React.useCallback(() => {
+        if (transcriptionStatus === 'transcribing') {
+            return;
+        }
+        if (!isRecording()) {
+            return;
+        }
+        autoSendModeRef.current = true;
+        stopRecording();
+        tracking?.capture('voice_recording_stopped', { auto_send_mode: true });
+    }, [transcriptionStatus, isRecording, stopRecording]);
+
     // Memoize mic button state to prevent flashing during transitions
     const micButtonState = useMemo(() => ({
         onMicPress: handleMicrophonePress,
@@ -515,6 +527,7 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
             onMicPressOut={micButtonState.onMicPressOut}
             onCancelRecording={cancelRecording}
             micStatus={micButtonState.micStatus}
+            onSendWhileRecording={handleSendWhileRecording}
             onAbort={() => sessionAbort(sessionId)}
             showAbortButton={sessionStatus.state === 'thinking' || sessionStatus.state === 'waiting'}
             onSwitchToRemote={handleSwitchToRemote}

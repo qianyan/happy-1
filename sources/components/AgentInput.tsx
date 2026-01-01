@@ -38,6 +38,7 @@ interface AgentInputProps {
     onMicPressOut?: () => void;         // Called when finger is released (stops recording in auto-send mode)
     onCancelRecording?: () => void;     // Called when user cancels recording via status bar
     micStatus?: TranscriptionStatus;
+    onSendWhileRecording?: () => void;
     permissionMode?: PermissionMode;
     onPermissionModeChange?: (mode: PermissionMode) => void;
     modelMode?: ModelMode;
@@ -305,6 +306,10 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
     const screenWidth = useWindowDimensions().width;
 
     const hasText = props.value.trim().length > 0;
+    const isRecording = props.micStatus === 'recording';
+    const canSendWhileRecording = Boolean(props.onSendWhileRecording) && isRecording && !props.isSending && !hasText;
+    const isSendButtonActive = hasText || props.isSending || canSendWhileRecording;
+    const isSendButtonDisabled = props.isSendDisabled || props.isSending || (!hasText && !canSendWhileRecording);
 
     // Check if this is a Codex session
     const isCodex = props.metadata?.flavor === 'codex';
@@ -1145,7 +1150,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                         <View
                             style={[
                                 styles.sendButton,
-                                (hasText || props.isSending)
+                                isSendButtonActive
                                     ? styles.sendButtonActive
                                     : styles.sendButtonInactive
                             ]}
@@ -1161,9 +1166,13 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                 hitSlop={{ top: 5, bottom: 10, left: 0, right: 0 }}
                                 onPress={() => {
                                     hapticsLight();
-                                    props.onSend();
+                                    if (canSendWhileRecording) {
+                                        props.onSendWhileRecording?.();
+                                    } else {
+                                        props.onSend();
+                                    }
                                 }}
-                                disabled={props.isSendDisabled || props.isSending || !hasText}
+                                disabled={isSendButtonDisabled}
                             >
                                 {props.isSending ? (
                                     <ActivityIndicator

@@ -244,6 +244,17 @@ function NewSessionScreen() {
         }
     }, [isRecording, stopRecording]);
 
+    const handleSendWhileRecording = React.useCallback(() => {
+        if (transcriptionStatus === 'transcribing') {
+            return;
+        }
+        if (!isRecording()) {
+            return;
+        }
+        autoSendModeRef.current = true;
+        stopRecording();
+    }, [transcriptionStatus, isRecording, stopRecording]);
+
     // Memoize mic button state to prevent flashing during transitions
     const micButtonState = React.useMemo(() => ({
         onMicPress: handleMicrophonePress,
@@ -760,6 +771,7 @@ function NewSessionScreen() {
                     onMicPressOut={micButtonState.onMicPressOut}
                     onCancelRecording={cancelRecording}
                     micStatus={micButtonState.micStatus}
+                    onSendWhileRecording={handleSendWhileRecording}
                 />
 
                 <View style={[
