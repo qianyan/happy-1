@@ -307,8 +307,8 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
 
     const hasText = props.value.trim().length > 0;
     const isRecording = props.micStatus === 'recording';
-    const canSendWhileRecording = Boolean(props.onSendWhileRecording) && isRecording && !props.isSending && !hasText;
-    const isSendButtonActive = hasText || props.isSending || canSendWhileRecording;
+    const canSendWhileRecording = Boolean(props.onSendWhileRecording) && isRecording && !props.isSending;
+    const isSendButtonActive = hasText || props.isSending || isRecording;
     const isSendButtonDisabled = props.isSendDisabled || props.isSending || (!hasText && !canSendWhileRecording);
 
     // Check if this is a Codex session
@@ -1166,7 +1166,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                                 hitSlop={{ top: 5, bottom: 10, left: 0, right: 0 }}
                                 onPress={() => {
                                     hapticsLight();
-                                    if (canSendWhileRecording) {
+                                    if (isRecording && props.onSendWhileRecording) {
                                         props.onSendWhileRecording?.();
                                     } else {
                                         props.onSend();

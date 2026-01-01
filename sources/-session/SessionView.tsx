@@ -233,14 +233,18 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
     // Ref to track if we're in auto-send mode (long-press recording)
     // When true, transcription completion will automatically send the message
     const autoSendModeRef = React.useRef(false);
+    const sendAfterTranscriptionRef = React.useRef(false);
+    const sendMessageWithTextRef = React.useRef<(text: string) => void>(() => {});
 
     // Transcription callback - handles cursor-aware insertion or auto-send
     const handleTranscription = React.useCallback((text: string) => {
         // Check if we're in auto-send mode (long-press recording)
         const shouldAutoSend = autoSendModeRef.current;
+        const shouldSendAfterTranscription = sendAfterTranscriptionRef.current;
 
         // Reset auto-send mode immediately
         autoSendModeRef.current = false;
+        sendAfterTranscriptionRef.current = false;
 
         if (shouldAutoSend && text.trim()) {
             // In auto-send mode: send the transcribed text directly
@@ -276,6 +280,12 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
                 const newCursorPos = start + insertText.length;
                 selectionRef.current = { start: newCursorPos, end: newCursorPos };
 
+                if (shouldSendAfterTranscription) {
+                    setTimeout(() => {
+                        sendMessageWithTextRef.current(newText);
+                    }, 0);
+                }
+
                 return newText;
             });
             // Focus input after transcription for easy submission
@@ -288,6 +298,7 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
     const handleTranscriptionError = React.useCallback((error: string) => {
         // Reset auto-send mode on error
         autoSendModeRef.current = false;
+        sendAfterTranscriptionRef.current = false;
         Modal.alert(t('common.error'), error);
         tracking?.capture('voice_transcription_error', { error });
     }, []);
@@ -398,7 +409,8 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
         if (!isRecording()) {
             return;
         }
-        autoSendModeRef.current = true;
+        autoSendModeRef.current = false;
+        sendAfterTranscriptionRef.current = true;
         stopRecording();
         tracking?.capture('voice_recording_stopped', { auto_send_mode: true });
     }, [transcriptionStatus, isRecording, stopRecording]);
@@ -453,13 +465,13 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
     ) : null;
 
     // Handle sending message (with or without images)
-    const handleSend = React.useCallback(async () => {
-        const hasText = message.trim().length > 0;
+    const sendMessageWithText = React.useCallback(async (text: string) => {
+        const hasText = text.trim().length > 0;
         const hasImages = imageAttachments.length > 0;
 
         if (!hasText && !hasImages) return;
 
-        const currentMessage = message;
+        const currentMessage = text;
         const currentImages = [...imageAttachments];
 
         // Clear input immediately for better UX
@@ -500,7 +512,15 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
         }
 
         trackMessageSent();
-    }, [message, imageAttachments, sessionId, clearDraft, clearImageAttachments]);
+    }, [imageAttachments, sessionId, clearDraft, clearImageAttachments]);
+
+    const handleSend = React.useCallback(() => {
+        sendMessageWithText(message);
+    }, [message, sendMessageWithText]);
+
+    React.useEffect(() => {
+        sendMessageWithTextRef.current = sendMessageWithText;
+    }, [sendMessageWithText]);
 
     const input = (
         <AgentInput

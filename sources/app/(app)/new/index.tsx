@@ -136,17 +136,20 @@ function NewSessionScreen() {
     // Ref to track if we're in auto-send mode (long-press recording)
     // When true, transcription completion will automatically create session and send
     const autoSendModeRef = React.useRef(false);
+    const sendAfterTranscriptionRef = React.useRef(false);
 
     // Ref to hold the doCreate function for auto-send mode
-    const doCreateRef = React.useRef<(() => Promise<void>) | null>(null);
+    const doCreateRef = React.useRef<((overrideInput?: string) => Promise<void>) | null>(null);
 
     // Transcription callback - handles cursor-aware insertion or auto-send
     const handleTranscription = React.useCallback((text: string) => {
         // Check if we're in auto-send mode (long-press recording)
         const shouldAutoSend = autoSendModeRef.current;
+        const shouldSendAfterTranscription = sendAfterTranscriptionRef.current;
 
         // Reset auto-send mode immediately
         autoSendModeRef.current = false;
+        sendAfterTranscriptionRef.current = false;
 
         if (shouldAutoSend && text.trim()) {
             // In auto-send mode: set the input and trigger create
@@ -181,6 +184,12 @@ function NewSessionScreen() {
                 const newCursorPos = start + insertText.length;
                 selectionRef.current = { start: newCursorPos, end: newCursorPos };
 
+                if (shouldSendAfterTranscription) {
+                    setTimeout(() => {
+                        doCreateRef.current?.(newText);
+                    }, 0);
+                }
+
                 return newText;
             });
         }
@@ -190,6 +199,7 @@ function NewSessionScreen() {
     const handleTranscriptionError = React.useCallback((error: string) => {
         // Reset auto-send mode on error
         autoSendModeRef.current = false;
+        sendAfterTranscriptionRef.current = false;
         Modal.alert(t('common.error'), error);
     }, []);
 
@@ -251,7 +261,8 @@ function NewSessionScreen() {
         if (!isRecording()) {
             return;
         }
-        autoSendModeRef.current = true;
+        autoSendModeRef.current = false;
+        sendAfterTranscriptionRef.current = true;
         stopRecording();
     }, [transcriptionStatus, isRecording, stopRecording]);
 
@@ -568,7 +579,7 @@ function NewSessionScreen() {
     }, [selectedMachineId, router, handleAgentClick]);
 
     // Create
-    const doCreate = React.useCallback(async () => {
+    const doCreate = React.useCallback(async (overrideInput?: string) => {
         if (!selectedMachineId) {
             Modal.alert(t('common.error'), t('newSession.noMachineSelected'));
             return;
@@ -579,7 +590,7 @@ function NewSessionScreen() {
         }
 
         // Clear input immediately for better UX (matches SessionView behavior)
-        const currentInput = input;
+        const currentInput = overrideInput ?? input;
         setInput('');
 
         setIsSending(true);
