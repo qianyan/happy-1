@@ -258,27 +258,25 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
             // Normal mode: insert text at cursor position
             setMessage(prev => {
                 const { start, end } = selectionRef.current;
+                let newText = text;
 
-                // If text is empty, just return the transcribed text
-                if (!prev) {
-                    return text;
+                if (prev) {
+                    // Insert at cursor position
+                    const before = prev.slice(0, start);
+                    const after = prev.slice(end);
+
+                    // Add space before if there's text before and it doesn't end with whitespace
+                    const needsSpaceBefore = before.length > 0 && !/\s$/.test(before);
+                    // Add space after if there's text after and it doesn't start with whitespace
+                    const needsSpaceAfter = after.length > 0 && !/^\s/.test(after);
+
+                    const insertText = (needsSpaceBefore ? ' ' : '') + text + (needsSpaceAfter ? ' ' : '');
+                    newText = before + insertText + after;
+
+                    // Update selection ref to position cursor after inserted text
+                    const newCursorPos = start + insertText.length;
+                    selectionRef.current = { start: newCursorPos, end: newCursorPos };
                 }
-
-                // Insert at cursor position
-                const before = prev.slice(0, start);
-                const after = prev.slice(end);
-
-                // Add space before if there's text before and it doesn't end with whitespace
-                const needsSpaceBefore = before.length > 0 && !/\s$/.test(before);
-                // Add space after if there's text after and it doesn't start with whitespace
-                const needsSpaceAfter = after.length > 0 && !/^\s/.test(after);
-
-                const insertText = (needsSpaceBefore ? ' ' : '') + text + (needsSpaceAfter ? ' ' : '');
-                const newText = before + insertText + after;
-
-                // Update selection ref to position cursor after inserted text
-                const newCursorPos = start + insertText.length;
-                selectionRef.current = { start: newCursorPos, end: newCursorPos };
 
                 if (shouldSendAfterTranscription) {
                     setTimeout(() => {
