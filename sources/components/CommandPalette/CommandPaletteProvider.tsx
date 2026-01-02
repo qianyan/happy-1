@@ -427,6 +427,12 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         } as any);
     }, [commandPaletteEnabled]);
 
+    // Handler for open zen shortcut (⌘⇧T)
+    const handleOpenZen = useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        router.push('/zen');
+    }, [router, commandPaletteEnabled]);
+
     // Keyboard shortcut handlers
     const keyboardHandlers = useMemo(() => ({
         onNewSession: handleNewSession,
@@ -437,7 +443,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         onNextSession: handleNextSession,
         onFocusSearch: handleFocusSearch,
         onShowKeyboardShortcuts: handleShowKeyboardShortcuts,
-    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch, handleShowKeyboardShortcuts]);
+        onOpenZen: handleOpenZen,
+    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch, handleShowKeyboardShortcuts, handleOpenZen]);
 
     // Set up global keyboard handler only if feature is enabled
     useGlobalKeyboard(
