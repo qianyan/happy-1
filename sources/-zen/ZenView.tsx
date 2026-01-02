@@ -444,7 +444,6 @@ const styles = StyleSheet.create((theme) => ({
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
-        marginTop: 4,
     },
     taskText: {
         fontSize: 20,
