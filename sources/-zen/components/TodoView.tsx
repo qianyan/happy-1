@@ -5,7 +5,7 @@ import { useUnistyles } from 'react-native-unistyles';
 import { useRouter } from 'expo-router';
 import { SharedValue, useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 
-export const TODO_HEIGHT = 72;
+export const TODO_HEIGHT = 60;
 
 export type TodoViewProps = {
     id: string;

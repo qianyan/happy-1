@@ -26,7 +26,7 @@ type AnimatedTodoItemProps = {
     onReorder?: (id: string, newIndex: number) => void;
 }
 
-const ITEM_SPACING = 12;
+const ITEM_SPACING = 8;
 
 function getPosition(index: number) {
     'worklet';
