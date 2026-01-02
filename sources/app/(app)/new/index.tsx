@@ -541,7 +541,7 @@ function NewSessionScreen() {
         commandPaletteEnabled ? keyboardHandlers : undefined
     );
 
-    // Additional keyboard shortcuts for selecting path (Cmd+Shift+P) and agent (Cmd+Shift+M) - Web only
+    // Additional keyboard shortcuts for selecting path (Cmd+Shift+P), machine (Cmd+Shift+M), and agent (Cmd+Shift+C) - Web only
     React.useEffect(() => {
         if (Platform.OS !== 'web') {
             return;
@@ -561,8 +561,16 @@ function NewSessionScreen() {
                 return;
             }
 
-            // Cmd+Shift+M - Toggle agent (Codex/Claude)
+            // Cmd+Shift+M - Open machine selector
             if (isModifierPressed && isShiftPressed && e.key.toLowerCase() === 'm') {
+                e.preventDefault();
+                e.stopPropagation();
+                handleMachineClick();
+                return;
+            }
+
+            // Cmd+Shift+C - Toggle agent (Codex/Claude)
+            if (isModifierPressed && isShiftPressed && e.key.toLowerCase() === 'c') {
                 e.preventDefault();
                 e.stopPropagation();
                 handleAgentClick();
@@ -574,7 +582,7 @@ function NewSessionScreen() {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [selectedMachineId, router, handleAgentClick]);
+    }, [selectedMachineId, router, handleMachineClick, handleAgentClick]);
 
     // Create
     const doCreate = React.useCallback(async (overrideInput?: string) => {
