@@ -427,7 +427,7 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         } as any);
     }, [commandPaletteEnabled]);
 
-    // Handler for open zen shortcut (⌘⇧T)
+    // Handler for open zen shortcut (⌘⇧E)
     const handleOpenZen = useCallback(() => {
         if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
         router.push('/zen');
