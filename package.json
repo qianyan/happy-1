@@ -15,7 +15,7 @@
     "ota": "APP_ENV=preview NODE_ENV=preview tsx sources/scripts/parseChangelog.ts && bun typecheck && eas update --branch preview --message 'OTA update'",
     "ota:production": "APP_ENV=production NODE_ENV=production tsx sources/scripts/parseChangelog.ts && bun typecheck && eas update --branch production --message 'OTA update'",
     "web:build": "APP_ENV=production NODE_ENV=production expo export --platform web --clear",
-    "web:deploy": "rsync -avz dist devbox:/root/happy-devbox/happy/",
+    "web:deploy": "rsync -avz dist happy-server:/root/happy-devbox/happy/",
     "web:production": "bun web:build && bun web:deploy",
     "typecheck": "tsc --noEmit",
     "postinstall": "patch-package",
