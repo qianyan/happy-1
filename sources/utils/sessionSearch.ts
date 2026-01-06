@@ -4,7 +4,7 @@ import { getSessionName, getSessionSubtitle } from '@/utils/sessionUtils';
 /**
  * Checks if a session matches the search query.
  * Supports OR syntax with '|' separator (e.g., "foo|bar" matches sessions containing "foo" OR "bar").
- * Each term is matched against session name, subtitle, and machine host.
+ * Each term is matched against session name, subtitle, machine host, and path.
  */
 export function sessionMatchesSearch(session: Session, searchQuery: string): boolean {
     const normalizedQuery = searchQuery.toLowerCase().trim();
@@ -13,6 +13,7 @@ export function sessionMatchesSearch(session: Session, searchQuery: string): boo
     const sessionName = getSessionName(session).toLowerCase();
     const sessionSubtitle = getSessionSubtitle(session).toLowerCase();
     const machineHost = session.metadata?.host?.toLowerCase() || '';
+    const sessionPath = session.metadata?.path?.toLowerCase() || '';
 
     // Split by '|' for OR logic
     const terms = normalizedQuery.split('|').map(t => t.trim()).filter(t => t.length > 0);
@@ -24,6 +25,7 @@ export function sessionMatchesSearch(session: Session, searchQuery: string): boo
     return terms.some(term =>
         sessionName.includes(term) ||
         sessionSubtitle.includes(term) ||
-        machineHost.includes(term)
+        machineHost.includes(term) ||
+        sessionPath.includes(term)
     );
 }
