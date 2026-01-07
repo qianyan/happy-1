@@ -593,6 +593,12 @@ export const en = {
         apiKeyCredentialsDescription: 'Enter your OpenAI API key to enable voice transcription. Your key is stored securely and only used for Whisper API calls.',
         getApiKey: 'Get API Key',
         whisperHint: 'Voice transcription uses OpenAI Whisper API. Usage is billed to your OpenAI account.',
+        // Custom vocabulary
+        vocabularyTitle: 'Custom Vocabulary',
+        vocabularyDescription: 'Add words or phrases that Whisper should recognize. This improves transcription accuracy for technical terms, names, or domain-specific vocabulary.',
+        vocabularyLabel: 'Vocabulary',
+        vocabularyPlaceholder: 'Claude, Anthropic, Kubernetes\nPostgreSQL, Redis, Docker',
+        vocabularyHint: 'Enter words separated by commas or new lines. Maximum 224 tokens.',
     },
 
     settingsAccount: {

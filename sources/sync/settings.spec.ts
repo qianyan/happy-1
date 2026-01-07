@@ -115,6 +115,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                whisperVocabulary: null,
                 sessionLastReadAt: {},
             };
             const delta: Partial<Settings> = {
@@ -150,6 +151,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                whisperVocabulary: null,
                 sessionLastReadAt: {},
             };
             const delta: Partial<Settings> = {};
@@ -183,6 +185,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                whisperVocabulary: null,
                 sessionLastReadAt: {},
             };
             const delta: Partial<Settings> = {
@@ -218,6 +221,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                whisperVocabulary: null,
                 sessionLastReadAt: {},
             };
             expect(applySettings(currentSettings, {})).toEqual({
@@ -265,6 +269,7 @@ describe('settings', () => {
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                whisperVocabulary: null,
                 sessionLastReadAt: {},
             };
             const delta: any = {
@@ -314,13 +319,15 @@ describe('settings', () => {
                 hideInactiveSessions: false,
                 reviewPromptAnswered: false,
                 reviewPromptLikedApp: null,
-                voiceAssistantLanguage: null,
+                voiceAssistantLanguage: 'en-US',
                 preferredLanguage: null,
                 recentMachinePaths: [],
                 lastUsedAgent: null,
                 lastUsedPermissionMode: null,
                 lastUsedModelMode: null,
                 openaiApiKey: null,
+                whisperVocabulary: null,
+                sessionLastReadAt: {},
             });
         });
 

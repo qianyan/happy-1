@@ -603,6 +603,11 @@ export const pl: TranslationStructure = {
         apiKeyCredentialsDescription: 'Wprowadź swój klucz API OpenAI, aby włączyć transkrypcję głosową. Twój klucz jest przechowywany bezpiecznie i używany tylko do wywołań API Whisper.',
         getApiKey: 'Pobierz Klucz API',
         whisperHint: 'Transkrypcja głosowa używa API OpenAI Whisper. Użycie jest rozliczane na Twoim koncie OpenAI.',
+        vocabularyTitle: 'Własne Słownictwo',
+        vocabularyDescription: 'Dodaj słowa lub frazy, które Whisper powinien rozpoznawać. Poprawia to dokładność transkrypcji dla terminów technicznych, nazw lub słownictwa specjalistycznego.',
+        vocabularyLabel: 'Słownictwo',
+        vocabularyPlaceholder: 'Claude, Anthropic, Kubernetes\nPostgreSQL, Redis, Docker',
+        vocabularyHint: 'Wprowadź słowa oddzielone przecinkami lub nowymi liniami. Maksymalnie 224 tokeny.',
     },
 
     settingsAccount: {

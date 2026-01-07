@@ -287,6 +287,19 @@ export function useWhisperTranscription(
                 }
             }
 
+            // Add custom vocabulary as prompt if configured
+            if (settings.whisperVocabulary) {
+                // Clean up the vocabulary: split by commas or newlines, trim, and rejoin
+                const vocabulary = settings.whisperVocabulary
+                    .split(/[,\n]+/)
+                    .map(word => word.trim())
+                    .filter(word => word.length > 0)
+                    .join(', ');
+                if (vocabulary) {
+                    parameters.prompt = vocabulary;
+                }
+            }
+
             // Upload via fetch with FormData
             const formData = new FormData();
             if (Platform.OS === 'web') {

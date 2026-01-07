@@ -593,6 +593,11 @@ export const pt: TranslationStructure = {
         apiKeyCredentialsDescription: 'Insira sua chave API do OpenAI para habilitar a transcrição de voz. Sua chave é armazenada com segurança e usada apenas para chamadas da API Whisper.',
         getApiKey: 'Obter Chave API',
         whisperHint: 'A transcrição de voz usa a API OpenAI Whisper. O uso é cobrado em sua conta OpenAI.',
+        vocabularyTitle: 'Vocabulário Personalizado',
+        vocabularyDescription: 'Adicione palavras ou frases que o Whisper deve reconhecer. Isso melhora a precisão da transcrição para termos técnicos, nomes ou vocabulário específico do domínio.',
+        vocabularyLabel: 'Vocabulário',
+        vocabularyPlaceholder: 'Claude, Anthropic, Kubernetes\nPostgreSQL, Redis, Docker',
+        vocabularyHint: 'Digite palavras separadas por vírgulas ou novas linhas. Máximo de 224 tokens.',
     },
 
     settingsAccount: {

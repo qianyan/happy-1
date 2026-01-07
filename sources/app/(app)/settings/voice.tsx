@@ -20,9 +20,11 @@ function VoiceSettingsScreen() {
     const router = useRouter();
     const [voiceAssistantLanguage] = useSettingMutable('voiceAssistantLanguage');
     const [savedApiKey, setSavedApiKey] = useSettingMutable('openaiApiKey');
+    const [savedVocabulary, setSavedVocabulary] = useSettingMutable('whisperVocabulary');
 
-    // Local state for input field
+    // Local state for input fields
     const [apiKeyInput, setApiKeyInput] = useState(savedApiKey || '');
+    const [vocabularyInput, setVocabularyInput] = useState(savedVocabulary || '');
 
     // Show/hide API key
     const [showApiKey, setShowApiKey] = useState(false);
@@ -36,6 +38,13 @@ function VoiceSettingsScreen() {
             setSavedApiKey(apiKeyInput.trim() || null);
         }
     }, [apiKeyInput, savedApiKey, setSavedApiKey]);
+
+    // Save vocabulary when user leaves the field
+    const handleVocabularyBlur = useCallback(() => {
+        if (vocabularyInput.trim() !== (savedVocabulary || '')) {
+            setSavedVocabulary(vocabularyInput.trim() || null);
+        }
+    }, [vocabularyInput, savedVocabulary, setSavedVocabulary]);
 
     // Save credentials manually
     const handleSaveCredentials = useCallback(() => {
@@ -142,6 +151,32 @@ function VoiceSettingsScreen() {
                 </View>
             </ItemGroup>
 
+            {/* Custom Vocabulary */}
+            <ItemGroup
+                title={t('settingsVoice.vocabularyTitle')}
+                footer={t('settingsVoice.vocabularyDescription')}
+            >
+                <View style={styles.contentContainer}>
+                    <View style={styles.labelRow}>
+                        <Text style={styles.labelText}>{t('settingsVoice.vocabularyLabel').toUpperCase()}</Text>
+                    </View>
+                    <TextInput
+                        style={[styles.textArea, { color: theme.colors.input.text, backgroundColor: theme.colors.input.background }]}
+                        value={vocabularyInput}
+                        onChangeText={setVocabularyInput}
+                        onBlur={handleVocabularyBlur}
+                        placeholder={t('settingsVoice.vocabularyPlaceholder')}
+                        placeholderTextColor={theme.colors.input.placeholder}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                        multiline
+                        numberOfLines={4}
+                        textAlignVertical="top"
+                    />
+                    <Text style={styles.hintText}>{t('settingsVoice.vocabularyHint')}</Text>
+                </View>
+            </ItemGroup>
+
         </ItemList>
     );
 }
@@ -191,6 +226,13 @@ const styles = StyleSheet.create((theme) => ({
         borderRadius: 8,
         ...Typography.mono(),
         fontSize: 14,
+    },
+    textArea: {
+        padding: 12,
+        borderRadius: 8,
+        ...Typography.default(),
+        fontSize: 14,
+        minHeight: 100,
     },
     showHideButton: {
         justifyContent: 'center',

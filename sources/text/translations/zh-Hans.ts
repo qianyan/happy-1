@@ -595,6 +595,11 @@ export const zhHans: TranslationStructure = {
         apiKeyCredentialsDescription: '输入您的 OpenAI API 密钥以启用语音转录。您的密钥安全存储，仅用于 Whisper API 调用。',
         getApiKey: '获取 API 密钥',
         whisperHint: '语音转录使用 OpenAI Whisper API。使用费用将计入您的 OpenAI 账户。',
+        vocabularyTitle: '自定义词汇',
+        vocabularyDescription: '添加 Whisper 应该识别的单词或短语。这可以提高技术术语、名称或特定领域词汇的转录准确性。',
+        vocabularyLabel: '词汇',
+        vocabularyPlaceholder: 'Claude, Anthropic, Kubernetes\nPostgreSQL, Redis, Docker',
+        vocabularyHint: '输入以逗号或换行符分隔的单词。最多 224 个 token。',
     },
 
     settingsAccount: {

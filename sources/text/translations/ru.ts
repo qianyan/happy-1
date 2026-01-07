@@ -603,6 +603,11 @@ export const ru: TranslationStructure = {
         apiKeyCredentialsDescription: 'Введите ваш API ключ OpenAI для включения транскрипции голоса. Ваш ключ хранится безопасно и используется только для вызовов API Whisper.',
         getApiKey: 'Получить API Ключ',
         whisperHint: 'Транскрипция голоса использует API OpenAI Whisper. Использование тарифицируется на вашем аккаунте OpenAI.',
+        vocabularyTitle: 'Пользовательский словарь',
+        vocabularyDescription: 'Добавьте слова или фразы, которые Whisper должен распознавать. Это улучшает точность транскрипции для технических терминов, имён или специализированной лексики.',
+        vocabularyLabel: 'Словарь',
+        vocabularyPlaceholder: 'Claude, Anthropic, Kubernetes\nPostgreSQL, Redis, Docker',
+        vocabularyHint: 'Вводите слова через запятую или с новой строки. Максимум 224 токена.',
     },
 
     settingsAccount: {

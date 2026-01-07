@@ -593,6 +593,11 @@ export const ca: TranslationStructure = {
         apiKeyCredentialsDescription: 'Introdueix la teva clau API d\'OpenAI per habilitar la transcripció de veu. La teva clau s\'emmagatzema de forma segura i només s\'utilitza per a crides a l\'API de Whisper.',
         getApiKey: 'Obtenir Clau API',
         whisperHint: 'La transcripció de veu utilitza l\'API d\'OpenAI Whisper. L\'ús es factura al teu compte d\'OpenAI.',
+        vocabularyTitle: 'Vocabulari Personalitzat',
+        vocabularyDescription: 'Afegeix paraules o frases que Whisper hauria de reconèixer. Això millora la precisió de la transcripció per a termes tècnics, noms o vocabulari específic del domini.',
+        vocabularyLabel: 'Vocabulari',
+        vocabularyPlaceholder: 'Claude, Anthropic, Kubernetes\nPostgreSQL, Redis, Docker',
+        vocabularyHint: 'Introdueix paraules separades per comes o línies noves. Màxim 224 tokens.',
     },
 
     settingsAccount: {
