@@ -28,6 +28,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
     const [selections, setSelections] = React.useState<Map<number, Set<number>>>(new Map());
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [isSubmitted, setIsSubmitted] = React.useState(false);
+    const [submittedAnswers, setSubmittedAnswers] = React.useState<Record<string, string> | null>(null);
 
     // Parse input
     const input = tool.input as AskUserQuestionInput | undefined;
@@ -92,6 +93,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         try {
             // Approve the permission with answers - CLI will merge answers into tool input
             await sessionAllowWithAnswers(sessionId, tool.permission.id, answers);
+            setSubmittedAnswers(answers);
             setIsSubmitted(true);
         } catch (error) {
             console.error('Failed to submit answer:', error);
@@ -239,19 +241,48 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         },
     });
 
+    // Parse answers from tool result if available
+    // Format: "User has answered your questions: "header1"="value1", "header2"="value2". You can now..."
+    const parseAnswersFromResult = React.useCallback((result: string | undefined): Record<string, string> | null => {
+        if (!result) return null;
+        const match = result.match(/User has answered your questions: (.+)\. You can now/);
+        if (!match) return null;
+
+        const answersStr = match[1];
+        const answers: Record<string, string> = {};
+        // Parse "key"="value" pairs
+        const pairRegex = /"([^"]+)"="([^"]+)"/g;
+        let pairMatch;
+        while ((pairMatch = pairRegex.exec(answersStr)) !== null) {
+            answers[pairMatch[1]] = pairMatch[2];
+        }
+        return Object.keys(answers).length > 0 ? answers : null;
+    }, []);
+
     // Show submitted state
+    // Priority: submittedAnswers (local) > parsed from result > tool.input.answers (from CLI) > selections state
     if (isSubmitted || tool.state === 'completed') {
+        const resultAnswers = parseAnswersFromResult(tool.result);
+        const inputAnswers = (tool.input as AskUserQuestionInput & { answers?: Record<string, string> })?.answers;
+        const answersToShow = submittedAnswers || resultAnswers || inputAnswers;
+
         return (
             <ToolSectionView>
                 <View style={styles.submittedContainer}>
                     {questions.map((q, qIndex) => {
-                        const selected = selections.get(qIndex);
-                        const selectedLabels = selected
-                            ? Array.from(selected)
-                                .map(optIndex => q.options[optIndex]?.label)
-                                .filter(Boolean)
-                                .join(', ')
-                            : '-';
+                        // Get answer from stored answers or fall back to selections
+                        let selectedLabels: string;
+                        if (answersToShow && answersToShow[q.header]) {
+                            selectedLabels = answersToShow[q.header];
+                        } else {
+                            const selected = selections.get(qIndex);
+                            selectedLabels = selected
+                                ? Array.from(selected)
+                                    .map(optIndex => q.options[optIndex]?.label)
+                                    .filter(Boolean)
+                                    .join(', ')
+                                : '-';
+                        }
                         return (
                             <View key={qIndex} style={styles.submittedItem}>
                                 <Text style={styles.submittedHeader}>{q.header}:</Text>
