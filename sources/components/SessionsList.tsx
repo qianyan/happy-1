@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, FlatList } from 'react-native';
+import { View, FlatList, RefreshControl } from 'react-native';
 import { Text } from '@/components/StyledText';
 import { usePathname } from 'expo-router';
 import { SessionListViewItem, useSetting } from '@/sync/storage';
@@ -9,10 +9,11 @@ import { ActiveSessionsGroupCompact } from './ActiveSessionsGroupCompact';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVisibleSessionListViewData } from '@/hooks/useVisibleSessionListViewData';
 import { Typography } from '@/constants/Typography';
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { useIsTablet } from '@/utils/responsive';
 import { requestReview } from '@/utils/requestReview';
 import { layout } from './layout';
+import { sync } from '@/sync/sync';
 
 const stylesheet = StyleSheet.create((theme) => ({
     container: {
@@ -64,6 +65,7 @@ interface SessionsListProps {
 
 export function SessionsList({ searchQuery = '' }: SessionsListProps) {
     const styles = stylesheet;
+    const { theme } = useUnistyles();
     const safeArea = useSafeAreaInsets();
     // When searching, show all sessions (including archived) regardless of hideInactiveSessions setting
     const isSearching = searchQuery.trim().length > 0;
@@ -72,6 +74,17 @@ export function SessionsList({ searchQuery = '' }: SessionsListProps) {
     const isTablet = useIsTablet();
     const compactSessionView = useSetting('compactSessionView');
     const selectable = isTablet;
+
+    // Pull-to-refresh state
+    const [refreshing, setRefreshing] = React.useState(false);
+    const onRefresh = React.useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await sync.refreshSessions();
+        } finally {
+            setRefreshing(false);
+        }
+    }, []);
 
     // Filter data based on search query (local filtering)
     // Supports OR syntax with '|' separator (e.g., "foo|bar")
@@ -214,6 +227,13 @@ export function SessionsList({ searchQuery = '' }: SessionsListProps) {
                     keyExtractor={keyExtractor}
                     contentContainerStyle={{ paddingBottom: safeArea.bottom + 128, maxWidth: layout.maxWidth }}
                     ListHeaderComponent={HeaderComponent}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor={theme.colors.textSecondary}
+                        />
+                    }
                 />
             </View>
         </View>
