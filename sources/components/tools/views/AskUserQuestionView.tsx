@@ -33,12 +33,21 @@ const OtherOption = React.memo<{
     isSelected: boolean;
     customText: string;
     canInteract: boolean;
-    onToggle: () => void;
-    onTextChange: (text: string) => void;
+    onToggle: (questionIndex: number, optionIndex: number, multiSelect: boolean) => void;
+    onTextChange: (questionIndex: number, text: string) => void;
     styles: Record<string, any>;
     theme: any;
-}>(({ multiSelect, isSelected, customText, canInteract, onToggle, onTextChange, styles, theme }) => {
+}>(({ questionIndex, multiSelect, isSelected, customText, canInteract, onToggle, onTextChange, styles, theme }) => {
     const [isFocused, setIsFocused] = React.useState(false);
+
+    // Create stable callbacks using the questionIndex
+    const handleToggle = React.useCallback(() => {
+        onToggle(questionIndex, OTHER_OPTION_INDEX, multiSelect);
+    }, [onToggle, questionIndex, multiSelect]);
+
+    const handleTextChange = React.useCallback((text: string) => {
+        onTextChange(questionIndex, text);
+    }, [onTextChange, questionIndex]);
 
     return (
         <View>
@@ -48,7 +57,7 @@ const OtherOption = React.memo<{
                     isSelected && styles.optionButtonSelected,
                     !canInteract && styles.optionButtonDisabled,
                 ]}
-                onPress={onToggle}
+                onPress={handleToggle}
                 disabled={!canInteract}
                 activeOpacity={0.7}
             >
@@ -83,7 +92,7 @@ const OtherOption = React.memo<{
                             isFocused && styles.otherTextInputFocused,
                         ]}
                         value={customText}
-                        onChangeText={onTextChange}
+                        onChangeText={handleTextChange}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
                         placeholder={t('tools.askUserQuestion.otherPlaceholder')}
@@ -128,9 +137,8 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         return true;
     });
 
+    // Use functional updates to avoid dependency on canInteract
     const handleOptionToggle = React.useCallback((questionIndex: number, optionIndex: number, multiSelect: boolean) => {
-        if (!canInteract) return;
-
         setSelections(prev => {
             const currentSet = prev[questionIndex] || new Set();
 
@@ -148,15 +156,15 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
                 return { ...prev, [questionIndex]: new Set([optionIndex]) };
             }
         });
-    }, [canInteract]);
+    }, []);
 
+    // Stable callback - no dependencies needed since we use functional update
     const handleCustomTextChange = React.useCallback((questionIndex: number, text: string) => {
-        if (!canInteract) return;
         setCustomTexts(prev => ({
             ...prev,
             [questionIndex]: text
         }));
-    }, [canInteract]);
+    }, []);
 
     const handleSubmit = React.useCallback(async () => {
         if (!sessionId || !allQuestionsAnswered || isSubmitting || !tool.permission?.id) return;
@@ -198,9 +206,10 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         } finally {
             setIsSubmitting(false);
         }
-    }, [sessionId, questions, selections, allQuestionsAnswered, isSubmitting, tool.permission?.id]);
+    }, [sessionId, questions, selections, customTexts, allQuestionsAnswered, isSubmitting, tool.permission?.id]);
 
-    const styles = StyleSheet.create({
+    // Memoize styles to prevent unnecessary re-renders of child components
+    const styles = React.useMemo(() => StyleSheet.create({
         container: {
             gap: 16,
         },
@@ -358,7 +367,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         otherTextInputFocused: {
             borderColor: theme.colors.radio.active,
         },
-    });
+    }), [theme]);
 
     // Parse answers from tool result if available
     // Format: "User has answered your questions: "header1"="value1", "header2"="value2". You can now..."
@@ -476,8 +485,8 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
                                     isSelected={selectedOptions.has(OTHER_OPTION_INDEX)}
                                     customText={customTexts[qIndex] || ''}
                                     canInteract={canInteract}
-                                    onToggle={() => handleOptionToggle(qIndex, OTHER_OPTION_INDEX, question.multiSelect)}
-                                    onTextChange={(text) => handleCustomTextChange(qIndex, text)}
+                                    onToggle={handleOptionToggle}
+                                    onTextChange={handleCustomTextChange}
                                     styles={styles}
                                     theme={theme}
                                 />
