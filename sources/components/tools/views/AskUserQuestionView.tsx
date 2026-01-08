@@ -99,8 +99,8 @@ const OtherOption = React.memo<{
 
 export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId }) => {
     const { theme } = useUnistyles();
-    const [selections, setSelections] = React.useState<Map<number, Set<number>>>(new Map());
-    const [customTexts, setCustomTexts] = React.useState<Map<number, string>>(new Map());
+    const [selections, setSelections] = React.useState<Record<number, Set<number>>>({});
+    const [customTexts, setCustomTexts] = React.useState<Record<number, string>>({});
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [isSubmitted, setIsSubmitted] = React.useState(false);
     const [submittedAnswers, setSubmittedAnswers] = React.useState<Record<string, string> | null>(null);
@@ -118,11 +118,11 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
 
     // Check if all questions have at least one selection (or custom text if "Other" is selected)
     const allQuestionsAnswered = questions.every((_, qIndex) => {
-        const selected = selections.get(qIndex);
+        const selected = selections[qIndex];
         if (!selected || selected.size === 0) return false;
         // If "Other" is selected, ensure custom text is not empty
         if (selected.has(OTHER_OPTION_INDEX)) {
-            const customText = customTexts.get(qIndex);
+            const customText = customTexts[qIndex];
             return customText && customText.trim().length > 0;
         }
         return true;
@@ -132,8 +132,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         if (!canInteract) return;
 
         setSelections(prev => {
-            const newMap = new Map(prev);
-            const currentSet = newMap.get(questionIndex) || new Set();
+            const currentSet = prev[questionIndex] || new Set();
 
             if (multiSelect) {
                 // Toggle for multi-select
@@ -143,23 +142,20 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
                 } else {
                     newSet.add(optionIndex);
                 }
-                newMap.set(questionIndex, newSet);
+                return { ...prev, [questionIndex]: newSet };
             } else {
                 // Replace for single-select
-                newMap.set(questionIndex, new Set([optionIndex]));
+                return { ...prev, [questionIndex]: new Set([optionIndex]) };
             }
-
-            return newMap;
         });
     }, [canInteract]);
 
     const handleCustomTextChange = React.useCallback((questionIndex: number, text: string) => {
         if (!canInteract) return;
-        setCustomTexts(prev => {
-            const newMap = new Map(prev);
-            newMap.set(questionIndex, text);
-            return newMap;
-        });
+        setCustomTexts(prev => ({
+            ...prev,
+            [questionIndex]: text
+        }));
     }, [canInteract]);
 
     const handleSubmit = React.useCallback(async () => {
@@ -170,7 +166,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         // Format answers as a map of question header to selected labels
         const answers: Record<string, string> = {};
         questions.forEach((q, qIndex) => {
-            const selected = selections.get(qIndex);
+            const selected = selections[qIndex];
             if (selected && selected.size > 0) {
                 const selectedLabels: string[] = [];
 
@@ -184,7 +180,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
 
                 // Add custom text if "Other" is selected
                 if (selected.has(OTHER_OPTION_INDEX)) {
-                    const customText = customTexts.get(qIndex)?.trim();
+                    const customText = customTexts[qIndex]?.trim();
                     if (customText) selectedLabels.push(customText);
                 }
 
@@ -398,7 +394,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
                         if (answersToShow && answersToShow[q.header]) {
                             selectedLabels = answersToShow[q.header];
                         } else {
-                            const selected = selections.get(qIndex);
+                            const selected = selections[qIndex];
                             selectedLabels = selected
                                 ? Array.from(selected)
                                     .map(optIndex => q.options[optIndex]?.label)
@@ -422,7 +418,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         <ToolSectionView>
             <View style={styles.container}>
                 {questions.map((question, qIndex) => {
-                    const selectedOptions = selections.get(qIndex) || new Set();
+                    const selectedOptions = selections[qIndex] || new Set();
 
                     return (
                         <View key={qIndex} style={styles.questionSection}>
@@ -478,7 +474,7 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
                                     questionIndex={qIndex}
                                     multiSelect={question.multiSelect}
                                     isSelected={selectedOptions.has(OTHER_OPTION_INDEX)}
-                                    customText={customTexts.get(qIndex) || ''}
+                                    customText={customTexts[qIndex] || ''}
                                     canInteract={canInteract}
                                     onToggle={() => handleOptionToggle(qIndex, OTHER_OPTION_INDEX, question.multiSelect)}
                                     onTextChange={(text) => handleCustomTextChange(qIndex, text)}
