@@ -1,11 +1,14 @@
 import * as React from 'react';
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { ToolViewProps } from './_all';
 import { ToolSectionView } from '../ToolSectionView';
 import { sessionAllowWithAnswers } from '@/sync/ops';
 import { t } from '@/text';
 import { Ionicons } from '@expo/vector-icons';
+
+// Special index to represent "Other" option
+const OTHER_OPTION_INDEX = -1;
 
 interface QuestionOption {
     label: string;
@@ -23,9 +26,81 @@ interface AskUserQuestionInput {
     questions: Question[];
 }
 
+// Separate component for "Other" option to manage focus state
+const OtherOption = React.memo<{
+    questionIndex: number;
+    multiSelect: boolean;
+    isSelected: boolean;
+    customText: string;
+    canInteract: boolean;
+    onToggle: () => void;
+    onTextChange: (text: string) => void;
+    styles: Record<string, any>;
+    theme: any;
+}>(({ multiSelect, isSelected, customText, canInteract, onToggle, onTextChange, styles, theme }) => {
+    const [isFocused, setIsFocused] = React.useState(false);
+
+    return (
+        <View>
+            <TouchableOpacity
+                style={[
+                    styles.optionButton,
+                    isSelected && styles.optionButtonSelected,
+                    !canInteract && styles.optionButtonDisabled,
+                ]}
+                onPress={onToggle}
+                disabled={!canInteract}
+                activeOpacity={0.7}
+            >
+                {multiSelect ? (
+                    <View style={[
+                        styles.checkboxOuter,
+                        isSelected && styles.checkboxOuterSelected,
+                    ]}>
+                        {isSelected && (
+                            <Ionicons name="checkmark" size={14} color="#fff" />
+                        )}
+                    </View>
+                ) : (
+                    <View style={[
+                        styles.radioOuter,
+                        isSelected && styles.radioOuterSelected,
+                    ]}>
+                        {isSelected && <View style={styles.radioInner} />}
+                    </View>
+                )}
+                <View style={styles.optionContent}>
+                    <Text style={styles.optionLabel}>{t('tools.askUserQuestion.other')}</Text>
+                    <Text style={styles.optionDescription}>{t('tools.askUserQuestion.otherDescription')}</Text>
+                </View>
+            </TouchableOpacity>
+
+            {isSelected && (
+                <View style={styles.otherInputContainer}>
+                    <TextInput
+                        style={[
+                            styles.otherTextInput,
+                            isFocused && styles.otherTextInputFocused,
+                        ]}
+                        value={customText}
+                        onChangeText={onTextChange}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        placeholder={t('tools.askUserQuestion.otherPlaceholder')}
+                        placeholderTextColor={theme.colors.textSecondary}
+                        editable={canInteract}
+                        autoFocus
+                    />
+                </View>
+            )}
+        </View>
+    );
+});
+
 export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId }) => {
     const { theme } = useUnistyles();
     const [selections, setSelections] = React.useState<Map<number, Set<number>>>(new Map());
+    const [customTexts, setCustomTexts] = React.useState<Map<number, string>>(new Map());
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [isSubmitted, setIsSubmitted] = React.useState(false);
     const [submittedAnswers, setSubmittedAnswers] = React.useState<Record<string, string> | null>(null);
@@ -41,10 +116,16 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
     const isRunning = tool.state === 'running';
     const canInteract = isRunning && !isSubmitted;
 
-    // Check if all questions have at least one selection
+    // Check if all questions have at least one selection (or custom text if "Other" is selected)
     const allQuestionsAnswered = questions.every((_, qIndex) => {
         const selected = selections.get(qIndex);
-        return selected && selected.size > 0;
+        if (!selected || selected.size === 0) return false;
+        // If "Other" is selected, ensure custom text is not empty
+        if (selected.has(OTHER_OPTION_INDEX)) {
+            const customText = customTexts.get(qIndex);
+            return customText && customText.trim().length > 0;
+        }
+        return true;
     });
 
     const handleOptionToggle = React.useCallback((questionIndex: number, optionIndex: number, multiSelect: boolean) => {
@@ -72,6 +153,15 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         });
     }, [canInteract]);
 
+    const handleCustomTextChange = React.useCallback((questionIndex: number, text: string) => {
+        if (!canInteract) return;
+        setCustomTexts(prev => {
+            const newMap = new Map(prev);
+            newMap.set(questionIndex, text);
+            return newMap;
+        });
+    }, [canInteract]);
+
     const handleSubmit = React.useCallback(async () => {
         if (!sessionId || !allQuestionsAnswered || isSubmitting || !tool.permission?.id) return;
 
@@ -82,11 +172,23 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
         questions.forEach((q, qIndex) => {
             const selected = selections.get(qIndex);
             if (selected && selected.size > 0) {
-                const selectedLabels = Array.from(selected)
-                    .map(optIndex => q.options[optIndex]?.label)
-                    .filter(Boolean)
-                    .join(', ');
-                answers[q.header] = selectedLabels;
+                const selectedLabels: string[] = [];
+
+                // Add predefined option labels
+                Array.from(selected)
+                    .filter(optIndex => optIndex !== OTHER_OPTION_INDEX)
+                    .forEach(optIndex => {
+                        const label = q.options[optIndex]?.label;
+                        if (label) selectedLabels.push(label);
+                    });
+
+                // Add custom text if "Other" is selected
+                if (selected.has(OTHER_OPTION_INDEX)) {
+                    const customText = customTexts.get(qIndex)?.trim();
+                    if (customText) selectedLabels.push(customText);
+                }
+
+                answers[q.header] = selectedLabels.join(', ');
             }
         });
 
@@ -239,6 +341,27 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
             color: theme.colors.text,
             flex: 1,
         },
+        otherInputContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 4,
+            marginLeft: 30, // Align with option content
+        },
+        otherTextInput: {
+            flex: 1,
+            borderWidth: 1,
+            borderColor: theme.colors.divider,
+            borderRadius: 6,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            fontSize: 14,
+            color: theme.colors.text,
+            backgroundColor: theme.colors.surface,
+        },
+        otherTextInputFocused: {
+            borderColor: theme.colors.radio.active,
+        },
     });
 
     // Parse answers from tool result if available
@@ -349,6 +472,19 @@ export const AskUserQuestionView = React.memo<ToolViewProps>(({ tool, sessionId 
                                         </TouchableOpacity>
                                     );
                                 })}
+
+                                {/* "Other" option with text input */}
+                                <OtherOption
+                                    questionIndex={qIndex}
+                                    multiSelect={question.multiSelect}
+                                    isSelected={selectedOptions.has(OTHER_OPTION_INDEX)}
+                                    customText={customTexts.get(qIndex) || ''}
+                                    canInteract={canInteract}
+                                    onToggle={() => handleOptionToggle(qIndex, OTHER_OPTION_INDEX, question.multiSelect)}
+                                    onTextChange={(text) => handleCustomTextChange(qIndex, text)}
+                                    styles={styles}
+                                    theme={theme}
+                                />
                             </View>
                         </View>
                     );

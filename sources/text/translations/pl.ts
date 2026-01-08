@@ -554,6 +554,9 @@ export const pl: TranslationStructure = {
         askUserQuestion: {
             submit: 'Wyślij odpowiedź',
             multipleQuestions: ({ count }: { count: number }) => `${count} ${plural({ count, one: 'pytanie', few: 'pytania', many: 'pytań' })}`,
+            other: 'Inne',
+            otherDescription: 'Podaj własną odpowiedź',
+            otherPlaceholder: 'Wpisz swoją odpowiedź...',
         }
     },
 
