@@ -17,6 +17,8 @@ interface SessionPermissionRequest {
     mode?: 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan';
     allowTools?: string[];
     decision?: 'approved' | 'approved_for_session' | 'denied' | 'abort';
+    /** Answers for AskUserQuestion tool - maps question header to answer string */
+    answers?: Record<string, string>;
 }
 
 // Mode change operation types
@@ -324,6 +326,17 @@ export async function sessionAbort(sessionId: string): Promise<void> {
  */
 export async function sessionAllow(sessionId: string, id: string, mode?: 'default' | 'acceptEdits' | 'bypassPermissions' | 'plan', allowedTools?: string[], decision?: 'approved' | 'approved_for_session'): Promise<void> {
     const request: SessionPermissionRequest = { id, approved: true, mode, allowTools: allowedTools, decision };
+    await apiSocket.sessionRPC(sessionId, 'permission', request);
+}
+
+/**
+ * Allow a permission request with answers (used for AskUserQuestion tool)
+ * @param sessionId - The session ID
+ * @param id - The permission request ID
+ * @param answers - Map of question header to selected answer(s)
+ */
+export async function sessionAllowWithAnswers(sessionId: string, id: string, answers: Record<string, string>): Promise<void> {
+    const request: SessionPermissionRequest = { id, approved: true, answers };
     await apiSocket.sessionRPC(sessionId, 'permission', request);
 }
 
