@@ -18,6 +18,8 @@
     "web:deploy": "rsync -avz dist happy-server:/root/happy-devbox/happy/",
     "web:production": "bun web:build && bun web:deploy",
     "typecheck": "tsc --noEmit",
+    "build:ios": "eas build --profile production --platform ios --local --non-interactive",
+    "build:android": "eas build --profile production --platform android --local --non-interactive",
     "postinstall": "patch-package",
     "generate-theme": "tsx sources/theme.gen.ts"
   },
