@@ -4,6 +4,16 @@ import { z } from "zod";
 // Agent states
 //
 
+export const CustomCommandSchema = z.object({
+    name: z.string(),
+    description: z.string().optional(),
+    argumentHint: z.string().optional(),
+    scope: z.enum(['project', 'personal']),
+    namespace: z.string().optional()
+});
+
+export type CustomCommand = z.infer<typeof CustomCommandSchema>;
+
 export const MetadataSchema = z.object({
     path: z.string(),
     host: z.string(),
@@ -18,6 +28,7 @@ export const MetadataSchema = z.object({
     claudeSessionId: z.string().optional(), // Claude Code session ID
     tools: z.array(z.string()).optional(),
     slashCommands: z.array(z.string()).optional(),
+    customCommands: z.array(CustomCommandSchema).optional(),
     homeDir: z.string().optional(), // User's home directory on the machine
     happyHomeDir: z.string().optional(), // Happy configuration directory
     hostPid: z.number().optional(), // Process ID of the session

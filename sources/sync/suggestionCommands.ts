@@ -9,6 +9,9 @@ import { storage } from './storage';
 export interface CommandItem {
     command: string;        // The command without slash (e.g., "compact")
     description?: string;   // Optional description of what the command does
+    argumentHint?: string;  // Hint for expected arguments (e.g., "[file-pattern]")
+    scope?: 'builtin' | 'project' | 'personal';  // Where the command comes from
+    namespace?: string;     // Subdirectory namespace for custom commands
 }
 
 interface SearchOptions {
@@ -92,27 +95,50 @@ function getCommandsFromSession(sessionId: string): CommandItem[] {
     const state = storage.getState();
     const session = state.sessions[sessionId];
     if (!session || !session.metadata) {
-        return DEFAULT_COMMANDS;
+        return DEFAULT_COMMANDS.map(cmd => ({ ...cmd, scope: 'builtin' as const }));
     }
 
-    const commands: CommandItem[] = [...DEFAULT_COMMANDS];
-    
+    const commands: CommandItem[] = DEFAULT_COMMANDS.map(cmd => ({ ...cmd, scope: 'builtin' as const }));
+
+    // Track command names to avoid duplicates (custom commands take precedence)
+    const commandNames = new Set(commands.map(c => c.command));
+
+    // Add custom commands from metadata (these have rich descriptions)
+    // Custom commands take precedence over SDK slash commands
+    if (session.metadata.customCommands) {
+        for (const customCmd of session.metadata.customCommands) {
+            if (!commandNames.has(customCmd.name)) {
+                commands.push({
+                    command: customCmd.name,
+                    description: customCmd.description,
+                    argumentHint: customCmd.argumentHint,
+                    scope: customCmd.scope,
+                    namespace: customCmd.namespace
+                });
+                commandNames.add(customCmd.name);
+            }
+        }
+    }
+
     // Add commands from metadata.slashCommands (filter with ignore list)
+    // These come from the SDK and may not have descriptions
     if (session.metadata.slashCommands) {
         for (const cmd of session.metadata.slashCommands) {
             // Skip if in ignore list
             if (IGNORED_COMMANDS.includes(cmd)) continue;
-            
-            // Check if it's already in default commands
-            if (!commands.find(c => c.command === cmd)) {
+
+            // Check if it's already added (custom commands take precedence)
+            if (!commandNames.has(cmd)) {
                 commands.push({
                     command: cmd,
-                    description: COMMAND_DESCRIPTIONS[cmd]  // Optional description
+                    description: COMMAND_DESCRIPTIONS[cmd],  // Use hardcoded description if available
+                    scope: 'builtin'
                 });
+                commandNames.add(cmd);
             }
         }
     }
-    
+
     return commands;
 }
 

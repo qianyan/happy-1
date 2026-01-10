@@ -8,22 +8,39 @@ import { t } from '@/text';
 interface CommandSuggestionProps {
     command: string;
     description?: string;
+    argumentHint?: string;
+    scope?: 'builtin' | 'project' | 'personal';
+    namespace?: string;
 }
 
-export const CommandSuggestion = React.memo(({ command, description }: CommandSuggestionProps) => {
+export const CommandSuggestion = React.memo(({ command, description, argumentHint, scope, namespace }: CommandSuggestionProps) => {
+    // Determine scope label for custom commands
+    const scopeLabel = scope === 'project' ? 'project' : scope === 'personal' ? 'personal' : undefined;
+    const displayLabel = namespace ? `${namespace}` : scopeLabel;
+
     return (
         <View style={styles.suggestionContainer}>
-            <Text 
-                style={[styles.commandText, { marginRight: description ? 12 : 0 }]}
+            <Text
+                style={[styles.commandText, { marginRight: 8 }]}
             >
                 /{command}
             </Text>
+            {argumentHint && (
+                <Text style={styles.argumentHintText}>
+                    {argumentHint}
+                </Text>
+            )}
             {description && (
                 <Text
                     style={styles.descriptionText}
                     numberOfLines={1}
                 >
                     {description}
+                </Text>
+            )}
+            {displayLabel && (
+                <Text style={styles.scopeLabel}>
+                    {displayLabel}
                 </Text>
             )}
         </View>
@@ -77,6 +94,24 @@ const styles = StyleSheet.create((theme) => ({
         flex: 1,
         fontSize: 13,
         color: theme.colors.textSecondary,
+        ...Typography.default(),
+    },
+    argumentHintText: {
+        fontSize: 12,
+        color: theme.colors.textSecondary,
+        opacity: 0.7,
+        marginRight: 8,
+        ...Typography.default(),
+    },
+    scopeLabel: {
+        fontSize: 11,
+        color: theme.colors.textSecondary,
+        opacity: 0.8,
+        backgroundColor: theme.colors.surfaceHigh,
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        marginLeft: 8,
         ...Typography.default(),
     },
     iconContainer: {
