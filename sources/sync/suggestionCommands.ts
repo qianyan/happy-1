@@ -17,39 +17,17 @@ interface SearchOptions {
 }
 
 // Commands to ignore/filter out
+// Only filter commands that are truly CLI-specific or system-level
 export const IGNORED_COMMANDS = [
-    "add-dir",
-    "agents",
-    "config",
-    "statusline",
-    "bashes",
-    "settings",
-    "cost",
-    "doctor",
-    "exit",
-    "help",
-    "ide",
-    "init",
-    "install-github-app",
-    "mcp",
-    "memory",
-    "migrate-installer",
-    "model",
-    "pr-comments",
-    "release-notes",
-    "resume",
-    "status",
-    "bug",
-    "review",
-    "security-review",
-    "terminal-setup",
-    "upgrade",
-    "vim",
-    "permissions",
-    "hooks",
-    "export",
-    "logout",
-    "login"
+    "add-dir",          // CLI directory management
+    "config",           // CLI configuration
+    "init",             // CLI initialization
+    "install-github-app", // Installation specific
+    "migrate-installer", // Installation specific
+    "terminal-setup",   // Terminal specific
+    "upgrade",          // CLI upgrade
+    "logout",           // Session management
+    "login"             // Session management
 ];
 
 // Default commands always available
@@ -60,21 +38,53 @@ const DEFAULT_COMMANDS: CommandItem[] = [
 
 // Command descriptions for known tools/commands
 const COMMAND_DESCRIPTIONS: Record<string, string> = {
-    // Default commands
-    compact: 'Compact the conversation history',
-    
-    // Common tool commands
-    help: 'Show available commands',
-    clear: 'Clear the conversation',
-    reset: 'Reset the session',
-    export: 'Export conversation',
-    debug: 'Show debug information',
-    status: 'Show connection status',
+    // Core conversation commands
+    compact: 'Compact the conversation history to save context',
+    clear: 'Clear the conversation and start fresh',
+    reset: 'Reset the session state',
+
+    // Development tools
+    review: 'Review code for improvements and best practices',
+    bug: 'Analyze code for potential bugs',
+    'security-review': 'Perform security analysis on code',
+    test: 'Generate or run tests',
+    docs: 'Generate documentation',
+
+    // IDE and workflow
+    vim: 'Toggle vim mode in the editor',
+    ide: 'Open in IDE',
+    settings: 'Manage application settings',
+    statusline: 'Configure status line display',
+
+    // Session and information
+    help: 'Show available commands and usage',
+    status: 'Show current session status',
+    cost: 'Display token usage and costs',
+    memory: 'Show memory usage statistics',
+    model: 'Switch or configure AI model',
+    agents: 'Manage AI agents',
+    resume: 'Resume a previous conversation',
+
+    // Export and sharing
+    export: 'Export conversation history',
+    'pr-comments': 'Generate pull request comments',
+    'release-notes': 'Generate release notes',
+
+    // System operations
     stop: 'Stop current operation',
     abort: 'Abort current operation',
     cancel: 'Cancel current operation',
-    
-    // Add more descriptions as needed
+    exit: 'Exit the application',
+    doctor: 'Run diagnostics',
+    debug: 'Show debug information',
+
+    // Features
+    mcp: 'Manage MCP (Model Context Protocol) servers',
+    permissions: 'Manage permissions',
+    hooks: 'Configure hooks',
+    bashes: 'Manage bash sessions',
+
+    // Add more descriptions as commands are discovered
 };
 
 // Get commands from session metadata
