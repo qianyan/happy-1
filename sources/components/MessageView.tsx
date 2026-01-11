@@ -11,8 +11,9 @@ import { AgentEvent } from "@/sync/typesRaw";
 import { sync } from '@/sync/sync';
 import { Option } from './markdown/MarkdownView';
 import { MessageImage } from './MessageImage';
+import { useLocalSetting } from '@/sync/storage';
 
-export const MessageView = (props: {
+export const MessageView = React.memo((props: {
   message: Message;
   metadata: Metadata | null;
   sessionId: string;
@@ -20,9 +21,18 @@ export const MessageView = (props: {
   onMessageSelect?: (messageId: string) => void;
   isSelected?: boolean;
 }) => {
+  const wideContentView = useLocalSetting('wideContentView');
+
+  const messageContentStyle = React.useMemo(() => ({
+    flexDirection: 'column' as const,
+    flexGrow: 1,
+    flexBasis: 0,
+    maxWidth: (wideContentView ? '100%' : layout.maxWidth) as any,
+  }), [wideContentView]);
+
   return (
     <View style={styles.messageContainer} renderToHardwareTextureAndroid={true}>
-      <View style={styles.messageContent}>
+      <View style={messageContentStyle}>
         <RenderBlock
           message={props.message}
           metadata={props.metadata}
@@ -34,7 +44,7 @@ export const MessageView = (props: {
       </View>
     </View>
   );
-};
+});
 
 // RenderBlock function that dispatches to the correct component based on message kind
 function RenderBlock(props: {
@@ -259,12 +269,6 @@ const styles = StyleSheet.create((theme) => ({
   messageContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-  },
-  messageContent: {
-    flexDirection: 'column',
-    flexGrow: 1,
-    flexBasis: 0,
-    maxWidth: layout.maxWidth,
   },
   userMessageContainer: {
     maxWidth: '100%',

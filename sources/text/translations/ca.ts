@@ -184,6 +184,8 @@ export const ca: TranslationStructure = {
         showFlavorIconsDescription: "Mostrar icones del proveïdor d'IA als avatars de sessió",
         compactSessionView: 'Vista compacta de sessions',
         compactSessionViewDescription: 'Mostra les sessions actives en un disseny més compacte',
+        wideContentView: 'Vista ampla de contingut',
+        wideContentViewDescription: "Utilitza l'amplada completa per al contingut en lloc d'un contenidor restringit. Les taules i el contingut ample tindran més espai.",
     },
 
     settingsFeatures: {

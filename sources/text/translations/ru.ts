@@ -166,6 +166,8 @@ export const ru: TranslationStructure = {
         showFlavorIconsDescription: 'Отображать иконки провайдеров ИИ на аватарах сессий',
         compactSessionView: 'Компактный вид сессий',
         compactSessionViewDescription: 'Отображать активные сессии в более компактном виде',
+        wideContentView: 'Широкий вид контента',
+        wideContentViewDescription: 'Использовать полную ширину для контента вместо ограниченного контейнера. Таблицы и широкий контент будут иметь больше места.',
     },
 
     settingsFeatures: {

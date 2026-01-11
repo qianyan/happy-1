@@ -12,6 +12,7 @@ export const LocalSettingsSchema = z.object({
     themePreference: z.enum(['light', 'dark', 'adaptive']).describe('Theme preference: light, dark, or adaptive (follows system)'),
     markdownCopyV2: z.boolean().describe('Replace native paragraph selection with long-press modal for full markdown copy'),
     shiftEnterToSend: z.boolean().describe('Use Shift+Enter to send messages (Enter creates new line). Default is Enter to send.'),
+    wideContentView: z.boolean().describe('Use full width for content instead of constrained 800px container'),
     // CLI version acknowledgments - keyed by machineId
     acknowledgedCliVersions: z.record(z.string(), z.string()).describe('Acknowledged CLI versions per machine'),
 });
@@ -36,6 +37,7 @@ export const localSettingsDefaults: LocalSettings = {
     themePreference: 'adaptive',
     markdownCopyV2: true,
     shiftEnterToSend: false,
+    wideContentView: false,
     acknowledgedCliVersions: {},
 };
 Object.freeze(localSettingsDefaults);

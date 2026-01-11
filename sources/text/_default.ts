@@ -184,6 +184,8 @@ export const en = {
         showFlavorIconsDescription: 'Display AI provider icons on session avatars',
         compactSessionView: 'Compact Session View',
         compactSessionViewDescription: 'Show active sessions in a more compact layout',
+        wideContentView: 'Wide Content View',
+        wideContentViewDescription: 'Use full width for content instead of constrained container. Tables and wide content will have more space.',
     },
 
     settingsFeatures: {

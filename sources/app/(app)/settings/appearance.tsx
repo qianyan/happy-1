@@ -11,6 +11,7 @@ import { Appearance } from 'react-native';
 import * as SystemUI from 'expo-system-ui';
 import { darkTheme, lightTheme } from '@/theme';
 import { t, getLanguageNativeName, SUPPORTED_LANGUAGES } from '@/text';
+import { Platform } from 'react-native';
 
 // Define known avatar styles for this version of the app
 type KnownAvatarStyle = 'pixelated' | 'gradient' | 'brutalist';
@@ -32,6 +33,7 @@ export default function AppearanceSettingsScreen() {
     const [showFlavorIcons, setShowFlavorIcons] = useSettingMutable('showFlavorIcons');
     const [compactSessionView, setCompactSessionView] = useSettingMutable('compactSessionView');
     const [themePreference, setThemePreference] = useLocalSettingMutable('themePreference');
+    const [wideContentView, setWideContentView] = useLocalSettingMutable('wideContentView');
     const [preferredLanguage] = useSettingMutable('preferredLanguage');
     
     // Ensure we have a valid style for display, defaulting to gradient for unknown values
@@ -221,6 +223,19 @@ export default function AppearanceSettingsScreen() {
                         />
                     }
                 />
+                {Platform.OS === 'web' && (
+                    <Item
+                        title={t('settingsAppearance.wideContentView')}
+                        subtitle={t('settingsAppearance.wideContentViewDescription')}
+                        icon={<Ionicons name="expand-outline" size={29} color="#5856D6" />}
+                        rightElement={
+                            <Switch
+                                value={wideContentView}
+                                onValueChange={setWideContentView}
+                            />
+                        }
+                    />
+                )}
                 {/* <Item
                     title="Compact Mode"
                     subtitle="Reduce spacing between elements"
