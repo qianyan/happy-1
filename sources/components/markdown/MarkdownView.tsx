@@ -257,12 +257,17 @@ function RenderTableBlockWeb(props: {
                 style={{
                     overflowX: 'auto',
                     width: '100%',
+                    // Ensure the scroll container doesn't expand beyond parent
+                    display: 'flex',
+                    flexDirection: 'column',
                 }}
             >
                 <table
                     style={{
                         width: '100%',
-                        minWidth: 'max-content',
+                        // Use a fixed max width instead of max-content to prevent overflow
+                        // The table will still scroll horizontally via the parent div
+                        tableLayout: 'fixed',
                         borderCollapse: 'collapse',
                         borderSpacing: 0,
                     }}
@@ -281,7 +286,8 @@ function RenderTableBlockWeb(props: {
                                         textAlign: 'left',
                                         verticalAlign: 'top',
                                         maxWidth: 300,
-                                        wordWrap: 'break-word',
+                                        overflow: 'hidden',
+                                        overflowWrap: 'break-word',
                                         whiteSpace: 'normal',
                                     }}
                                 >
@@ -304,7 +310,8 @@ function RenderTableBlockWeb(props: {
                                             borderRight: cellIndex < row.length - 1 ? `1px solid ${theme.colors.divider}` : 'none',
                                             verticalAlign: 'top',
                                             maxWidth: 300,
-                                            wordWrap: 'break-word',
+                                            overflow: 'hidden',
+                                            overflowWrap: 'break-word',
                                             whiteSpace: 'normal',
                                         }}
                                     >
