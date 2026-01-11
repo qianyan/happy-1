@@ -195,6 +195,23 @@ function parseTable(content: any): ParsedTable | null {
 }
 
 /**
+ * Check if a line contains unescaped pipe characters
+ */
+function hasUnescapedPipe(line: string): boolean {
+    let i = 0;
+    while (i < line.length) {
+        if (line[i] === '\\' && i + 1 < line.length) {
+            i += 2; // Skip escaped character
+        } else if (line[i] === '|') {
+            return true; // Found unescaped pipe
+        } else {
+            i++;
+        }
+    }
+    return false;
+}
+
+/**
  * Parse markdown table format
  * Example:
  * | Header 1 | Header 2 |
@@ -205,8 +222,8 @@ function parseMarkdownTable(text: string): ParsedTable | null {
     const lines = text.trim().split('\n');
     if (lines.length < 2) return null; // At least header + separator
 
-    // Check if first line contains pipes
-    if (!lines[0].includes('|')) return null;
+    // Check if first line contains unescaped pipes
+    if (!hasUnescapedPipe(lines[0])) return null;
 
     // Parse header row
     const headers = parsePipeDelimitedRow(lines[0]);
@@ -222,7 +239,7 @@ function parseMarkdownTable(text: string): ParsedTable | null {
     const rows: string[][] = [];
     for (let i = 2; i < lines.length; i++) {
         const line = lines[i].trim();
-        if (!line.includes('|')) continue;
+        if (!hasUnescapedPipe(line)) continue;
 
         const cells = parsePipeDelimitedRow(line);
 
@@ -276,6 +293,7 @@ function parseAlignments(separatorLine: string, columnCount: number): TableAlign
  * Parse a pipe-delimited row, handling both formats:
  * - With outer pipes: | A | B | C |
  * - Without outer pipes: A | B | C
+ * - With escaped pipes: | A \| B | C | (the \| inside cell is treated as literal |)
  */
 function parsePipeDelimitedRow(line: string): string[] {
     const trimmed = line.trim();
@@ -289,10 +307,30 @@ function parsePipeDelimitedRow(line: string): string[] {
         content = content.substring(0, content.length - 1);
     }
 
-    // Split and trim each cell
-    return content
-        .split('|')
-        .map(cell => cell.trim());
+    // Split on unescaped pipes only, and unescape the result
+    const parts: string[] = [];
+    let current = '';
+    let i = 0;
+
+    while (i < content.length) {
+        if (content[i] === '\\' && i + 1 < content.length) {
+            // Escaped character - add the next character literally
+            current += content[i + 1];
+            i += 2;
+        } else if (content[i] === '|') {
+            // Unescaped pipe - this is a delimiter
+            parts.push(current.trim());
+            current = '';
+            i++;
+        } else {
+            current += content[i];
+            i++;
+        }
+    }
+    // Add the last part
+    parts.push(current.trim());
+
+    return parts.filter(cell => cell.length > 0);
 }
 
 /**

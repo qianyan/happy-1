@@ -5,8 +5,23 @@ function parseTable(lines: string[], startIndex: number): { table: MarkdownBlock
     let index = startIndex;
     const tableLines: string[] = [];
 
-    // Collect consecutive lines that contain pipe characters to identify potential table rows
-    while (index < lines.length && lines[index].includes('|')) {
+    // Collect consecutive lines that contain unescaped pipe characters to identify potential table rows
+    // A pipe is considered unescaped if it's not preceded by a backslash (accounting for double backslashes)
+    const hasUnescapedPipe = (line: string): boolean => {
+        let i = 0;
+        while (i < line.length) {
+            if (line[i] === '\\' && i + 1 < line.length) {
+                i += 2; // Skip escaped character
+            } else if (line[i] === '|') {
+                return true; // Found unescaped pipe
+            } else {
+                i++;
+            }
+        }
+        return false;
+    };
+
+    while (index < lines.length && hasUnescapedPipe(lines[index])) {
         tableLines.push(lines[index]);
         index++;
     }
@@ -23,12 +38,35 @@ function parseTable(lines: string[], startIndex: number): { table: MarkdownBlock
         return { table: null, nextIndex: startIndex };
     }
 
+    // Split on unescaped pipes only, and unescape the result
+    const splitOnUnescapedPipes = (line: string): string[] => {
+        const parts: string[] = [];
+        let current = '';
+        let i = 0;
+
+        while (i < line.length) {
+            if (line[i] === '\\' && i + 1 < line.length) {
+                // Escaped character - add the next character literally
+                current += line[i + 1];
+                i += 2;
+            } else if (line[i] === '|') {
+                // Unescaped pipe - this is a delimiter
+                parts.push(current.trim());
+                current = '';
+                i++;
+            } else {
+                current += line[i];
+                i++;
+            }
+        }
+        // Add the last part
+        parts.push(current.trim());
+        return parts.filter(cell => cell.length > 0);
+    };
+
     // Extract header cells from the first line, filtering out empty cells that may result from leading/trailing pipes
     const headerLine = tableLines[0].trim();
-    const headers = headerLine
-        .split('|')
-        .map(cell => cell.trim())
-        .filter(cell => cell.length > 0);
+    const headers = splitOnUnescapedPipes(headerLine);
 
     if (headers.length === 0) {
         return { table: null, nextIndex: startIndex };
@@ -39,10 +77,7 @@ function parseTable(lines: string[], startIndex: number): { table: MarkdownBlock
     for (let i = 2; i < tableLines.length; i++) {
         const rowLine = tableLines[i].trim();
         if (rowLine.startsWith('|')) {
-            const rowCells = rowLine
-                .split('|')
-                .map(cell => cell.trim())
-                .filter(cell => cell.length > 0);
+            const rowCells = splitOnUnescapedPipes(rowLine);
 
             // Include rows that contain actual content, filtering out empty rows
             if (rowCells.length > 0) {
@@ -157,8 +192,22 @@ export function parseMarkdownBlock(markdown: string) {
             continue;
         }
 
-        // Check for table
-        if (trimmed.includes('|') && !trimmed.startsWith('```')) {
+        // Check for table (only if line contains unescaped pipes)
+        const hasUnescapedPipe = (() => {
+            let i = 0;
+            while (i < trimmed.length) {
+                if (trimmed[i] === '\\' && i + 1 < trimmed.length) {
+                    i += 2; // Skip escaped character
+                } else if (trimmed[i] === '|') {
+                    return true; // Found unescaped pipe
+                } else {
+                    i++;
+                }
+            }
+            return false;
+        })();
+
+        if (hasUnescapedPipe && !trimmed.startsWith('```')) {
             const { table, nextIndex } = parseTable(lines, index - 1);
             if (table) {
                 blocks.push(table);
