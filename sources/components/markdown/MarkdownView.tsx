@@ -257,17 +257,12 @@ function RenderTableBlockWeb(props: {
                 style={{
                     overflowX: 'auto',
                     width: '100%',
-                    // Ensure the scroll container doesn't expand beyond parent
-                    display: 'flex',
-                    flexDirection: 'column',
                 }}
             >
                 <table
                     style={{
                         width: '100%',
-                        // Use a fixed max width instead of max-content to prevent overflow
-                        // The table will still scroll horizontally via the parent div
-                        tableLayout: 'fixed',
+                        tableLayout: 'auto',
                         borderCollapse: 'collapse',
                         borderSpacing: 0,
                     }}
@@ -285,10 +280,6 @@ function RenderTableBlockWeb(props: {
                                         fontWeight: 600,
                                         textAlign: 'left',
                                         verticalAlign: 'top',
-                                        maxWidth: 300,
-                                        overflow: 'hidden',
-                                        overflowWrap: 'break-word',
-                                        whiteSpace: 'normal',
                                     }}
                                 >
                                     <Text selectable style={style.tableHeaderText}>
@@ -309,10 +300,6 @@ function RenderTableBlockWeb(props: {
                                             borderBottom: rowIndex < props.rows.length - 1 ? `1px solid ${theme.colors.divider}` : 'none',
                                             borderRight: cellIndex < row.length - 1 ? `1px solid ${theme.colors.divider}` : 'none',
                                             verticalAlign: 'top',
-                                            maxWidth: 300,
-                                            overflow: 'hidden',
-                                            overflowWrap: 'break-word',
-                                            whiteSpace: 'normal',
                                         }}
                                     >
                                         <Text selectable style={style.tableCellText}>
