@@ -286,8 +286,11 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
 
                 return newText;
             });
-            // Focus input after transcription for easy submission
-            inputRef.current?.focus();
+
+            // Focus input after transcription only if NOT sending after transcription
+            if (!shouldSendAfterTranscription) {
+                inputRef.current?.focus();
+            }
             tracking?.capture('voice_transcription_completed', { auto_send: false });
         }
     }, [sessionId, clearDraft]);
