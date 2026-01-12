@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Platform, Pressable, useWindowDimensions } from 'react-native';
+import { View, Text, Platform, Pressable, useWindowDimensions, TextInput } from 'react-native';
 import { Typography } from '@/constants/Typography';
 import { useAllMachines, storage, useSetting } from '@/sync/storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -117,6 +117,7 @@ function NewSessionScreen() {
     });
     const [isSending, setIsSending] = React.useState(false);
     const [sessionType, setSessionType] = React.useState<'simple' | 'worktree'>('simple');
+    const [manualResumeSessionId, setManualResumeSessionId] = React.useState(resumeClaudeSessionId || '');
     const ref = React.useRef<MultiTextInputHandle>(null);
 
     // Image attachments state
@@ -639,7 +640,7 @@ function NewSessionScreen() {
                 // For now we assume you already have a path to start in
                 approvedNewDirectoryCreation: true,
                 agent: agentType,
-                resumeClaudeSessionId
+                resumeClaudeSessionId: manualResumeSessionId || resumeClaudeSessionId
             });
 
             // Use sessionId to check for success for backwards compatibility
@@ -832,6 +833,58 @@ function NewSessionScreen() {
                         </Pressable>
                     </View>
                 </View>
+
+                {/* Resume session ID input - Claude only */}
+                {agentType === 'claude' && (
+                    <View style={[
+                        { paddingHorizontal: screenWidth > 700 ? 16 : 8, flexDirection: 'row', justifyContent: 'center' }
+                    ]}>
+                        <View style={[
+                            { maxWidth, flex: 1 }
+                        ]}>
+                            <View style={{
+                                backgroundColor: theme.colors.input.background,
+                                borderRadius: Platform.select({ default: 16, android: 20 }),
+                                paddingHorizontal: 12,
+                                paddingVertical: 10,
+                                marginBottom: 8,
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                            }}>
+                                <Ionicons
+                                    name="refresh-outline"
+                                    size={14}
+                                    color={manualResumeSessionId ? theme.colors.textLink : theme.colors.button.secondary.tint}
+                                />
+                                <TextInput
+                                    value={manualResumeSessionId}
+                                    onChangeText={setManualResumeSessionId}
+                                    placeholder={t('newSession.resumeSessionPlaceholder')}
+                                    placeholderTextColor={theme.colors.textSecondary}
+                                    style={{
+                                        flex: 1,
+                                        fontSize: 13,
+                                        color: theme.colors.text,
+                                        marginLeft: 6,
+                                        padding: 0,
+                                        ...Typography.default('semiBold'),
+                                    }}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                />
+                                {manualResumeSessionId.length > 0 && (
+                                    <Pressable onPress={() => setManualResumeSessionId('')}>
+                                        <Ionicons
+                                            name="close-circle"
+                                            size={16}
+                                            color={theme.colors.textSecondary}
+                                        />
+                                    </Pressable>
+                                )}
+                            </View>
+                        </View>
+                    </View>
+                )}
             </View>
         </KeyboardAvoidingView>
     )

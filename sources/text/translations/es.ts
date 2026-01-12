@@ -281,6 +281,7 @@ export const es: TranslationStructure = {
         startNewSessionInFolder: 'Nueva sesión aquí',
         noMachineSelected: 'Por favor, selecciona una máquina para iniciar la sesión',
         noPathSelected: 'Por favor, selecciona un directorio para iniciar la sesión',
+        resumeSessionPlaceholder: 'Reanudar desde ID de sesión (opcional)',
         sessionType: {
             title: 'Tipo de sesión',
             simple: 'Simple',
