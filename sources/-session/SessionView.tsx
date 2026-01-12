@@ -442,6 +442,12 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
         }
     }, [isDesktopSplitView, sessionId, router]);
 
+    // Handle option edit - append text to input and focus
+    const handleOptionEdit = React.useCallback((text: string) => {
+        setMessage(text);
+        inputRef.current?.focus();
+    }, []);
+
     let content = (
         <>
             <Deferred>
@@ -450,6 +456,7 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
                         session={session}
                         onMessageSelect={isDesktopSplitView ? handleMessageSelect : undefined}
                         selectedMessageId={isDesktopSplitView ? selectedMessageId : undefined}
+                        onOptionEdit={handleOptionEdit}
                     />
                 )}
             </Deferred>

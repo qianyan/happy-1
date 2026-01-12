@@ -16,6 +16,7 @@ export const ChatList = React.memo((props: {
     session: Session;
     onMessageSelect?: (messageId: string) => void;
     selectedMessageId?: string | null;
+    onOptionEdit?: (text: string) => void;
 }) => {
     const { messages } = useSessionMessages(props.session.id);
     return (
@@ -25,6 +26,7 @@ export const ChatList = React.memo((props: {
             messages={messages}
             onMessageSelect={props.onMessageSelect}
             selectedMessageId={props.selectedMessageId}
+            onOptionEdit={props.onOptionEdit}
         />
     )
 });
@@ -54,6 +56,7 @@ const ChatListInternal = React.memo((props: {
     messages: Message[],
     onMessageSelect?: (messageId: string) => void;
     selectedMessageId?: string | null;
+    onOptionEdit?: (text: string) => void;
 }) => {
     const flatListRef = useRef<FlatList<Message>>(null);
     const [showScrollButton, setShowScrollButton] = useState(false);
@@ -66,8 +69,9 @@ const ChatListInternal = React.memo((props: {
             sessionId={props.sessionId}
             onMessageSelect={props.onMessageSelect}
             isSelected={props.selectedMessageId === item.id}
+            onOptionEdit={props.onOptionEdit}
         />
-    ), [props.metadata, props.sessionId, props.onMessageSelect, props.selectedMessageId]);
+    ), [props.metadata, props.sessionId, props.onMessageSelect, props.selectedMessageId, props.onOptionEdit]);
 
     const handleScroll = useCallback((event: any) => {
         // Since list is inverted, contentOffset.y represents distance from newest messages

@@ -16,15 +16,17 @@ import * as Clipboard from 'expo-clipboard';
 import { MermaidRenderer } from './MermaidRenderer';
 import { MarkdownImage } from './MarkdownImage';
 import { t } from '@/text';
+import { Ionicons } from '@expo/vector-icons';
 
 // Option type for callback
 export type Option = {
     title: string;
 };
 
-export const MarkdownView = React.memo((props: { 
+export const MarkdownView = React.memo((props: {
     markdown: string;
     onOptionPress?: (option: Option) => void;
+    onOptionEdit?: (option: Option) => void;
 }) => {
     const blocks = React.useMemo(() => parseMarkdown(props.markdown), [props.markdown]);
     
@@ -67,7 +69,7 @@ export const MarkdownView = React.memo((props: {
                     } else if (block.type === 'mermaid') {
                         return <MermaidRenderer content={block.content} key={index} />;
                     } else if (block.type === 'options') {
-                        return <RenderOptionsBlock items={block.items} key={index} first={index === 0} last={index === blocks.length - 1} selectable={selectable} onOptionPress={props.onOptionPress} />;
+                        return <RenderOptionsBlock items={block.items} key={index} first={index === 0} last={index === blocks.length - 1} selectable={selectable} onOptionPress={props.onOptionPress} onOptionEdit={props.onOptionEdit} />;
                     } else if (block.type === 'table') {
                         return <RenderTableBlock headers={block.headers} rows={block.rows} key={index} first={index === 0} last={index === blocks.length - 1} />;
                     } else if (block.type === 'image') {
@@ -178,28 +180,44 @@ function RenderCodeBlock(props: { content: string, language: string | null, firs
     );
 }
 
-function RenderOptionsBlock(props: { 
-    items: string[], 
-    first: boolean, 
-    last: boolean, 
+function RenderOptionsBlock(props: {
+    items: string[],
+    first: boolean,
+    last: boolean,
     selectable: boolean,
-    onOptionPress?: (option: Option) => void 
+    onOptionPress?: (option: Option) => void,
+    onOptionEdit?: (option: Option) => void
 }) {
+    const { theme } = useUnistyles();
     return (
         <View style={[style.optionsContainer, props.first && style.first, props.last && style.last]}>
             {props.items.map((item, index) => {
                 if (props.onOptionPress) {
                     return (
-                        <Pressable 
-                            key={index} 
-                            style={({ pressed }) => [
-                                style.optionItem,
-                                pressed && style.optionItemPressed
-                            ]}
-                            onPress={() => props.onOptionPress?.({ title: item })}
-                        >
-                            <Text selectable={props.selectable} style={style.optionText}>{item}</Text>
-                        </Pressable>
+                        <View key={index} style={style.optionItemWrapper}>
+                            <Pressable
+                                style={({ pressed }) => [
+                                    style.optionItem,
+                                    style.optionItemWithEdit,
+                                    pressed && style.optionItemPressed
+                                ]}
+                                onPress={() => props.onOptionPress?.({ title: item })}
+                            >
+                                <Text selectable={props.selectable} style={style.optionText}>{item}</Text>
+                            </Pressable>
+                            {props.onOptionEdit && (
+                                <Pressable
+                                    style={({ pressed }) => [
+                                        style.optionEditButton,
+                                        pressed && style.optionEditButtonPressed
+                                    ]}
+                                    onPress={() => props.onOptionEdit?.({ title: item })}
+                                    hitSlop={8}
+                                >
+                                    <Ionicons name="pencil" size={14} color={theme.colors.textSecondary} />
+                                </Pressable>
+                            )}
+                        </View>
                     );
                 } else {
                     return (
@@ -559,6 +577,11 @@ const style = StyleSheet.create((theme) => ({
         gap: 8,
         marginVertical: 8,
     },
+    optionItemWrapper: {
+        flexDirection: 'row',
+        alignItems: 'stretch',
+        gap: 0,
+    },
     optionItem: {
         backgroundColor: theme.colors.surfaceHighest,
         borderRadius: 8,
@@ -567,7 +590,27 @@ const style = StyleSheet.create((theme) => ({
         borderWidth: 1,
         borderColor: theme.colors.divider,
     },
+    optionItemWithEdit: {
+        flex: 1,
+        borderTopRightRadius: 0,
+        borderBottomRightRadius: 0,
+        borderRightWidth: 0,
+    },
     optionItemPressed: {
+        opacity: 0.7,
+        backgroundColor: theme.colors.surfaceHigh,
+    },
+    optionEditButton: {
+        backgroundColor: theme.colors.surfaceHighest,
+        borderWidth: 1,
+        borderColor: theme.colors.divider,
+        borderTopRightRadius: 8,
+        borderBottomRightRadius: 8,
+        paddingHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    optionEditButtonPressed: {
         opacity: 0.7,
         backgroundColor: theme.colors.surfaceHigh,
     },
