@@ -4,7 +4,7 @@ import { Text } from '@/components/StyledText';
 import { useRouter, Stack } from 'expo-router';
 import { StyleSheet, useUnistyles } from 'react-native-unistyles';
 import { t } from '@/text';
-import { layout } from '@/components/layout';
+import { useResponsiveMaxWidth } from '@/components/layout';
 import { Modal } from '@/modal';
 import { sync } from '@/sync/sync';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -72,6 +72,7 @@ export default function NewArtifactScreen() {
     const styles = stylesheet;
     const router = useRouter();
     const safeArea = useSafeAreaInsets();
+    const maxWidth = useResponsiveMaxWidth();
     
     const [title, setTitle] = React.useState('');
     const [body, setBody] = React.useState('');
@@ -156,7 +157,7 @@ export default function NewArtifactScreen() {
                         style={styles.scrollView}
                         contentContainerStyle={[
                             styles.contentContainer,
-                            { maxWidth: layout.maxWidth, alignSelf: 'center', width: '100%' }
+                            { maxWidth, alignSelf: 'center', width: '100%' }
                         ]}
                         keyboardShouldPersistTaps="handled"
                     >
