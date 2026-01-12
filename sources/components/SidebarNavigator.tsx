@@ -6,15 +6,22 @@ import { SidebarView } from './SidebarView';
 import { useWindowDimensions, Platform } from 'react-native';
 import { useLocalSetting } from '@/sync/storage';
 import { SidebarToggleButton } from './SidebarToggleButton';
+import { usePathname } from 'expo-router';
 
 export const SidebarNavigator = React.memo(() => {
     const auth = useAuth();
     const isTablet = useIsTablet();
     const sidebarCollapsed = useLocalSetting('sidebarCollapsed');
     const isWeb = Platform.OS === 'web';
+    const pathname = usePathname();
 
-    // On web tablet, respect the collapsed setting
-    const showPermanentDrawer = auth.isAuthenticated && isTablet && !(isWeb && sidebarCollapsed);
+    // Check if a session detail is currently being viewed
+    const isSessionDetailOpen = pathname.startsWith('/session/');
+
+    // On web tablet, respect the collapsed setting ONLY when a session is open
+    // When no session is open, always show sidebar so user can see the session list
+    const effectiveCollapsed = isWeb && sidebarCollapsed && isSessionDetailOpen;
+    const showPermanentDrawer = auth.isAuthenticated && isTablet && !effectiveCollapsed;
     const { width: windowWidth } = useWindowDimensions();
 
     // Calculate drawer width only when needed
@@ -62,8 +69,8 @@ export const SidebarNavigator = React.memo(() => {
         []
     );
 
-    // Show toggle button when sidebar is collapsed on web tablet
-    const showToggleButton = auth.isAuthenticated && isTablet && isWeb && sidebarCollapsed;
+    // Show toggle button when sidebar is effectively collapsed (only when session is open)
+    const showToggleButton = auth.isAuthenticated && isTablet && isWeb && effectiveCollapsed;
 
     return (
         <>
