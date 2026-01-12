@@ -2,7 +2,7 @@ import { Ionicons, Octicons } from '@expo/vector-icons';
 import * as React from 'react';
 import { View, Platform, useWindowDimensions, ViewStyle, Text, ActivityIndicator, TouchableWithoutFeedback, Image as RNImage, Pressable } from 'react-native';
 import { Image } from 'expo-image';
-import { layout } from './layout';
+import { useResponsiveMaxWidth } from './layout';
 import { MultiTextInput, KeyPressEvent } from './MultiTextInput';
 import { Typography } from '@/constants/Typography';
 import { PermissionMode, ModelMode } from './PermissionModeSelector';
@@ -304,6 +304,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
     const styles = stylesheet;
     const { theme } = useUnistyles();
     const screenWidth = useWindowDimensions().width;
+    const responsiveMaxWidth = useResponsiveMaxWidth();
 
     const hasText = props.value.trim().length > 0;
     const isRecording = props.micStatus === 'recording';
@@ -558,7 +559,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
         ]}>
             <View style={[
                 styles.innerContainer,
-                { maxWidth: layout.maxWidth }
+                { maxWidth: responsiveMaxWidth }
             ]}>
                 {/* Autocomplete suggestions overlay */}
                 {suggestions.length > 0 && (

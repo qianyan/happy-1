@@ -5,13 +5,12 @@ import { MarkdownView } from "./markdown/MarkdownView";
 import { t } from '@/text';
 import { Message, UserTextMessage, AgentTextMessage, ToolCallMessage, ThinkingMessage, SubAgentInvocation } from "@/sync/typesMessage";
 import { Metadata } from "@/sync/storageTypes";
-import { layout } from "./layout";
+import { useResponsiveMaxWidth } from "./layout";
 import { ToolView } from "./tools/ToolView";
 import { AgentEvent } from "@/sync/typesRaw";
 import { sync } from '@/sync/sync';
 import { Option } from './markdown/MarkdownView';
 import { MessageImage } from './MessageImage';
-import { useLocalSetting } from '@/sync/storage';
 
 export const MessageView = React.memo((props: {
   message: Message;
@@ -20,15 +19,16 @@ export const MessageView = React.memo((props: {
   getMessageById?: (id: string) => Message | null;
   onMessageSelect?: (messageId: string) => void;
   isSelected?: boolean;
+  onOptionEdit?: (text: string) => void;
 }) => {
-  const wideContentView = useLocalSetting('wideContentView');
+  const responsiveMaxWidth = useResponsiveMaxWidth();
 
   const messageContentStyle = React.useMemo(() => ({
     flexDirection: 'column' as const,
     flexGrow: 1,
     flexBasis: 0,
-    maxWidth: (wideContentView ? '100%' : layout.maxWidth) as any,
-  }), [wideContentView]);
+    maxWidth: responsiveMaxWidth as any,
+  }), [responsiveMaxWidth]);
 
   return (
     <View style={styles.messageContainer} renderToHardwareTextureAndroid={true}>
@@ -40,6 +40,7 @@ export const MessageView = React.memo((props: {
           getMessageById={props.getMessageById}
           onMessageSelect={props.onMessageSelect}
           isSelected={props.isSelected}
+          onOptionEdit={props.onOptionEdit}
         />
       </View>
     </View>
@@ -54,13 +55,14 @@ function RenderBlock(props: {
   getMessageById?: (id: string) => Message | null;
   onMessageSelect?: (messageId: string) => void;
   isSelected?: boolean;
+  onOptionEdit?: (text: string) => void;
 }): React.ReactElement {
   switch (props.message.kind) {
     case 'user-text':
-      return <UserTextBlock message={props.message} sessionId={props.sessionId} />;
+      return <UserTextBlock message={props.message} sessionId={props.sessionId} onOptionEdit={props.onOptionEdit} />;
 
     case 'agent-text':
-      return <AgentTextBlock message={props.message} sessionId={props.sessionId} />;
+      return <AgentTextBlock message={props.message} sessionId={props.sessionId} onOptionEdit={props.onOptionEdit} />;
 
     case 'tool-call':
       return <ToolCallBlock
@@ -91,10 +93,15 @@ function RenderBlock(props: {
 function UserTextBlock(props: {
   message: UserTextMessage;
   sessionId: string;
+  onOptionEdit?: (text: string) => void;
 }) {
   const handleOptionPress = React.useCallback((option: Option) => {
     sync.sendMessage(props.sessionId, option.title);
   }, [props.sessionId]);
+
+  const handleOptionEdit = React.useCallback((option: Option) => {
+    props.onOptionEdit?.(option.title);
+  }, [props.onOptionEdit]);
 
   const hasImages = props.message.images && props.message.images.length > 0;
   const hasText = props.message.text.length > 0;
@@ -103,7 +110,7 @@ function UserTextBlock(props: {
     <View style={styles.userMessageContainer}>
       <View style={styles.userMessageBubble}>
         {hasText && (
-          <MarkdownView markdown={props.message.displayText || props.message.text} onOptionPress={handleOptionPress} />
+          <MarkdownView markdown={props.message.displayText || props.message.text} onOptionPress={handleOptionPress} onOptionEdit={handleOptionEdit} />
         )}
         {hasImages && (
           <View style={styles.imagesContainer}>
@@ -124,14 +131,19 @@ function UserTextBlock(props: {
 function AgentTextBlock(props: {
   message: AgentTextMessage;
   sessionId: string;
+  onOptionEdit?: (text: string) => void;
 }) {
   const handleOptionPress = React.useCallback((option: Option) => {
     sync.sendMessage(props.sessionId, option.title);
   }, [props.sessionId]);
 
+  const handleOptionEdit = React.useCallback((option: Option) => {
+    props.onOptionEdit?.(option.title);
+  }, [props.onOptionEdit]);
+
   return (
     <View style={styles.agentMessageContainer}>
-      <MarkdownView markdown={props.message.text} onOptionPress={handleOptionPress} />
+      <MarkdownView markdown={props.message.text} onOptionPress={handleOptionPress} onOptionEdit={handleOptionEdit} />
     </View>
   );
 }

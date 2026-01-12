@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Avatar } from '@/components/Avatar';
 import { Typography } from '@/constants/Typography';
 import { useHeaderHeight } from '@/utils/responsive';
-import { layout } from '@/components/layout';
+import { useResponsiveHeaderMaxWidth } from '@/components/layout';
 import { useUnistyles } from 'react-native-unistyles';
 
 interface ChatHeaderViewProps {
@@ -38,6 +38,7 @@ export const ChatHeaderView: React.FC<ChatHeaderViewProps> = ({
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
     const headerHeight = useHeaderHeight();
+    const responsiveMaxWidth = useResponsiveHeaderMaxWidth();
 
     const handleBackPress = () => {
         if (onBackPress) {
@@ -50,7 +51,7 @@ export const ChatHeaderView: React.FC<ChatHeaderViewProps> = ({
     return (
         <View style={[styles.container, { paddingTop: insets.top, backgroundColor: theme.colors.header.background }]}>
             <View style={styles.contentWrapper}>
-                <View style={[styles.content, { height: headerHeight }]}>
+                <View style={[styles.content, { height: headerHeight, maxWidth: responsiveMaxWidth }]}>
                 <Pressable onPress={handleBackPress} style={styles.backButton} hitSlop={15}>
                     <Ionicons
                         name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'}
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: Platform.OS === 'ios' ? 8 : 16,
         width: '100%',
-        maxWidth: layout.headerMaxWidth,
+        // maxWidth is applied dynamically via useResponsiveHeaderMaxWidth
     },
     backButton: {
         marginRight: 8,
