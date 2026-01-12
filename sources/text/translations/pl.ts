@@ -1002,6 +1002,7 @@ export const pl: TranslationStructure = {
         openCommandPalette: 'Otwórz paletę poleceń',
         showKeyboardShortcuts: 'Pokaż skróty klawiszowe',
         openSettings: 'Otwórz ustawienia',
+        toggleSidebar: 'Przełącz panel boczny',
         newSession: 'Nowa sesja',
         focusSearch: 'Skup na wyszukiwaniu',
         previousSession: 'Poprzednia sesja',

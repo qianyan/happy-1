@@ -3,13 +3,18 @@ import * as React from 'react';
 import { Drawer } from 'expo-router/drawer';
 import { useIsTablet } from '@/utils/responsive';
 import { SidebarView } from './SidebarView';
-import { Slot } from 'expo-router';
-import { useWindowDimensions } from 'react-native';
+import { useWindowDimensions, Platform } from 'react-native';
+import { useLocalSetting } from '@/sync/storage';
+import { SidebarToggleButton } from './SidebarToggleButton';
 
 export const SidebarNavigator = React.memo(() => {
     const auth = useAuth();
     const isTablet = useIsTablet();
-    const showPermanentDrawer = auth.isAuthenticated && isTablet;
+    const sidebarCollapsed = useLocalSetting('sidebarCollapsed');
+    const isWeb = Platform.OS === 'web';
+
+    // On web tablet, respect the collapsed setting
+    const showPermanentDrawer = auth.isAuthenticated && isTablet && !(isWeb && sidebarCollapsed);
     const { width: windowWidth } = useWindowDimensions();
 
     // Calculate drawer width only when needed
@@ -32,7 +37,7 @@ export const SidebarNavigator = React.memo(() => {
                 },
             };
         }
-        
+
         // When drawer is permanent
         return {
             lazy: false,
@@ -57,10 +62,16 @@ export const SidebarNavigator = React.memo(() => {
         []
     );
 
+    // Show toggle button when sidebar is collapsed on web tablet
+    const showToggleButton = auth.isAuthenticated && isTablet && isWeb && sidebarCollapsed;
+
     return (
-        <Drawer
-            screenOptions={drawerNavigationOptions}
-            drawerContent={showPermanentDrawer ? drawerContent : undefined}
-        />
+        <>
+            <Drawer
+                screenOptions={drawerNavigationOptions}
+                drawerContent={showPermanentDrawer ? drawerContent : undefined}
+            />
+            {showToggleButton && <SidebarToggleButton />}
+        </>
     )
 });

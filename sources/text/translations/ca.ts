@@ -978,6 +978,7 @@ export const ca: TranslationStructure = {
         openCommandPalette: 'Obrir paleta de comandes',
         showKeyboardShortcuts: 'Mostrar dreceres de teclat',
         openSettings: 'Obrir configuració',
+        toggleSidebar: 'Mostrar/amagar barra lateral',
         newSession: 'Nova sessió',
         focusSearch: 'Enfocar cerca',
         previousSession: 'Sessió anterior',

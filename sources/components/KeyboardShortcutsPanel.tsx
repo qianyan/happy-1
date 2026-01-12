@@ -33,6 +33,7 @@ function getKeyboardShortcuts(): ShortcutGroup[] {
                 { keys: `${mod}K`, description: t('keyboardShortcuts.openCommandPalette') },
                 { keys: `${mod}${shift}?`, description: t('keyboardShortcuts.showKeyboardShortcuts') },
                 { keys: `${mod},`, description: t('keyboardShortcuts.openSettings') },
+                { keys: `${mod}B`, description: t('keyboardShortcuts.toggleSidebar') },
             ],
         },
         {

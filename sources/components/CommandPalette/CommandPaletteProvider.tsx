@@ -413,8 +413,14 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
     }, [commandPaletteEnabled, sessionsList, currentSessionId, navigateToSession]);
 
     // Handler for focus search shortcut (⌘⇧F)
+    // Also expands sidebar if collapsed so the search field is visible
     const handleFocusSearch = useCallback(() => {
         if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        // Expand sidebar if collapsed so search is visible
+        const localSettings = storage.getState().localSettings;
+        if (localSettings.sidebarCollapsed) {
+            storage.getState().applyLocalSettings({ sidebarCollapsed: false });
+        }
         focusSearch();
     }, [commandPaletteEnabled, focusSearch]);
 
@@ -433,6 +439,13 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         router.push('/zen');
     }, [router, commandPaletteEnabled]);
 
+    // Handler for toggle sidebar shortcut (⌘B)
+    const handleToggleSidebar = useCallback(() => {
+        if (Platform.OS !== 'web' || !commandPaletteEnabled) return;
+        const localSettings = storage.getState().localSettings;
+        storage.getState().applyLocalSettings({ sidebarCollapsed: !localSettings.sidebarCollapsed });
+    }, [commandPaletteEnabled]);
+
     // Keyboard shortcut handlers
     const keyboardHandlers = useMemo(() => ({
         onNewSession: handleNewSession,
@@ -444,7 +457,8 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
         onFocusSearch: handleFocusSearch,
         onShowKeyboardShortcuts: handleShowKeyboardShortcuts,
         onOpenZen: handleOpenZen,
-    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch, handleShowKeyboardShortcuts, handleOpenZen]);
+        onToggleSidebar: handleToggleSidebar,
+    }), [handleNewSession, handleArchiveSession, handleDeleteSession, handleToggleVoiceRecording, handlePrevSession, handleNextSession, handleFocusSearch, handleShowKeyboardShortcuts, handleOpenZen, handleToggleSidebar]);
 
     // Set up global keyboard handler only if feature is enabled
     useGlobalKeyboard(

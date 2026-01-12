@@ -980,6 +980,7 @@ export const zhHans: TranslationStructure = {
         openCommandPalette: '打开命令面板',
         showKeyboardShortcuts: '显示键盘快捷键',
         openSettings: '打开设置',
+        toggleSidebar: '切换侧边栏',
         newSession: '新建会话',
         focusSearch: '聚焦搜索',
         previousSession: '上一个会话',

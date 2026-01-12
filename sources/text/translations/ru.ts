@@ -1001,6 +1001,7 @@ export const ru: TranslationStructure = {
         openCommandPalette: 'Открыть палитру команд',
         showKeyboardShortcuts: 'Показать горячие клавиши',
         openSettings: 'Открыть настройки',
+        toggleSidebar: 'Показать/скрыть боковую панель',
         newSession: 'Новая сессия',
         focusSearch: 'Фокус на поиске',
         previousSession: 'Предыдущая сессия',

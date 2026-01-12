@@ -980,6 +980,7 @@ export const en = {
         openCommandPalette: 'Open command palette',
         showKeyboardShortcuts: 'Show keyboard shortcuts',
         openSettings: 'Open settings',
+        toggleSidebar: 'Toggle sidebar',
         newSession: 'New session',
         focusSearch: 'Focus search',
         previousSession: 'Previous session',

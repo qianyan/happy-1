@@ -13,6 +13,7 @@ export const LocalSettingsSchema = z.object({
     markdownCopyV2: z.boolean().describe('Replace native paragraph selection with long-press modal for full markdown copy'),
     shiftEnterToSend: z.boolean().describe('Use Shift+Enter to send messages (Enter creates new line). Default is Enter to send.'),
     wideContentView: z.boolean().describe('Use full width for content instead of constrained 800px container'),
+    sidebarCollapsed: z.boolean().describe('Collapse sidebar on web (Cmd+B to toggle)'),
     // CLI version acknowledgments - keyed by machineId
     acknowledgedCliVersions: z.record(z.string(), z.string()).describe('Acknowledged CLI versions per machine'),
 });
@@ -38,6 +39,7 @@ export const localSettingsDefaults: LocalSettings = {
     markdownCopyV2: true,
     shiftEnterToSend: false,
     wideContentView: false,
+    sidebarCollapsed: false,
     acknowledgedCliVersions: {},
 };
 Object.freeze(localSettingsDefaults);
