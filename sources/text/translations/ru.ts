@@ -361,6 +361,8 @@ export const ru: TranslationStructure = {
         cliVersionOutdatedMessage: ({ currentVersion, requiredVersion }: { currentVersion: string; requiredVersion: string }) =>
             `Установлена версия ${currentVersion}. Обновите до ${requiredVersion} или новее`,
         updateCliInstructions: 'Пожалуйста, выполните npm install -g happy-coder@latest',
+        continueFromHere: 'Продолжить отсюда',
+        continueFromHereSubtitle: 'Начать новую сессию, продолжая этот разговор',
         deleteSession: 'Удалить сессию',
         deleteSessionSubtitle: 'Удалить эту сессию навсегда',
         deleteSessionConfirm: 'Удалить сессию навсегда?',

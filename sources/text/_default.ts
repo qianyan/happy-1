@@ -393,6 +393,8 @@ export const en = {
         cliVersionOutdatedMessage: ({ currentVersion, requiredVersion }: { currentVersion: string; requiredVersion: string }) =>
             `Version ${currentVersion} installed. Update to ${requiredVersion} or later`,
         updateCliInstructions: 'Please run npm install -g happy-coder@latest',
+        continueFromHere: 'Continue From Here',
+        continueFromHereSubtitle: 'Start a new session continuing this conversation',
         deleteSession: 'Delete Session',
         deleteSessionSubtitle: 'Permanently remove this session',
         deleteSessionConfirm: 'Delete Session Permanently?',

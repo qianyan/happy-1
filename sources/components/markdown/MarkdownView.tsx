@@ -147,6 +147,14 @@ function RenderCodeBlock(props: { content: string, language: string | null, firs
         }
     }, [props.content]);
 
+    const renderCodeContent = () => (
+        <SimpleSyntaxHighlighter
+            code={props.content}
+            language={props.language}
+            selectable={props.selectable}
+        />
+    );
+
     return (
         <View
             style={[style.codeBlock, props.first && style.first, props.last && style.last]}
@@ -156,18 +164,22 @@ function RenderCodeBlock(props: { content: string, language: string | null, firs
             onMouseLeave={() => setIsHovered(false)}
         >
             {props.language && <Text selectable={props.selectable} style={style.codeLanguage}>{props.language}</Text>}
-            <ScrollView
-                style={{ flexGrow: 0, flexShrink: 0 }}
-                horizontal={true}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-                showsHorizontalScrollIndicator={false}
-            >
-                <SimpleSyntaxHighlighter
-                    code={props.content}
-                    language={props.language}
-                    selectable={props.selectable}
-                />
-            </ScrollView>
+            {Platform.OS === 'web' ? (
+                <div style={{ overflowX: 'auto', width: '100%' }}>
+                    <div style={{ padding: 16 }}>
+                        {renderCodeContent()}
+                    </div>
+                </div>
+            ) : (
+                <ScrollView
+                    style={{ flexGrow: 0, flexShrink: 0 }}
+                    horizontal={true}
+                    contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+                    showsHorizontalScrollIndicator={false}
+                >
+                    {renderCodeContent()}
+                </ScrollView>
+            )}
             <View style={[style.copyButtonWrapper, isHovered && style.copyButtonWrapperVisible]}>
                 <Pressable
                     style={style.copyButton}

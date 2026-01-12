@@ -393,6 +393,8 @@ export const es: TranslationStructure = {
         cliVersionOutdatedMessage: ({ currentVersion, requiredVersion }: { currentVersion: string; requiredVersion: string }) =>
             `Versión ${currentVersion} instalada. Actualice a ${requiredVersion} o posterior`,
         updateCliInstructions: 'Por favor ejecute npm install -g happy-coder@latest',
+        continueFromHere: 'Continuar desde aquí',
+        continueFromHereSubtitle: 'Iniciar una nueva sesión continuando esta conversación',
         deleteSession: 'Eliminar sesión',
         deleteSessionSubtitle: 'Eliminar permanentemente esta sesión',
         deleteSessionConfirm: '¿Eliminar sesión permanentemente?',

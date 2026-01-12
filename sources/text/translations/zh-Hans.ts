@@ -395,6 +395,8 @@ export const zhHans: TranslationStructure = {
         cliVersionOutdatedMessage: ({ currentVersion, requiredVersion }: { currentVersion: string; requiredVersion: string }) =>
             `已安装版本 ${currentVersion}。请更新到 ${requiredVersion} 或更高版本`,
         updateCliInstructions: '请运行 npm install -g happy-coder@latest',
+        continueFromHere: '从这里继续',
+        continueFromHereSubtitle: '开始新会话继续此对话',
         deleteSession: '删除会话',
         deleteSessionSubtitle: '永久删除此会话',
         deleteSessionConfirm: '永久删除会话？',

@@ -93,11 +93,12 @@ function NewSessionScreen() {
     const { theme } = useUnistyles();
     const router = useRouter();
     const maxWidth = useResponsiveMaxWidth();
-    const { prompt, dataId, selectedMachineId: selectedMachineIdParam, selectedPathParam } = useLocalSearchParams<{
+    const { prompt, dataId, selectedMachineId: selectedMachineIdParam, selectedPathParam, resumeClaudeSessionId } = useLocalSearchParams<{
         prompt?: string;
         dataId?: string;
         selectedMachineId?: string;
         selectedPathParam?: string;
+        resumeClaudeSessionId?: string;
     }>();
 
     // Try to get data from temporary store first, fallback to direct prompt parameter
@@ -637,7 +638,8 @@ function NewSessionScreen() {
                 directory: actualPath,
                 // For now we assume you already have a path to start in
                 approvedNewDirectoryCreation: true,
-                agent: agentType
+                agent: agentType,
+                resumeClaudeSessionId
             });
 
             // Use sessionId to check for success for backwards compatibility

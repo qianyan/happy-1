@@ -265,6 +265,14 @@ function SessionInfoContent({ session }: { session: Session }) {
                             onPress={handleArchiveSession}
                         />
                     )}
+                    {!sessionStatus.isConnected && !session.active && session.metadata?.claudeSessionId && session.metadata?.machineId && (
+                        <Item
+                            title={t('sessionInfo.continueFromHere')}
+                            subtitle={t('sessionInfo.continueFromHereSubtitle')}
+                            icon={<Ionicons name="play-outline" size={29} color="#34C759" />}
+                            onPress={() => router.push(`/new?resumeClaudeSessionId=${session.metadata!.claudeSessionId}&selectedMachineId=${session.metadata!.machineId}&selectedPathParam=${encodeURIComponent(session.metadata!.path || '')}`)}
+                        />
+                    )}
                     {!sessionStatus.isConnected && !session.active && (
                         <Item
                             title={t('sessionInfo.deleteSession')}
