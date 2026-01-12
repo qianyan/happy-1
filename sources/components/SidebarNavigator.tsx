@@ -15,12 +15,13 @@ export const SidebarNavigator = React.memo(() => {
     const isWeb = Platform.OS === 'web';
     const pathname = usePathname();
 
-    // Check if a session detail is currently being viewed
-    const isSessionDetailOpen = pathname.startsWith('/session/');
+    // Check if we're on a screen where sidebar can be collapsed
+    // Sidebar can collapse on: session detail view or new session screen
+    const canCollapseSidebar = pathname.startsWith('/session/') || pathname.startsWith('/new');
 
-    // On web tablet, respect the collapsed setting ONLY when a session is open
-    // When no session is open, always show sidebar so user can see the session list
-    const effectiveCollapsed = isWeb && sidebarCollapsed && isSessionDetailOpen;
+    // On web tablet, respect the collapsed setting ONLY on screens that allow it
+    // On other screens, always show sidebar so user can see the session list
+    const effectiveCollapsed = isWeb && sidebarCollapsed && canCollapseSidebar;
     const showPermanentDrawer = auth.isAuthenticated && isTablet && !effectiveCollapsed;
     const { width: windowWidth } = useWindowDimensions();
 
@@ -69,7 +70,7 @@ export const SidebarNavigator = React.memo(() => {
         []
     );
 
-    // Show toggle button when sidebar is effectively collapsed (only when session is open)
+    // Show toggle button when sidebar is effectively collapsed
     const showToggleButton = auth.isAuthenticated && isTablet && isWeb && effectiveCollapsed;
 
     return (

@@ -7,7 +7,7 @@ import { storage } from '@/sync/storage';
 
 /**
  * Floating button shown when sidebar is collapsed on web.
- * Clicking it or pressing Cmd+B expands the sidebar.
+ * Clicking it or pressing Cmd+B or Cmd+1 expands the sidebar.
  */
 export const SidebarToggleButton = React.memo(() => {
     const styles = stylesheet;

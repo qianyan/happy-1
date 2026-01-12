@@ -73,6 +73,7 @@ interface AgentInputProps {
     isSendDisabled?: boolean;
     isSending?: boolean;
     minHeight?: number;
+    maxHeight?: number;
     // Image attachment props
     imageAttachments?: ImageAttachment[];
     onRemoveImageAttachment?: (id: string) => void;
@@ -849,7 +850,7 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
                             placeholder={props.placeholder}
                             onKeyPress={handleKeyPress}
                             onStateChange={handleInputStateChange}
-                            maxHeight={120}
+                            maxHeight={props.maxHeight ?? 120}
                             onPaste={props.onPaste}
                         />
                     </View>

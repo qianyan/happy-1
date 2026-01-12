@@ -5,7 +5,7 @@ import { useAllMachines, storage, useSetting } from '@/sync/storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useUnistyles } from 'react-native-unistyles';
-import { layout } from '@/components/layout';
+import { useResponsiveMaxWidth } from '@/components/layout';
 import { t } from '@/text';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { AgentInput } from '@/components/AgentInput';
@@ -92,6 +92,7 @@ const updateRecentMachinePaths = (
 function NewSessionScreen() {
     const { theme } = useUnistyles();
     const router = useRouter();
+    const maxWidth = useResponsiveMaxWidth();
     const { prompt, dataId, selectedMachineId: selectedMachineIdParam, selectedPathParam } = useLocalSearchParams<{
         prompt?: string;
         dataId?: string;
@@ -747,7 +748,7 @@ function NewSessionScreen() {
                     { paddingHorizontal: screenWidth > 700 ? 16 : 8, flexDirection: 'row', justifyContent: 'center' }
                 ]}>
                     <View style={[
-                        { maxWidth: layout.maxWidth, flex: 1 }
+                        { maxWidth, flex: 1 }
                     ]}>
                         <SessionTypeSelector
                             value={sessionType}
@@ -789,13 +790,15 @@ function NewSessionScreen() {
                     onCancelRecording={cancelRecording}
                     micStatus={micButtonState.micStatus}
                     onSendWhileRecording={handleSendWhileRecording}
+                    // Allow more vertical space for composing new session prompts
+                    maxHeight={300}
                 />
 
                 <View style={[
                     { paddingHorizontal: screenWidth > 700 ? 16 : 8, flexDirection: 'row', justifyContent: 'center' }
                 ]}>
                     <View style={[
-                        { maxWidth: layout.maxWidth, flex: 1 }
+                        { maxWidth, flex: 1 }
                     ]}>
                         <Pressable
                             onPress={handlePathClick}

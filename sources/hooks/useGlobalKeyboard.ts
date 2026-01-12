@@ -21,7 +21,7 @@ export interface KeyboardHandlers {
 
 /**
  * Hook for handling global keyboard shortcuts on web
- * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘⇧F (focus search), ⌘⇧? (shortcuts panel), ⌘⇧E (zen), ⌘B (toggle sidebar)
+ * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘⇧F (focus search), ⌘⇧? (shortcuts panel), ⌘⇧E (zen), ⌘B or ⌘1 (toggle sidebar)
  * Prev/Next session: ⌥↑/↓ on Mac, Ctrl+Shift+↑/↓ on Windows/Linux
  */
 export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<KeyboardHandlers, 'onCommandPalette'>) {
@@ -119,8 +119,8 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
                 return;
             }
 
-            // ⌘B - Toggle sidebar (without shift)
-            if (isModifierPressed && !isShiftPressed && e.key.toLowerCase() === 'b') {
+            // ⌘B or ⌘1 - Toggle sidebar (without shift)
+            if (isModifierPressed && !isShiftPressed && (e.key.toLowerCase() === 'b' || e.key === '1')) {
                 e.preventDefault();
                 e.stopPropagation();
                 handlers?.onToggleSidebar?.();
