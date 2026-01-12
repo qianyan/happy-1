@@ -444,7 +444,14 @@ function SessionViewLoaded({ sessionId, session, showDebugPanel }: { sessionId: 
 
     // Handle option edit - append text to input and focus
     const handleOptionEdit = React.useCallback((text: string) => {
-        setMessage(text);
+        setMessage(prev => {
+            if (!prev || prev.length === 0) {
+                return text;
+            }
+            // Add space if current message doesn't end with whitespace
+            const needsSpace = !/\s$/.test(prev);
+            return prev + (needsSpace ? ' ' : '') + text;
+        });
         inputRef.current?.focus();
     }, []);
 

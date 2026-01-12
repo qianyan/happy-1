@@ -17,6 +17,7 @@
     "web:build": "APP_ENV=production NODE_ENV=production expo export --platform web --clear",
     "web:deploy": "rsync -avz dist happy-server:/root/happy-devbox/happy/",
     "web:production": "bun web:build && bun web:deploy",
+    "deploy": "bun web:production && bun ota:production",
     "typecheck": "tsc --noEmit",
     "build:ios": "eas build --profile production --platform ios --local --non-interactive",
     "build:android": "eas build --profile production --platform android --local --non-interactive",
