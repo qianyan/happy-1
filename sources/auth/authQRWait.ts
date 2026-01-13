@@ -30,10 +30,24 @@ export async function authQRWait(keypair: QRAuthKeyPair, onProgress?: (dots: num
                 const decrypted = decryptBox(encryptedResponse, keypair.secretKey);
                 if (decrypted) {
                     console.log('\n\n✓ Authentication successful\n');
-                    return {
-                        secret: decrypted,
-                        token: token
-                    };
+                    // Check version byte and extract dataKeySeed
+                    // Version 0: response contains [version(1 byte) + dataKeySeed(32 bytes)]
+                    // Legacy: response is the secret directly
+                    if (decrypted[0] === 0 && decrypted.length >= 33) {
+                        const dataKeySeed = decrypted.slice(1, 33);
+                        console.log('[auth] Extracted dataKeySeed (32 bytes) from version 0 response');
+                        return {
+                            secret: dataKeySeed,
+                            token: token
+                        };
+                    } else {
+                        // Legacy format - use entire decrypted blob
+                        console.log('[auth] Using legacy format (using entire decrypted blob as secret)');
+                        return {
+                            secret: decrypted,
+                            token: token
+                        };
+                    }
                 } else {
                     console.log('\n\nFailed to decrypt response. Please try again.');
                     return null;

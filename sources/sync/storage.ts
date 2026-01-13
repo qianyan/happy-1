@@ -1028,8 +1028,12 @@ export function useLocalSettings(): LocalSettings {
 
 export function useAllMachines(): Machine[] {
     return storage(useShallow((state) => {
-        if (!state.isDataReady) return [];
-        return (Object.values(state.machines).sort((a, b) => b.createdAt - a.createdAt)).filter((v) => v.active);
+        if (!state.isDataReady) {
+            return [];
+        }
+        return Object.values(state.machines)
+            .filter((v) => v.active)
+            .sort((a, b) => b.createdAt - a.createdAt);
     }));
 }
 

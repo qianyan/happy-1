@@ -1068,7 +1068,6 @@ class Sync {
     private fetchMachines = async () => {
         if (!this.credentials) return;
 
-        console.log('📊 Sync: Fetching machines...');
         const API_ENDPOINT = getServerUrl();
 
         let response: Response;
@@ -1094,7 +1093,6 @@ class Sync {
         }
 
         const data = await response.json();
-        console.log(`📊 Sync: Fetched ${Array.isArray(data) ? data.length : 0} machines from server`);
         const machines = data as Array<{
             id: string;
             metadata: string;
@@ -1747,15 +1745,12 @@ class Sync {
     }
 
     private handleUpdate = async (update: unknown) => {
-        console.log('🔄 Sync: handleUpdate called with:', JSON.stringify(update).substring(0, 300));
         const validatedUpdate = ApiUpdateContainerSchema.safeParse(update);
         if (!validatedUpdate.success) {
-            console.log('❌ Sync: Invalid update received:', validatedUpdate.error);
             console.error('❌ Sync: Invalid update data:', update);
             return;
         }
         const updateData = validatedUpdate.data;
-        console.log(`🔄 Sync: Validated update type: ${updateData.body.t}`);
 
         if (updateData.body.t === 'new-message') {
 
@@ -1881,6 +1876,71 @@ class Sync {
 
             // Apply the updated profile to storage
             storage.getState().applyProfile(updatedProfile);
+        } else if (updateData.body.t === 'new-machine') {
+            const newMachineData = updateData.body;
+            const machineId = newMachineData.machineId;
+
+            // Initialize machine encryption
+            const machineKeysMap = new Map<string, Uint8Array | null>();
+            if (newMachineData.dataEncryptionKey) {
+                const decryptedKey = await this.encryption.decryptEncryptionKey(newMachineData.dataEncryptionKey);
+                if (decryptedKey) {
+                    machineKeysMap.set(machineId, decryptedKey);
+                    this.machineDataKeys.set(machineId, decryptedKey);
+                } else {
+                    console.error(`Failed to decrypt dataEncryptionKey for new machine ${machineId}`);
+                }
+            } else {
+                // No dataEncryptionKey - use legacy encryption (null key)
+                machineKeysMap.set(machineId, null);
+            }
+
+            // Initialize the machine encryption
+            await this.encryption.initializeMachines(machineKeysMap);
+
+            // Get machine-specific encryption (will use legacy if dataEncryptionKey was null)
+            const machineEncryption = this.encryption.getMachineEncryption(machineId);
+            if (!machineEncryption) {
+                console.error(`Machine encryption not found for ${machineId} - cannot create machine`);
+                return;
+            }
+
+            // Decrypt metadata and daemonState
+            let metadata: any = null;
+            let daemonState: any = null;
+
+            try {
+                metadata = newMachineData.metadata
+                    ? await machineEncryption.decryptMetadata(newMachineData.metadataVersion, newMachineData.metadata)
+                    : null;
+            } catch (error) {
+                console.error(`Failed to decrypt metadata for new machine ${machineId}:`, error);
+            }
+
+            try {
+                daemonState = newMachineData.daemonState
+                    ? await machineEncryption.decryptDaemonState(newMachineData.daemonStateVersion, newMachineData.daemonState)
+                    : null;
+            } catch (error) {
+                console.error(`Failed to decrypt daemonState for new machine ${machineId}:`, error);
+            }
+
+            // Create machine object
+            const newMachine: Machine = {
+                id: machineId,
+                seq: newMachineData.seq,
+                createdAt: newMachineData.createdAt,
+                updatedAt: newMachineData.updatedAt,
+                active: newMachineData.active,
+                activeAt: newMachineData.activeAt,
+                metadata,
+                metadataVersion: newMachineData.metadataVersion,
+                daemonState,
+                daemonStateVersion: newMachineData.daemonStateVersion
+            };
+
+            storage.getState().applyMachines([newMachine]);
+            log.log(`Received new-machine event for ${machineId}`);
         } else if (updateData.body.t === 'update-machine') {
             const machineUpdate = updateData.body;
             const machineId = machineUpdate.machineId;  // Changed from .id to .machineId
