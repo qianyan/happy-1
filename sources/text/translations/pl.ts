@@ -329,6 +329,7 @@ export const pl: TranslationStructure = {
         startRecordingSubtitle: 'Nagraj i transkrybuj swój głos',
         stopRecording: 'Zatrzymaj nagrywanie',
         stopRecordingSubtitle: 'Zatrzymaj nagrywanie i transkrybuj',
+        toggleSidebarSubtitle: 'Pokaż lub ukryj panel boczny',
     },
 
     server: {
@@ -1006,6 +1007,7 @@ export const pl: TranslationStructure = {
         showKeyboardShortcuts: 'Pokaż skróty klawiszowe',
         openSettings: 'Otwórz ustawienia',
         toggleSidebar: 'Przełącz panel boczny',
+        toggleSidebarSubtitle: 'Pokaż lub ukryj panel boczny',
         newSession: 'Nowa sesja',
         focusSearch: 'Skup na wyszukiwaniu',
         previousSession: 'Poprzednia sesja',

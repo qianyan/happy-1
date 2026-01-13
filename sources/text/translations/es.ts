@@ -318,6 +318,7 @@ export const es: TranslationStructure = {
         startRecordingSubtitle: 'Grabar y transcribir tu voz',
         stopRecording: 'Detener grabación',
         stopRecordingSubtitle: 'Detener grabación y transcribir',
+        toggleSidebarSubtitle: 'Mostrar u ocultar la barra lateral',
     },
 
     server: {
@@ -983,6 +984,7 @@ export const es: TranslationStructure = {
         showKeyboardShortcuts: 'Mostrar atajos de teclado',
         openSettings: 'Abrir configuración',
         toggleSidebar: 'Mostrar/ocultar barra lateral',
+        toggleSidebarSubtitle: 'Mostrar u ocultar la barra lateral',
         newSession: 'Nueva sesión',
         focusSearch: 'Enfocar búsqueda',
         previousSession: 'Sesión anterior',

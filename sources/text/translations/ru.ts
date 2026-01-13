@@ -424,6 +424,7 @@ export const ru: TranslationStructure = {
         startRecordingSubtitle: 'Записать и транскрибировать голос',
         stopRecording: 'Остановить запись',
         stopRecordingSubtitle: 'Остановить запись и транскрибировать',
+        toggleSidebarSubtitle: 'Показать или скрыть боковую панель',
     },
 
     agentInput: {
@@ -1005,6 +1006,7 @@ export const ru: TranslationStructure = {
         showKeyboardShortcuts: 'Показать горячие клавиши',
         openSettings: 'Открыть настройки',
         toggleSidebar: 'Показать/скрыть боковую панель',
+        toggleSidebarSubtitle: 'Показать или скрыть боковую панель',
         newSession: 'Новая сессия',
         focusSearch: 'Фокус на поиске',
         previousSession: 'Предыдущая сессия',

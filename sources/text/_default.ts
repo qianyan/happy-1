@@ -318,6 +318,7 @@ export const en = {
         startRecordingSubtitle: 'Record and transcribe your voice',
         stopRecording: 'Stop Recording',
         stopRecordingSubtitle: 'Stop recording and transcribe',
+        toggleSidebarSubtitle: 'Show or hide the sidebar',
     },
 
     server: {
@@ -984,6 +985,7 @@ export const en = {
         showKeyboardShortcuts: 'Show keyboard shortcuts',
         openSettings: 'Open settings',
         toggleSidebar: 'Toggle sidebar',
+        toggleSidebarSubtitle: 'Show or hide the sidebar',
         newSession: 'New session',
         focusSearch: 'Focus search',
         previousSession: 'Previous session',

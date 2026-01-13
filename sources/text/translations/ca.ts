@@ -318,6 +318,7 @@ export const ca: TranslationStructure = {
         startRecordingSubtitle: 'Gravar i transcriure la teva veu',
         stopRecording: 'Aturar gravació',
         stopRecordingSubtitle: 'Aturar gravació i transcriure',
+        toggleSidebarSubtitle: 'Mostra o amaga la barra lateral',
     },
 
     server: {
@@ -982,6 +983,7 @@ export const ca: TranslationStructure = {
         showKeyboardShortcuts: 'Mostrar dreceres de teclat',
         openSettings: 'Obrir configuració',
         toggleSidebar: 'Mostrar/amagar barra lateral',
+        toggleSidebarSubtitle: 'Mostra o amaga la barra lateral',
         newSession: 'Nova sessió',
         focusSearch: 'Enfocar cerca',
         previousSession: 'Sessió anterior',

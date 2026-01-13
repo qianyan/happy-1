@@ -320,6 +320,7 @@ export const zhHans: TranslationStructure = {
         startRecordingSubtitle: '录制并转录您的语音',
         stopRecording: '停止录制',
         stopRecordingSubtitle: '停止录制并转录',
+        toggleSidebarSubtitle: '显示或隐藏侧边栏',
     },
 
     server: {
@@ -984,6 +985,7 @@ export const zhHans: TranslationStructure = {
         showKeyboardShortcuts: '显示键盘快捷键',
         openSettings: '打开设置',
         toggleSidebar: '切换侧边栏',
+        toggleSidebarSubtitle: '显示或隐藏侧边栏',
         newSession: '新建会话',
         focusSearch: '聚焦搜索',
         previousSession: '上一个会话',

@@ -137,6 +137,18 @@ export function CommandPaletteProvider({ children }: { children: React.ReactNode
                     router.push('/terminal/connect');
                 }
             },
+            {
+                id: 'toggle-sidebar',
+                title: t('keyboardShortcuts.toggleSidebar'),
+                subtitle: t('commandPalette.toggleSidebarSubtitle'),
+                icon: 'menu-outline',
+                category: 'Navigation',
+                shortcut: shortcut({ command: true, key: 'B' }),
+                action: () => {
+                    const localSettings = storage.getState().localSettings;
+                    storage.getState().applyLocalSettings({ sidebarCollapsed: !localSettings.sidebarCollapsed });
+                }
+            },
         ];
 
         // Add session-specific commands
