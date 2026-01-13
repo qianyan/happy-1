@@ -23,12 +23,18 @@ export class Encryption {
         const anonID = encodeHex((await deriveKey(masterSecret, 'Happy Coder', ['analytics', 'id']))).slice(0, 16).toLowerCase();
 
         // Create encryption
-        return new Encryption(anonID, masterSecret, contentKeyPair);
+        return new Encryption(anonID, masterSecret, contentDataKey, contentKeyPair);
     }
 
     private readonly legacyEncryption: SecretBoxEncryption;
     private readonly contentKeyPair: sodium.KeyPair;
     readonly anonID: string;
+    /**
+     * The seed used to derive the content keypair.
+     * This is sent to CLI during V2 terminal auth so CLI can derive the same keypair.
+     * NOTE: This is NOT the public key - it's the 32-byte seed that gets hashed (SHA-512)
+     * to produce the secret key, from which the public key is then derived.
+     */
     readonly contentDataKey: Uint8Array;
 
     // Session and machine encryption management
@@ -36,12 +42,12 @@ export class Encryption {
     private machineEncryptions = new Map<string, MachineEncryption>();
     private cache: EncryptionCache;
 
-    private constructor(anonID: string, masterSecret: Uint8Array, contentKeyPair: sodium.KeyPair) {
+    private constructor(anonID: string, masterSecret: Uint8Array, contentDataKey: Uint8Array, contentKeyPair: sodium.KeyPair) {
         this.anonID = anonID;
         this.contentKeyPair = contentKeyPair;
         this.legacyEncryption = new SecretBoxEncryption(masterSecret);
         this.cache = new EncryptionCache();
-        this.contentDataKey = contentKeyPair.publicKey;
+        this.contentDataKey = contentDataKey;
     }
 
     //
