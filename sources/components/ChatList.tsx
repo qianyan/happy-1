@@ -114,7 +114,7 @@ const ScrollToBottomButton = React.memo((props: { onPress: () => void }) => {
     return (
         <Animated.View
             entering={FadeIn.duration(150)}
-            exiting={FadeOut.duration(150)}
+            exiting={Platform.OS === 'ios' ? FadeOut.duration(150) : undefined}
             style={styles.scrollButtonContainer}
         >
             <Pressable
