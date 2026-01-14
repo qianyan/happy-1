@@ -25,6 +25,7 @@ import { hapticsHeavy } from '@/components/haptics';
 import { useWhisperTranscription, TranscriptionStatus } from '@/hooks/useWhisperTranscription';
 import { useGlobalKeyboard } from '@/hooks/useGlobalKeyboard';
 import { CommandPalette } from '@/components/CommandPalette';
+import { isMacPlatform } from '@/utils/keyboard';
 
 // Simple temporary state for passing selections back from picker screens
 let onMachineSelected: (machineId: string) => void = () => { };
@@ -551,7 +552,10 @@ function NewSessionScreen() {
         }
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            const isModifierPressed = e.metaKey || e.ctrlKey;
+            // Platform-specific modifier key handling
+            const isMac = isMacPlatform();
+            // On Mac: use Cmd (metaKey), on Windows/Linux: use Ctrl
+            const isModifierPressed = isMac ? e.metaKey : e.ctrlKey;
             const isShiftPressed = e.shiftKey;
 
             // Cmd+Shift+P - Open path selector

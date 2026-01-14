@@ -25,6 +25,7 @@ import { ImageAttachmentBar } from './ImageAttachmentBar';
 import { ImageAttachment } from '@/hooks/useImageAttachments';
 import { RecordingStatusBar } from './RecordingStatusBar';
 import { TranscriptionStatus } from '@/hooks/useWhisperTranscription';
+import { isMacPlatform } from '@/utils/keyboard';
 
 interface AgentInputProps {
     value: string;
@@ -532,8 +533,10 @@ export const AgentInput = React.memo(React.forwardRef<MultiTextInputHandle, Agen
         if (Platform.OS !== 'web') return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Handle Cmd/Ctrl+M for model mode switching
-            if (e.key === 'm' && (e.metaKey || e.ctrlKey) && props.onModelModeChange) {
+            // Handle Cmd+M (Mac) or Ctrl+M (Windows/Linux) for model mode switching
+            const isMac = isMacPlatform();
+            const isModifierPressed = isMac ? e.metaKey : e.ctrlKey;
+            if (e.key === 'm' && isModifierPressed && props.onModelModeChange) {
                 e.preventDefault();
                 const modelOrder: ModelMode[] = isCodex
                     ? ['gpt-5-codex-high', 'gpt-5-codex-medium', 'gpt-5-codex-low', 'default']

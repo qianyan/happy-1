@@ -21,7 +21,8 @@ export interface KeyboardHandlers {
 
 /**
  * Hook for handling global keyboard shortcuts on web
- * Supports: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘⇧F (focus search), ⌘⇧? (shortcuts panel), ⌘⇧E (zen), ⌘B or ⌘1 (toggle sidebar)
+ * Mac: ⌘K (palette), ⌘⇧O (new session), ⌘⇧A (archive), ⌘⌫ (delete), ⌘⇧V (voice), ⌘⇧F (focus search), ⌘⇧? (shortcuts panel), ⌘⇧E (zen), ⌘B or ⌘1 (toggle sidebar)
+ * Windows/Linux: Uses Ctrl instead of ⌘ for all shortcuts
  * Prev/Next session: ⌥↑/↓ on Mac, Ctrl+Shift+↑/↓ on Windows/Linux
  */
 export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<KeyboardHandlers, 'onCommandPalette'>) {
@@ -31,8 +32,10 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
         }
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Check for CMD (Mac) or Ctrl (Windows/Linux)
-            const isModifierPressed = e.metaKey || e.ctrlKey;
+            // Platform-specific modifier key handling
+            const isMac = isMacPlatform();
+            // On Mac: use Cmd (metaKey), on Windows/Linux: use Ctrl
+            const isModifierPressed = isMac ? e.metaKey : e.ctrlKey;
             const isShiftPressed = e.shiftKey;
 
             // ⌘K - Open command palette
@@ -76,7 +79,6 @@ export function useGlobalKeyboard(onCommandPalette: () => void, handlers?: Omit<
             }
 
             // Previous session: ⌥↑ on Mac, Ctrl+Shift+↑ on Windows/Linux
-            const isMac = isMacPlatform();
             const prevNextMac = isMac && e.altKey && !e.ctrlKey && !e.shiftKey;
             const prevNextWin = !isMac && e.ctrlKey && e.shiftKey && !e.altKey;
 
