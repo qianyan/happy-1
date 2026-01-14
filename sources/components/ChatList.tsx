@@ -100,12 +100,7 @@ const ChatListInternal = React.memo((props: {
                 ListHeaderComponent={<ListFooter sessionId={props.sessionId} />}
                 ListFooterComponent={<ListHeader />}
                 onScroll={handleScroll}
-                scrollEventThrottle={Platform.OS === 'ios' ? 16 : 32}
-                // Android-specific optimizations to prevent view recycling crashes
-                maxToRenderPerBatch={10}
-                windowSize={21}
-                initialNumToRender={10}
-                removeClippedSubviews={Platform.OS === 'android'}
+                scrollEventThrottle={16}
             />
             {showScrollButton && (
                 <ScrollToBottomButton onPress={scrollToBottom} />

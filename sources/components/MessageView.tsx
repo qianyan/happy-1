@@ -31,7 +31,7 @@ export const MessageView = React.memo((props: {
   }), [responsiveMaxWidth]);
 
   return (
-    <View style={styles.messageContainer}>
+    <View style={styles.messageContainer} renderToHardwareTextureAndroid={true}>
       <View style={messageContentStyle}>
         <RenderBlock
           message={props.message}
